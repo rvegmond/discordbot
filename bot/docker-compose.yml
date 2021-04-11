@@ -1,0 +1,19 @@
+version: "3"
+
+# Easy as 1-2-3 export your discord token:
+# export DISCORD_TOKEN=asdflasdfjkasdlkfjas;dlkfj;asdklfj
+# and execute docker-compose up
+# might be that the container doesn't exist yet for your arch...
+#
+# it is bad practice to code status channel here...
+
+services:
+  bot:
+    container_name: discordbot
+    image: rvegmond/discordbot:latest
+    environment:
+      DISCORD_TOKEN: ${DISCORD_TOKEN} 
+      STATUS_CHANNEL: 829773055592235018
+    # Volumes store your data between container upgrades
+    volumes:
+      - '../data:/bot/data'

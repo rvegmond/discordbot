@@ -1,14 +1,13 @@
 import discord
 from discord.ext import commands
 from loguru import logger
-import logging
 import sqlite3
 
 from modules import status, ping
 
-db_file = 'hades.db'
+db_file = 'data/hades.db'
 
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
+# logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 def generate_table(msg):
     return msg

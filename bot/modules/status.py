@@ -19,20 +19,27 @@ class Status(commands.Cog):
     async def status(self, ctx, *args):
         conn = self.conn
         bot = self.bot
+        status_channel = os.getenv("STATUS_CHANNEL")
+        logger.info(f"status_channel {status_channel}")
         cur = conn.cursor()
         query = f"delete from status where Naam = '{ctx.author.name}'"
+        #TODO make delete message work...
+        try:
+            await ctx.message.delete()
+        except:
+            logger.info("message deletion failed")
         try:
             cur.execute(query)
         except:
-            print(f"{ctx.author.name} doesn't have an entry in status yet..")
+            logger.info(f"{ctx.author.name} doesn't have an entry in status yet..")
         now = datetime.now().strftime("%d-%m-%Y")
-        query = f"insert into status values('{ctx.author.name}', '{now}', '{' '.join(args)}')"
-        print(query)
-        # cur.execute(query, (ctx.author, '2021-03-32', ' '.join(args)))
-        cur.execute(query)
-        conn.commit(
-            )
+        query = f"insert into status values(?, ?, ?)"
+        logger.info(query)
+        cur.execute(query, [ctx.author.name, now, ' '.join(args)])
+        conn.commit()
+        #TODO channel should be an environment variable, but it doesn't seem to function as expected...
         channel = bot.get_channel(829773055592235018)
+        logger.info(f"channel {channel}")
 
         query = """
                 select g.Naam, 
@@ -44,15 +51,12 @@ class Status(commands.Cog):
                 where lower(g.WhiteStar)=?
                 order by lower(g.Naam)
                 """
-        # async for message in channel.history(limit=200):
-        #     await message.delete()
+        async for message in channel.history(limit=200):
+            await message.delete()
         for i in ("ws1","ws2"):
             logger.info(f"whitestar {i}")
             msg = ''
-            # await channel.send(query)
-            cur.execute(query, (i,))
-            # print(cur.fetchall())
-            # await ctx.send('{} arguments: {}'.format(len(args), ' '.join(args)))
+            cur.execute(query, [i])
             col1 = 15
             col2 = 15
             col3 = 35

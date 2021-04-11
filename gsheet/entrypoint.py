@@ -3,12 +3,7 @@
 import gspread
 import sqlite3
 from datetime import datetime
-# # If modifying these scopes, delete the file token.json.
-# SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 
-# # The ID and range of a sample spreadsheet.
-# SAMPLE_SPREADSHEET_ID = '18wokp19S-H4n5bsgYYrADnTTYdGgWpLJfle8WRnlhO0'
-# SAMPLE_RANGE_NAME = 'Modules'
 
 
 def create_connection(db_file):
@@ -69,17 +64,10 @@ def insert_gsheet_into_table(conn, worksheet):
     query += ")"
     print("query: {}".format(query))
 
-    
-    # print("{}".format(values_list))
-    # for x in values_list:
-   
-    #     print("{}".format(x))
     result = cur.executemany(query, list_of_lists)
     print("{}".format(result))
     conn.commit()
 
-    #         for i in 
-    #         print("{}".format(y))
 
 
 def main():
@@ -90,18 +78,8 @@ def main():
 
     # Open a sheet from a spreadsheet in one go
     wks = gc.open("Hades Star Spreadsheet")
-    # wks = gc.open("1tCwYgWGwbYViWKpdTCJSMPiQVEBCnoQvryqgN0DMcI0")
-
     # Update a range of cells using the top left corner address
     worksheet = wks.worksheet("Modules")
-
-    # get heaeder rows
-    # values_list = worksheet.row_values(1)
-
-    # for val in values_list:
-    #     print("{}".format(val))
-
-
 
     cur = conn.cursor()
     # create_gsheet_table(conn, worksheet)

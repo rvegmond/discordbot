@@ -1,0 +1,14 @@
+version: "3"
+
+# Easy as 1-2-3 export your discord token:
+# export DISCORD_TOKEN=asdflasdfjkasdlkfjas;dlkfj;asdklfj
+# and execute docker-compose up
+# might be that the container doesn't exist yet for your arch...
+ 
+services:
+  gsheet:
+    container_name: gsheet
+    image: rvegmond/gsheet-updater:latest
+    volumes:
+      - '../data:/data'
+      - './config:/root/.config/gspread'
