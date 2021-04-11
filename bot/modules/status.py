@@ -58,8 +58,9 @@ class Status(commands.Cog):
             col1 = 15
             col2 = 15
             col3 = 35
-            msg += "**{upper(i)}:**\n"
-            msg += "**{row[0]}** - {row[1]} - {row[2]}\n" 
+            msg += f"**{upper(i)}:**\n"
+            for row in cur.fetchall():
+                msg += f"**{row[0]}** - {row[1]} - {row[2]}\n" 
             # msg += '-' * (col1 + col2 + col3 + 4)
 
             # msg = "```\n"
