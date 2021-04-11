@@ -4,6 +4,7 @@ import os
 from datetime import datetime
 from discord.ext import commands
 from loguru import logger
+# from utils import generate_table
 
 class Status(commands.Cog):
     def __init__(self, bot, conn):
@@ -19,15 +20,13 @@ class Status(commands.Cog):
     async def status(self, ctx, *args):
         conn = self.conn
         bot = self.bot
-        status_channel = os.getenv("STATUS_CHANNEL")
-        logger.info(f"status_channel {status_channel}")
+        status_channel = int(os.getenv("STATUS_CHANNEL"))
         cur = conn.cursor()
         query = f"delete from status where Naam = '{ctx.author.name}'"
-        #TODO make delete message work...
         try:
             await ctx.message.delete()
-        except:
-            logger.info("message deletion failed")
+        except Exception as e: 
+            logger.info(f"message deletion failed {e}")
         try:
             cur.execute(query)
         except:
@@ -38,7 +37,7 @@ class Status(commands.Cog):
         cur.execute(query, [ctx.author.name, now, ' '.join(args)])
         conn.commit()
         #TODO channel should be an environment variable, but it doesn't seem to function as expected...
-        channel = bot.get_channel(829773055592235018)
+        channel = bot.get_channel(status_channel)
         logger.info(f"channel {channel}")
 
         query = """

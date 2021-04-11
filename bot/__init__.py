@@ -18,7 +18,6 @@ logger.info("Now loading...")
 
 
 def start():
-	print(f"{DISCORD_TOKEN}")
 	b = bot.new_bot(os.getenv("COMMAND_PREFIX", "!"), os.getenv("BOT_DESCRIPTION", "A discord bot"))
 	b.run(os.getenv("DISCORD_TOKEN"))
 
