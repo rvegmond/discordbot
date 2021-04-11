@@ -58,19 +58,23 @@ class Status(commands.Cog):
             col1 = 15
             col2 = 15
             col3 = 35
-            msg = "```\n"
-            msg += '-' * (col1 + col2 + col3 + 4)
-            msg += '\n'
-            msg += f"|{i.upper().center(col1 + col2 + col3 + 2, ' ')}|\n"
-            msg += '-' * (col1 + col2 + col3 + 4)
-            msg += '\n'
-            msg += f"|{'User'.center(col1, ' ')}|{'Last Update'.center(col2, ' ')}|{'Status'.center(col3, ' ')}|\n"
-            msg += '-' * (col1 + col2 + col3 + 4)
-            msg += '\n'
-            for row in cur.fetchall():
-                msg += f"|{row[0].center(col1, ' ')}|{row[1].center(col2, ' ')}|{row[2].ljust(col3, ' ')}|\n" 
-            msg += '-' * (col1 + col2 + col3 + 4)
-            msg += "```"
+            msg += "**{upper(i)}:**\n"
+            msg += "**{row[0]}** - {row[1]} - {row[2]}\n" 
+            # msg += '-' * (col1 + col2 + col3 + 4)
+
+            # msg = "```\n"
+            # msg += '-' * (col1 + col2 + col3 + 4)
+            # msg += '\n'
+            # msg += f"|{i.upper().center(col1 + col2 + col3 + 2, ' ')}|\n"
+            # msg += '-' * (col1 + col2 + col3 + 4)
+            # msg += '\n'
+            # msg += f"|{'User'.center(col1, ' ')}|{'Last Update'.center(col2, ' ')}|{'Status'.center(col3, ' ')}|\n"
+            # msg += '-' * (col1 + col2 + col3 + 4)
+            # msg += '\n'
+            # for row in cur.fetchall():
+            #     msg += f"|{row[0].center(col1, ' ')}|{row[1].center(col2, ' ')}|{row[2].ljust(col3, ' ')}|\n" 
+            # msg += '-' * (col1 + col2 + col3 + 4)
+            # msg += "```"
             await channel.send(msg)
 
 

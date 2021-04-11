@@ -13,7 +13,8 @@ services:
     image: rvegmond/discordbot:latest
     environment:
       DISCORD_TOKEN: ${DISCORD_TOKEN} 
-      STATUS_CHANNEL: 829773055592235018
+      STATUS_CHANNEL: ${STATUS_CHANNEL}
+      COMMAND_PREFIX: ${COMMAND_PREFIX}
     # Volumes store your data between container upgrades
     volumes:
       - '../data:/bot/data'
