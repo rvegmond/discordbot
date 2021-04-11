@@ -36,7 +36,6 @@ class Status(commands.Cog):
         logger.info(query)
         cur.execute(query, [ctx.author.name, now, ' '.join(args)])
         conn.commit()
-        #TODO channel should be an environment variable, but it doesn't seem to function as expected...
         channel = bot.get_channel(status_channel)
         logger.info(f"channel {channel}")
 
