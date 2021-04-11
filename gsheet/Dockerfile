@@ -1,4 +1,4 @@
-FROM python:3-alpine3.13
+FROM python:3-alpine3.12
 
 ADD requirements.txt /
 ADD entrypoint.py /

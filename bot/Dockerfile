@@ -1,4 +1,4 @@
-FROM python:3-alpine3.13
+FROM python:3-alpine3.12
 
 RUN apk update && apk upgrade && apk add gcc musl-dev
 RUN mkdir bot
