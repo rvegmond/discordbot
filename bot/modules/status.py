@@ -22,7 +22,10 @@ class Status(commands.Cog):
         bot = self.bot
         status_channel = int(os.getenv("STATUS_CHANNEL"))
         cur = conn.cursor()
-        query = f"delete from status where Naam = '{ctx.author.name}'"
+        DiscordId = str(ctx.author)
+        logger.info(f"New status from {DiscordId}: {' '.join(args)} ")
+
+        query = f"delete from status where DiscordId = '{DiscordId}'"
         try:
             await ctx.message.delete()
         except Exception as e: 
@@ -30,38 +33,49 @@ class Status(commands.Cog):
         try:
             cur.execute(query)
         except:
-            logger.info(f"{ctx.author.name} doesn't have an entry in status yet..")
+            logger.info(f"{DiscordId} doesn't have a previous status set..")
+        query = f"select * from UserMap where DiscordId=?"
+        logger.info(query)
+        cur.execute(query, [DiscordId])
+        rowcount = len(cur.fetchall())
+        logger.info(f"rowcount {rowcount}")
+        if rowcount == 0:
+            query = f"insert into UserMap values (?, ?, ?)"
+            logger.info(query)
+            cur.execute(query, [DiscordId, ctx.author.name, ctx.author.name])     
         now = datetime.now().strftime("%d-%m-%Y")
         query = f"insert into status values(?, ?, ?)"
         logger.info(query)
-        cur.execute(query, [ctx.author.name, now, ' '.join(args)])
+        cur.execute(query, [DiscordId, now, ' '.join(args)])
         conn.commit()
         channel = bot.get_channel(status_channel)
         logger.info(f"channel {channel}")
 
         query = """
-                select g.Naam, 
+                select case when um.DiscordAlias is null then '.'||g.Naam else um.DiscordAlias end, 
                     case when s.LastUpdate is null then "0-0-000" else s.LastUpdate end, 
                     case when s.StatusText is null then "Geen status ingevuld" else s.StatusText end 
                 from gsheet_v g
+                left join UserMap um 
+                on g.Naam = um.GsheetAlias 
                 left join status s
-                on s.Naam = g.Naam 
-                where lower(g.WhiteStar)=?
+                on um.DiscordId = s.DiscordId 
+                where g.WhiteStar = ?
                 order by lower(g.Naam)
                 """
         async for message in channel.history(limit=200):
             await message.delete()
+        msg = ''        
         for i in ("ws1","ws2"):
             logger.info(f"whitestar {i}")
-            msg = ''
             cur.execute(query, [i])
-            col1 = 15
-            col2 = 15
-            col3 = 35
+            # col1 = 15
+            # col2 = 15
+            # col3 = 35
             msg += f"**{i.upper()}:**\n"
             for row in cur.fetchall():
                 msg += f"**{row[0]}** - {row[1]} - {row[2]}\n" 
-            msg += ".\n"
+            msg += "\n"
 
             # msg += '-' * (col1 + col2 + col3 + 4)
 
@@ -78,10 +92,6 @@ class Status(commands.Cog):
             #     msg += f"|{row[0].center(col1, ' ')}|{row[1].center(col2, ' ')}|{row[2].ljust(col3, ' ')}|\n" 
             # msg += '-' * (col1 + col2 + col3 + 4)
             # msg += "```"
-            await channel.send(msg)
+        await channel.send(msg) 
 
-
-        logger.info("{}".format(ctx.author))  
-        logger.info("status received")
-        # await ctx.send(args)
         conn.commit()

@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from loguru import logger
 import sqlite3
+import sys
 
 from modules import status, ping
 
@@ -21,9 +22,10 @@ def create_connection(db_file):
     conn = None
     try:
         conn = sqlite3.connect(db_file)
-        return conn
-    except:
-        logger.info("connection failed")
+        logger.info(f"connected successful to {db_file}")
+    except Exception as e: 
+        logger.info(f"connection failed {e}")
+        sys.exit(3)
 
     return conn
 
