@@ -6,7 +6,7 @@ from discord.ext import commands
 from loguru import logger
 # from utils import generate_table
 
-class Status(commands.Cog):
+class WhiteStar(commands.Cog):
     def __init__(self, bot, conn):
         self.bot = bot
         self.conn = conn
@@ -15,7 +15,7 @@ class Status(commands.Cog):
         name="status",
         help=("Met het status commando update je status in het status kanaal,"
         " hiermee help je je mede ws-ers op de hoogte te houden hoe snel je kunt reageren."),        
-        brief="Commando om je status in het status kanaal",
+        brief="Hiermee update je je status in het status kanaal",
         )
     async def status(self, ctx, *args):
         conn = self.conn
