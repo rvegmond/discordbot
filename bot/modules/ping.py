@@ -1,9 +1,10 @@
 import discord
 from discord.ext import commands
 from threading import Lock
+from .robin import Robin
 
 
-class Ping(commands.Cog):
+class Ping(Robin):
     bot: discord.ext.commands.Bot
 
     mutex = Lock()

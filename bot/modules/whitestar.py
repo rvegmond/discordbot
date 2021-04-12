@@ -4,12 +4,9 @@ import os
 from datetime import datetime
 from discord.ext import commands
 from loguru import logger
-# from utils import generate_table
+from .robin import Robin
 
-class WhiteStar(commands.Cog):
-    def __init__(self, bot, conn):
-        self.bot = bot
-        self.conn = conn
+class WhiteStar(Robin):
 
     @commands.command(
         name="status",
@@ -21,11 +18,12 @@ class WhiteStar(commands.Cog):
         conn = self.conn
         bot = self.bot
         status_channel = int(os.getenv("STATUS_CHANNEL"))
+        UserMap = self.getUserMap(str(ctx.author), str(ctx.author.name))  
+        
         cur = conn.cursor()
-        DiscordId = str(ctx.author)
-        logger.info(f"New status from {DiscordId}: {' '.join(args)} ")
+        logger.info(f"New status from {UserMap['DiscordId']}: {' '.join(args)} ")
 
-        query = f"delete from status where DiscordId = '{DiscordId}'"
+        query = f"delete from status where DiscordId = '{UserMap['DiscordId']}'"
         try:
             await ctx.message.delete()
         except Exception as e: 
@@ -33,20 +31,13 @@ class WhiteStar(commands.Cog):
         try:
             cur.execute(query)
         except:
-            logger.info(f"{DiscordId} doesn't have a previous status set..")
-        query = f"select * from UserMap where DiscordId=?"
-        logger.info(query)
-        cur.execute(query, [DiscordId])
-        rowcount = len(cur.fetchall())
-        logger.info(f"rowcount {rowcount}")
-        if rowcount == 0:
-            query = f"insert into UserMap values (?, ?, ?)"
-            logger.info(query)
-            cur.execute(query, [DiscordId, ctx.author.name, ctx.author.name])     
+            logger.info(f"{UserMap['DiscordId']} doesn't have a previous status set..")
+
+     
         now = datetime.now().strftime("%d-%m-%Y")
         query = f"insert into status values(?, ?, ?)"
         logger.info(query)
-        cur.execute(query, [DiscordId, now, ' '.join(args)])
+        cur.execute(query, [UserMap['DiscordId'], now, ' '.join(args)])
         conn.commit()
         channel = bot.get_channel(status_channel)
         logger.info(f"channel {channel}")
