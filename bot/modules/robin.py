@@ -10,19 +10,19 @@ class Robin(commands.Cog):
         logger.info(f"Class {type(self).__name__} initialized ")
 
 
-    def sanitize(self, message, maxlength=200):
+    def sanitize(self, msg_in, maxlength=200):
         forbidden = ['@', '#']
-        logger.info(f"message: {message}")
-        if len(message) > maxlength:
+        logger.info(f"msg_in: {msg_in}")
+        if len(msg_in) > maxlength:
             tmplength = maxlength - len(' .. truncated')
             logger.info(f"tmplength {tmplength}")
             if tmplength < 0:
                 output = ' .. truncated'
             else:
-                output = message[:tmplength]
+                output = msg_in[:tmplength]
                 output += ' .. truncated'
         else:
-            output = message
+            output = msg_in
 
         for nogo in forbidden:
             output = output.replace(nogo, '_')
