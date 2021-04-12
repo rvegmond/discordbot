@@ -3,7 +3,7 @@ from discord.ext import commands
 from loguru import logger
 import sqlite3
 
-from modules import status, ping
+from modules import whitestar, ping
 
 db_file = 'data/hades.db'
 
@@ -38,7 +38,7 @@ def new_bot(command_prefix: str, description: str) -> discord.ext.commands.bot:
         logger.info(f"Signed in as [{bot.user.id}] [{bot.user.name}]")
         
         bot.add_cog(ping.Ping(bot))
-        bot.add_cog(status.Status(bot, conn))
+        bot.add_cog(whitestar.WhiteStar(bot, conn))
 
 
     return bot
