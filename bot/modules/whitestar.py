@@ -19,9 +19,9 @@ class WhiteStar(Robin):
         bot = self.bot
         status_channel = int(os.getenv("STATUS_CHANNEL"))
         UserMap = self.getUserMap(str(ctx.author), str(ctx.author.name))  
-        
+        statusupdate = self.sanitize(' '.join(args), 100)
         cur = conn.cursor()
-        logger.info(f"New status from {UserMap['DiscordId']}: {' '.join(args)} ")
+        logger.info(f"New status from {UserMap['DiscordId']}: {statusupdate} ")
 
         query = f"delete from status where DiscordId = '{UserMap['DiscordId']}'"
         try:
@@ -37,7 +37,7 @@ class WhiteStar(Robin):
         now = datetime.now().strftime("%d-%m-%Y")
         query = f"insert into status values(?, ?, ?)"
         logger.info(query)
-        cur.execute(query, [UserMap['DiscordId'], now, ' '.join(args)])
+        cur.execute(query, [UserMap['DiscordId'], now, statusupdate])
         conn.commit()
         channel = bot.get_channel(status_channel)
         logger.info(f"channel {channel}")

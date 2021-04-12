@@ -10,6 +10,25 @@ class Robin(commands.Cog):
         logger.info(f"Class {type(self).__name__} initialized ")
 
 
+    def sanitize(self, message, maxlength=200):
+        forbidden = ['@', '#']
+        logger.info(f"message: {message}")
+        if len(message) > maxlength:
+            tmplength = maxlength - len(' .. truncated')
+            logger.info(f"tmplength {tmplength}")
+            if tmplength < 0:
+                output = ' .. truncated'
+            else:
+                output = message[:tmplength]
+                output += ' .. truncated'
+        else:
+            output = message
+
+        for nogo in forbidden:
+            output = output.replace(nogo, '_')
+        return(output)
+
+
     def getUserMap(self, DiscordId, Alias=None):
         """
         Get the mapping for DiscordAlias and GsheetAlias
@@ -46,4 +65,4 @@ class Robin(commands.Cog):
             UserMap = {'DiscordId': row[0], 'DiscordAlias': row[1], 'GsheetAlias': row[2]} 
         logger.info(f"UserMap: DiscordId{UserMap['DiscordId']}, DiscordAlias->{UserMap['DiscordAlias']}, GsheetAlias->{UserMap['GsheetAlias']}")
 
-        return UserMap
+        return(UserMap)
