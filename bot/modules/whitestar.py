@@ -58,7 +58,7 @@ class WhiteStar(Robin):
                 where g.WhiteStar = ?
                 order by lower(g.Naam)
                 """
-        async for message in channel.history(limit=200):
+        async for message in channel.history(limit=2):
             await message.delete()
         msg = ''        
         for i in ("ws1","ws2"):
@@ -124,7 +124,7 @@ class WhiteStar(Robin):
                 and w.inschrijving = 'in'
                 group by w.inschrijving
                 """
-        # async for message in channel.history(limit=200):
+        # async for message in channel.history(limit=2):
         #     await message.delete()
         cur.execute(query)
         num_players = cur.fetchone()[0]
@@ -132,7 +132,7 @@ class WhiteStar(Robin):
         msg += f"**Planners:** {num_planners}, **Spelers:** {num_players}, **Totaal:** {num_planners+num_players}"
         msg += "\n"
 
-        async for message in wsq_channel.history(limit=200):
+        async for message in wsq_channel.history(limit=2):
             # if message.author == bot.user:  
             await message.delete()  
         await wsq_channel.send(msg)
