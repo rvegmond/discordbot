@@ -17,52 +17,52 @@ class Robin(commands.Cog):
             tmplength = maxlength - len(' .. truncated')
             logger.info(f"tmplength {tmplength}")
             if tmplength < 0:
-                output = ' .. truncated'
+                msg_out = ' .. truncated'
             else:
-                output = msg_in[:tmplength]
-                output += ' .. truncated'
+                msg_out = msg_in[:tmplength]
+                msg_out += ' .. truncated'
         else:
-            output = msg_in
+            msg_out = msg_in
 
         for nogo in forbidden:
-            output = output.replace(nogo, '_')
-        return(output)
+            msg_out = msg_out.replace(nogo, '_')
+        return(msg_out)
 
 
-    def getUserMap(self, DiscordId, Alias=None):
+    def getusermap(self, discordid, alias=None):
         """
-        Get the mapping for DiscordAlias and GsheetAlias
+        Get the mapping for discordalias and gsheetalias
         DiscordId is the key for the selection.
-        If DiscordId is not yet in UserMap table it will be added 
+        If DiscordId is not yet in usermap table it will be added 
         with the provided alias.
         """
         conn = self.conn
-        UserMap = {}
+        usermap = {}
         cur = conn.cursor()
 
-        query = "select * from UserMap where DiscordId=?"
+        query = "select * from usermap where DiscordId=?"
         logger.info(query)
-        logger.info(f"DiscordId: {DiscordId}")
-        logger.info(f"type(DiscordId): {type(DiscordId)}")
-        if Alias == None:
-            Alias = DiscordId
+        logger.info(f"discordid: {discordid}")
+        logger.info(f"type(discordid): {type(discordid)}")
+        if alias == None:
+            alias = discordid
         try:
-            cur.execute(query, [DiscordId])
+            cur.execute(query, [discordid])
         except Exception as e:
             logger.info(f"Exception: {e}")
         rowcount = len(cur.fetchall())
         logger.info(f"rowcount {rowcount}")
         if rowcount == 0:
-            logger.info(f"User {DiscordId} doesn't exist in UserMap (yet)")
-            query = f"insert into UserMap values (?, ?, ?)"
+            logger.info(f"User {discordid} doesn't exist in usermap (yet)")
+            query = f"insert into usermap values (?, ?, ?)"
             logger.info(query)
-            cur.execute(query, [DiscordId, Alias, Alias])
-            UserMap = {'DiscordId': DiscordId, 'DiscordAlias': Alias, 'GsheetAlias': Alias} 
+            cur.execute(query, [discordid, alias, alias])
+            usermap = {'discordid': discordid, 'discordalias': alias, 'gsheetalias': alias} 
         else:
-            query = f"select DiscordId, DiscordAlias, GsheetAlias from UserMap where DiscordId=?"
-            cur.execute(query, [DiscordId])
+            query = f"select DiscordId, discordalias, gsheetalias from usermap where DiscordId=?"
+            cur.execute(query, [discordid])
             row = cur.fetchone()
-            UserMap = {'DiscordId': row[0], 'DiscordAlias': row[1], 'GsheetAlias': row[2]} 
-        logger.info(f"UserMap: DiscordId{UserMap['DiscordId']}, DiscordAlias->{UserMap['DiscordAlias']}, GsheetAlias->{UserMap['GsheetAlias']}")
+            usermap = {'discordid': row[0], 'discordalias': row[1], 'gsheetalias': row[2]} 
+        logger.info(f"usermap: discordid->{usermap['discordid']}, discordalias->{usermap['discordalias']}, gsheetalias->{usermap['gsheetalias']}")
 
-        return(UserMap)
+        return(usermap)
