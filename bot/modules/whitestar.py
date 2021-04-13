@@ -17,7 +17,7 @@ class WhiteStar(Robin):
         name="status",
         help=("Met het status commando update je status in het status kanaal,"
         " hiermee help je je mede ws-ers op de hoogte te houden hoe snel je kunt reageren."),        
-        brief="Hiermee update je je status in het status kanaal",
+        brief="Update je status in het status kanaal",
         )
     async def status(self, ctx, *args):
         conn = self.conn
