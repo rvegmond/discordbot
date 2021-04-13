@@ -148,6 +148,7 @@ class WhiteStar(Robin):
         "    Bij een rol update (van speler naar planner) hoef je niet eerst jezelf eruit te gooien."
         " 2e argument is optioneel, is tekst input voor de ws samensteller (bv. casual)"),        
         brief="Schrijf jezelf in voor de volgende ws",
+        hidden="True",
         )
     async def ws(self, ctx, *args):
         conn = self.conn

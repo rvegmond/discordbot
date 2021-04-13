@@ -23,3 +23,20 @@ class Roles(Robin):
         for role in all_roles:
             msg += f"role.name: {role.name}\n"
         await ctx.send(f"{msg}")
+
+    @commands.command(
+        name="in_roles",
+        help=("Met het status commando update je status in het status kanaal,"
+        " hiermee help je je mede ws-ers op de hoogte te houden hoe snel je kunt reageren."),        
+        brief="Hiermee update je je status in het status kanaal",
+        )
+    async def in_roles(self, ctx, *args):
+        # req_role = args[0]
+
+        # g: discord.Guild = ctx.guild
+
+        
+        for role in ctx.author.roles:
+            await ctx.send(f"role: {role}")
+            if role.name == "Test":
+                print("USER_ID: %d - ROLE: %s" % (member.id, role.name))
