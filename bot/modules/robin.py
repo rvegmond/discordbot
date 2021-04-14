@@ -4,7 +4,7 @@ from loguru import logger
 
 
 class Robin(commands.Cog):
-    def __init__(self, bot, conn):
+    def __init__(self, bot, conn=None):
         self.bot = bot
         self.conn = conn
         logger.info(f"Class {type(self).__name__} initialized ")
