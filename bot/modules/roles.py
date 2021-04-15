@@ -40,3 +40,16 @@ class Roles(Robin):
             await ctx.send(f"role: {role}")
             if role.name == "Test":
                 print("USER_ID: %d - ROLE: %s" % (member.id, role.name))
+
+    @commands.command()
+    async def team(self, ctx, *args): # Always same role, no input needed
+        guild = ctx.message.guild
+        tk = guild.get_role(831972238328332288)
+        tkm = tk.members
+        await ctx.send(f"tkm: {tkm}")
+        for row in tkm:   
+            a = row.name  
+            await ctx.send(f"a: {a}")
+            await ctx.send(f"row.name: {row.name}")
+            # print(type(a)) # smehows "<class 'discord.member.Member'>" x amount of times
+            await ctx.send(a)
