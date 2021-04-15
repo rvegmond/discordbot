@@ -5,9 +5,12 @@ from datetime import datetime
 from discord.ext import commands
 from loguru import logger
 from .robin import Robin
+from .roles import Roles
+from discord.utils import get
+
+
 
 class WhiteStar(Robin):
-
 
 ######################################################################################################
 #  command status
@@ -45,29 +48,41 @@ class WhiteStar(Robin):
         conn.commit()
 
         logger.info(f"channel {channel}")
+        
+        # create temporary table.
 
-        query = """
-                select case when um.DiscordAlias is null then '.'||g.Naam else um.DiscordAlias end, 
-                    case when s.LastUpdate is null then "0-0-000" else s.LastUpdate end, 
-                    case when s.StatusText is null then "Geen status ingevuld" else s.StatusText end 
-                from gsheet_v g
-                left join UserMap um 
-                on g.Naam = um.GsheetAlias 
-                left join status s
-                on um.DiscordId = s.DiscordId 
-                where g.WhiteStar = ?
-                order by lower(g.Naam)
-                """
         async for message in channel.history(limit=2):
             await message.delete()
         msg = ''        
         for i in ("ws1","ws2"):
-            logger.info(f"whitestar {i}")
-            cur.execute(query, [i])
-            msg += f"**{i.upper()}:**\n"
-            for row in cur.fetchall():
-                msg += f"**{row[0]}** - {row[1]} - {row[2]}\n" 
-            msg += "\n"
+            l = []
+            msg += f"**{i.upper()}**\n" 
+            query = "delete from temp_ws"
+            cur.execute(query)
+            query = "insert into temp_ws (username) values (?)"
+            memberlist = await self.rolemembers(ctx, i)
+            for member in memberlist:
+                cur.execute(query, [member])
+            query = """
+                    select tw.username, 
+                        case when s.LastUpdate is null then "0-0-000" else s.LastUpdate end, 
+                        case when s.StatusText is null then "Geen status ingevuld" else s.StatusText end 
+                    from temp_ws tw
+                    left join UserMap um
+                    on um.DiscordAlias = tw.username 
+                    left join Status s
+                    on s.DiscordId = um.DiscordId
+                    """
+            try:
+                cur.execute(query)
+                alle = cur.fetchall() 
+                for row in alle:
+                    msg += f"**{row[0]}** - {row[1]} - {row[2]}\n" 
+                msg += "\n"
+            except Exception as e:
+                logger.info(f"error: {e}")
+                pass
+            conn.commit()
         await channel.send(msg) 
         await ctx.send(content=f"Dank, {usermap['discordalias']} je ws-status is nu bijgewerkt", delete_after=3)
 
@@ -136,6 +151,17 @@ class WhiteStar(Robin):
             # if message.author == bot.user:  
             await message.delete()  
         await wsq_channel.send(msg)
+
+    async def rolemembers(self, ctx, *args): # Always same role, no input needed
+        guild = ctx.guild
+        role_name = args[0] 
+        role_id = get(guild.roles, name=role_name)
+
+        members = []
+        x = role_id.members
+        for t in x:
+            members.append(t.name)
+        return members
 
 ######################################################################################################
 #  command ws  (inschrijvingen)

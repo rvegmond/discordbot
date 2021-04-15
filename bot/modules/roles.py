@@ -6,6 +6,7 @@ from datetime import datetime
 from discord.ext import commands
 from loguru import logger
 from .robin import Robin
+from discord.utils import get
 
 class Roles(Robin):
 
@@ -41,15 +42,20 @@ class Roles(Robin):
             if role.name == "Test":
                 print("USER_ID: %d - ROLE: %s" % (member.id, role.name))
 
-    @commands.command()
-    async def team(self, ctx, *args): # Always same role, no input needed
-        guild = ctx.message.guild
-        tk = guild.get_role(831972238328332288)
-        tkm = tk.members
-        await ctx.send(f"tkm: {tkm}")
-        for row in tkm:   
-            a = row.name  
-            await ctx.send(f"a: {a}")
-            await ctx.send(f"row.name: {row.name}")
-            # print(type(a)) # smehows "<class 'discord.member.Member'>" x amount of times
-            await ctx.send(a)
+    # @commands.command()
+    async def rolemembers(self, ctx, *args): # Always same role, no input needed
+        guild = ctx.guild
+        role_name = args[0] 
+        role_id = get(guild.roles, name=role_name)
+
+        members = []
+        await ctx.send(f"role: {role_name}, id: {role_id} ")
+        x = role_id.members
+        await ctx.send(f"len: {len(x)}")
+        for t in x.toL:
+            await ctx.send(f"member: {t}")
+            members.append(t.name)
+        await ctx.send(f"members: {members}")
+        await ctx.send(f"type(members): {type(members)}")
+
+        return members
