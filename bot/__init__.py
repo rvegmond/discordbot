@@ -4,7 +4,6 @@ from loguru import logger
 import sys
 
 ___VERSION___ = "[v0.1.0]"
-DISCORD_TOKEN=os.getenv("DISCORD_TOKEN")
 
 config = {
     "handlers": [

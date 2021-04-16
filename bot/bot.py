@@ -32,7 +32,9 @@ def create_connection(db_file):
 
 
 def new_bot(command_prefix: str, description: str) -> discord.ext.commands.bot:
-    bot = commands.Bot(command_prefix=command_prefix, description=description)
+    intents = discord.Intents.default()
+    intents.members = True
+    bot = commands.Bot(command_prefix=command_prefix, description=description, intents=intents)
     conn = create_connection(db_file) 
 
     @bot.event

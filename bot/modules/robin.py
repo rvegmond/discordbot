@@ -10,7 +10,15 @@ class Robin(commands.Cog):
         logger.info(f"Class {type(self).__name__} initialized ")
 
 
-    def sanitize(self, msg_in, maxlength=200):
+    def _sanitize(self, msg_in: str, maxlength=200) -> str:
+        """
+        Sanitize the message in, remove forbidden characters.
+        Truncate the message at maxlength (last bit will be replace with truncated)
+
+        parameters:
+          msg_in:    string to be sanitized
+          maxlenght: maximum length of the string
+        """
         forbidden = ['@', '#']
         logger.info(f"msg_in: {msg_in}")
         if len(msg_in) > maxlength:
@@ -28,8 +36,27 @@ class Robin(commands.Cog):
             msg_out = msg_out.replace(nogo, '_')
         return(msg_out)
 
+    async def _feedback(self, ctx, msg: str, delete_after=None, delete_message=False) -> str:
+        """
+        Send feedback to the user after a message is posted. 
+        The original message can be deleted.
+        The feedback will be sent to the original channel.
 
-    def getusermap(self, discordid, alias=None):
+        paramters:
+          msg:            the message to send
+          delete_after:   how long to wait to delete the feedback message (default keep)
+          delete_message: delete the original message (default keep)
+        """ 
+        await ctx.send(content=msg, delete_after=delete_after)
+        if delete_message:
+            try:
+                await ctx.message.delete()
+            except Exception as e: 
+                logger.info(f"message deletion failed {e}")
+                return f"message deletion failed {e}"
+        return "feedback sent successful"
+
+    def _getusermap(self, discordid, alias=None):
         """
         Get the mapping for discordalias and gsheetalias
         DiscordId is the key for the selection.

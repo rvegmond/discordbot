@@ -6,6 +6,7 @@ from datetime import datetime
 from discord.ext import commands
 from loguru import logger
 from .robin import Robin
+from discord.utils import get
 
 class Roles(Robin):
 
@@ -52,7 +53,26 @@ async def in_role(self, ctx, *args):
             return True
     return False
 
-    # for role in ctx.author.roles:
-    #     await ctx.send(f"role: {role}")
-    #     if role.name == "Test":
-    #         print("USER_ID: %d - ROLE: %s" % (member.id, role.name))
+        
+        for role in ctx.author.roles:
+            await ctx.send(f"role: {role}")
+            if role.name == "Test":
+                print("USER_ID: %d - ROLE: %s" % (member.id, role.name))
+
+    # @commands.command()
+    async def rolemembers(self, ctx, *args): # Always same role, no input needed
+        guild = ctx.guild
+        role_name = args[0] 
+        role_id = get(guild.roles, name=role_name)
+
+        members = []
+        await ctx.send(f"role: {role_name}, id: {role_id} ")
+        x = role_id.members
+        await ctx.send(f"len: {len(x)}")
+        for t in x.toL:
+            await ctx.send(f"member: {t}")
+            members.append(t.name)
+        await ctx.send(f"members: {members}")
+        await ctx.send(f"type(members): {type(members)}")
+
+        return members
