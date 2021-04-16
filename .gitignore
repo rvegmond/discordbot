@@ -3,6 +3,7 @@ gsheet/config/*
 .DS_Store
 run_*
 .vscode*
+data/hades.db
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
