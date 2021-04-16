@@ -1,5 +1,8 @@
 # config files!
 gsheet/config/*
+.DS_Store
+run_*
+.vscode*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
