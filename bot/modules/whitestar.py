@@ -307,7 +307,7 @@ class WhiteStar(Robin):
         If Id is not yet in usermap table it will be added 
         with the provided alias.
         """
-        if await Roles.in_role(self, ctx, 'Moderator'):
+        if await Roles.in_role(self, ctx, 'Moderator') or await Roles.in_role(self, ctx, 'Bot Bouwers'):
             conn = self.conn
             usermap = {}
             cur = conn.cursor()
