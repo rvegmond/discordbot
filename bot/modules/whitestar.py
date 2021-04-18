@@ -183,7 +183,7 @@ class WhiteStar(Robin):
         wsin_channel_id = int(os.getenv("WSIN_CHANNEL"))
         wsin_channel = bot.get_channel(int(os.getenv("WSIN_CHANNEL")))
         wslist_channel = bot.get_channel(int(os.getenv("WSLIST_CHANNEL")))
-        ws_role = ctx.guild.get_role(833335105011187723)
+        ws_role = ctx.guild.get_role(int(os.getenv("WS_ROLE")))
 
         if ctx.channel != wsin_channel:
             await ctx.send(content=f"{usermap['discordalias']}, je kunt alleen in kanaal <#{wsin_channel_id}> inschrijven, je bent nu nog **niet** ingeschreven!", delete_after=5)
