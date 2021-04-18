@@ -323,6 +323,7 @@ class WhiteStar(Robin):
                 else:
                     pass
             conn.commit()
+            await ctx.send(f"usermap updated by {ctx.author.name}")
         else:
             pass
  
