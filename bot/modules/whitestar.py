@@ -318,6 +318,7 @@ class WhiteStar(Robin):
             for member in members:
                 cur.execute(select_query, [member.Id])
                 if len(cur.fetchall()) == 0:
+                    logger.info(f"updated {member.display_name}")
                     query = "insert into usermap (Id, DiscordAlias) values (?, ?)"
                     cur.execute(query, [member.id, member.display_name ])
                 else:
