@@ -39,7 +39,7 @@ class WhiteStar(Robin):
 
      
         now = datetime.now().strftime("%d-%m-%Y")
-        query = f"insert into status values(?, ?, ?)"
+        query = f"insert into status (DiscordId, LastUpdate, StatusText) values(?, ?, ?)"
         logger.info(query)
         cur.execute(query, [usermap['discordid'], now, statusupdate])
         conn.commit()
