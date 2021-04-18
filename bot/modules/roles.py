@@ -15,6 +15,7 @@ class Roles(Robin):
         help=("Met het status commando update je status in het status kanaal,"
         " hiermee help je je mede ws-ers op de hoogte te houden hoe snel je kunt reageren."),        
         brief="Hiermee update je je status in het status kanaal",
+        hidden="True"
         )
     async def get_roles(self, ctx, *args):
         g: discord.Guild = ctx.guild

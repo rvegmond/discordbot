@@ -299,7 +299,19 @@ class WhiteStar(Robin):
                 await ctx.send(content=f"Gefeliciteerd, {usermap['discordalias']} je bent nu {action} voor de volgende ws", delete_after=3)
         await self.update_ws_inschrijvingen_tabel(ctx, wslist_channel)
 
-    @commands.command()
+
+######################################################################################################
+#  command updateusermap
+######################################################################################################
+
+    @commands.command(
+        name="updateusermap",
+        help=(""
+        "Moderator only:\n"
+        " geen argumenten, update de usermap tabel\n"),
+        brief="Update de usermap tabel",
+        hidden="True",
+        )
     async def updateusermap(self, ctx, *args):
         """
         Get the mapping for discordalias and gsheetalias
