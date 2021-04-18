@@ -151,12 +151,19 @@ class WhiteStar(Robin):
 
     @commands.command(
         name="ws",
-        help=("Met het ws commando schrijf je je in (of uit) voor de volgende ws, opties:\n"
+        help=(f"Met het ws commando schrijf je je in (of uit) voor de volgende ws, opties:\n"
         " plan/p [opmerking] - aanmelden als planner voor de volgende ws\n"
         " in/i [opmerking]   - aanmelden als speler voor de volgende ws\n"
         " uit/u              - afmelden voor de volgende ws (als je aangemeld was)\n"
         "\n"
-        "Moderator only:\n"
+        "\n"
+        "Inschrijven kan **alleen** in het #ws-inschrijvingen kanaal. Het overzicht komt in #ws-inschrijflijst\n"
+        "Updaten van je rol (speler -> planner) kan door je in te schrijven met je nieuwe rol.\n"
+        "inschrijven planner met !ws plan\n"
+        "inschrijven als speler met !ws in\n"
+        "uitschrijven kan met !ws out\n"
+        "\n"
+        "Onderstaande opties zijn voor Moderator only:\n"
         " open  - open het ws-inschrijvingen kanaal\n"
         " close - sluit het ws-inschrijvingen kanaal\n"
         " clear - schoon het ws-inschrijvingen kanaal, inschrijvingen worden geopend.\n"),
@@ -244,6 +251,7 @@ class WhiteStar(Robin):
                     await wsin_channel.purge(limit=100)
                     await wsin_channel.set_permissions(ctx.guild.default_role, send_messages=True)
                     await ctx.send(content=f"Inschrijving geopend door {ctx.author.name}")
+                    await ctx.send_help(ctx.command)
                     query = """
                             update WSinschrijvingen 
                             set actueel = 'nee'
