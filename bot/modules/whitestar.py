@@ -183,7 +183,7 @@ class WhiteStar(Robin):
         wsin_channel_id = int(os.getenv("WSIN_CHANNEL"))
         wsin_channel = bot.get_channel(int(os.getenv("WSIN_CHANNEL")))
         wslist_channel = bot.get_channel(int(os.getenv("WSLIST_CHANNEL")))
-
+        ws_role = ctx.guild.get_role(833335105011187723)
 
         if ctx.channel != wsin_channel:
             await ctx.send(content=f"{usermap['discordalias']}, je kunt alleen in kanaal <#{wsin_channel_id}> inschrijven, je bent nu nog **niet** ingeschreven!", delete_after=5)
@@ -248,10 +248,16 @@ class WhiteStar(Robin):
                     return None
             elif args[0] in ['clear']:
                 if await Roles.in_role(self, ctx, 'Moderator') or await Roles.in_role(self, ctx, 'Bot Bouwers'):
+                    msg = (f"{ws_role.mention}, De WS inschrijving is geopend\n"
+                            "Met `!ws plan` of `ws p` schrijf je je in als planner en speler\n"
+                            "Met `!ws in` of `ws i` schrijf je je in als speler\n"
+                            f"Inschrijven kan alleen in {wsin_channel.mention}, het overzicht van de inschrijvinen komt in {wslist_channel.mention}"
+                            "\n"
+                            "met 30 inschrijvingen worden er 2 wssen gestart maar er moeten dan wel minimaal **4 planners** zijn."
+                            "\n")
                     await wsin_channel.purge(limit=100)
                     await wsin_channel.set_permissions(ctx.guild.default_role, send_messages=True)
-                    await ctx.send(content=f"Inschrijving geopend door {ctx.author.name}")
-                    await ctx.send_help(ctx.command)
+                    await ctx.send(content=msg)
                     query = """
                             update WSinschrijvingen 
                             set actueel = 'nee'
