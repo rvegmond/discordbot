@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from loguru import logger
+from discord.utils import get
 
 
 class Robin(commands.Cog):
@@ -56,40 +57,33 @@ class Robin(commands.Cog):
                 return f"message deletion failed {e}"
         return "feedback sent successful"
 
-    def _getusermap(self, discordid, alias=None):
+    def _getusermap(self, Id):
         """
         Get the mapping for discordalias and gsheetalias
-        DiscordId is the key for the selection.
-        If DiscordId is not yet in usermap table it will be added 
+        Id is the key for the selection.
         with the provided alias.
         """
         conn = self.conn
         usermap = {}
         cur = conn.cursor()
 
-        query = "select * from usermap where DiscordId=?"
-        logger.info(query)
-        logger.info(f"discordid: {discordid}")
-        logger.info(f"type(discordid): {type(discordid)}")
-        if alias == None:
-            alias = discordid
-        try:
-            cur.execute(query, [discordid])
-        except Exception as e:
-            logger.info(f"Exception: {e}")
-        rowcount = len(cur.fetchall())
-        logger.info(f"rowcount {rowcount}")
-        if rowcount == 0:
-            logger.info(f"User {discordid} doesn't exist in usermap (yet)")
-            query = f"insert into usermap values (?, ?, ?)"
-            logger.info(query)
-            cur.execute(query, [discordid, alias, alias])
-            usermap = {'discordid': discordid, 'discordalias': alias, 'gsheetalias': alias} 
-        else:
-            query = f"select DiscordId, discordalias, gsheetalias from usermap where DiscordId=?"
-            cur.execute(query, [discordid])
-            row = cur.fetchone()
-            usermap = {'discordid': row[0], 'discordalias': row[1], 'gsheetalias': row[2]} 
+        query = f"select Id, DiscordId, discordalias, gsheetalias from usermap where Id=?"
+        cur.execute(query, [Id])
+        row = cur.fetchone()
+        usermap = {'Id': row[0], 'discordid': row[1], 'discordalias': row[2], 'gsheetalias': row[3]} 
         logger.info(f"usermap: discordid->{usermap['discordid']}, discordalias->{usermap['discordalias']}, gsheetalias->{usermap['gsheetalias']}")
 
         return(usermap)
+
+    # @commands.command()
+    def _rolemembers(self, ctx, *args): # Always same role, no input needed
+        guild = ctx.guild
+        role_name = args[0] 
+        role_id = get(guild.roles, name=role_name)
+
+        members = []
+        x = role_id.members
+        for t in x:
+            members.append(t.id)
+        return members
+

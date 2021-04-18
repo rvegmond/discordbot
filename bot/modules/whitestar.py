@@ -6,11 +6,8 @@ from discord.ext import commands
 from loguru import logger
 from .robin import Robin
 from .roles import Roles
-from discord.utils import get
 
 
-
-class WhiteStar(Robin):
 
 class WhiteStar(Robin):
 ######################################################################################################
@@ -22,27 +19,27 @@ class WhiteStar(Robin):
         help=("Met het status commando update je status in het status kanaal,"
         " hiermee help je je mede ws-ers op de hoogte te houden hoe snel je kunt reageren."),        
         brief="Update je status in het status kanaal",
-        hidden="True"
         )
     async def status(self, ctx, *args):
         conn = self.conn
         bot = self.bot
+
         status_channel = int(os.getenv("STATUS_CHANNEL"))
         channel = bot.get_channel(status_channel)
-        usermap = self._getusermap(str(ctx.author), str(ctx.author.name))  
+        usermap = self._getusermap(int(ctx.author.id))  
         statusupdate = self._sanitize(' '.join(args), 100)
         cur = conn.cursor()
-        logger.info(f"New status from {usermap['discordid']}: {statusupdate} ")
-        query = f"delete from status where discordid = '{usermap['discordid']}'"
+        logger.info(f"New status from {usermap['discordalias']}: {statusupdate} ")
+        query = f"delete from status where Id = '{usermap['Id']}'"
         try:
             cur.execute(query)
         except:
-            logger.info(f"{usermap['discordid']} doesn't have a previous status set..")
+            logger.info(f"{usermap['discordalias']} doesn't have a previous status set..")
             return None
      
         now = datetime.now().strftime("%d-%m-%Y")
-        query = f"insert into status values(?, ?, ?)"
-        cur.execute(query, [usermap['discordid'], now, statusupdate])
+        query = f"insert into status (Id, LastUpdate, StatusText) values (?, ?, ?)"
+        cur.execute(query, [usermap['Id'], now, statusupdate])
         conn.commit()
 
         await channel.purge(limit=100)
@@ -53,20 +50,20 @@ class WhiteStar(Robin):
 
             cur.execute("delete from temp_ws")
 
-            query = "insert into temp_ws (username) values (?)"
-            memberlist = await self.rolemembers(ctx, i)
+            query = "insert into temp_ws (Id) values (?)"
+            memberlist = self._rolemembers(ctx, i)
             for member in memberlist:
                 cur.execute(query, [member])
 
             query = """
-                    select tw.username, 
+                    select um.DiscordAlias, 
                         case when s.LastUpdate is null then "0-0-000" else s.LastUpdate end, 
                         case when s.StatusText is null then "Geen status ingevuld" else s.StatusText end 
                     from temp_ws tw
                     left join UserMap um
-                    on um.DiscordAlias = tw.username 
+                    on um.Id = tw.Id 
                     left join Status s
-                    on s.DiscordId = um.DiscordId
+                    on s.Id = um.Id
                     """
             try:
                 cur.execute(query)
@@ -100,7 +97,7 @@ class WhiteStar(Robin):
                 select um.DiscordAlias, w.inschrijving, w.Opmerkingen
                 from WSinschrijvingen w 
                 left join UserMap um 
-                on w.DiscordId = um.DiscordId
+                on w.Id = um.Id
                 where actueel = 'ja'
                 order by Inschrijving desc, Inschrijftijd asc
                 """
@@ -146,68 +143,7 @@ class WhiteStar(Robin):
         await wslist_channel.send(msg)
 
 
-    @commands.command(
-        name="ws_admin",
-        help=("Met het ws commando schrijf je je in (of uit) voor de volgende ws,"
-        " 1e argument is in/i uit/u/out/o of plan, indien je uitschrijft schrijf je je helemaal uit."
-        "    Bij een rol update (van speler naar planner) hoef je niet eerst jezelf eruit te gooien."
-        " 2e argument is optioneel, is tekst input voor de ws samensteller (bv. casual)"
-        "status, open (inschrijving mogelijk, gestart (ingedeeld, status gebruikers active = nee), dicht (inschrijving gesloten)"
-),        
-        brief="Schrijf jezelf in voor de volgende ws",
-        hidden="True",
-        )
-    async def ws_admin(self, ctx, *args):
-        conn = self.conn
-        bot = self.bot
-        # cur = conn.cursor()
-        # query = """
-        #         select * from WSstatus
-        #         """
-        # cur.execute(query)
-        # ws_status = cur.fetchone[0]
-        if await in_role(self, ctx, 'Admin'):
-            await ctx.send("in the Admin role")
 
-        wsq_channel = bot.get_channel(int(os.getenv("WSQ_CHANNEL")))   
-        cur = conn.cursor()
-        usermap = self._getusermap(str(ctx.author), str(ctx.author))
-        comment = ''
-        if len(args) == 0:
-            # send help!
-            await ctx.send_help(ctx.command)
-            return None
-        elif len(args) > 1:
-            # there is a comment
-            comment = self._sanitize(' '.join(args))
-        
-        if args[0] in ['i', 'in']:
-            action = 'speler'
-        elif args[0] in ['u', 'uit', 'o', 'out']:
-            action = 'out'
-            query = """
-                    select * from WSinschrijvingen where DiscordId = ? and actueel = 'ja'
-                    """
-            cur.execute(query, [usermap['discordid']])
-            if len(cur.fetchall()) == 0:
-                self._feedback(msg=f"{usermap['discordalias']}, je stond nog niet ingeschreven voor de volgende ws", delete_after=2, delete_message=True)
-            else:
-                query = """
-                        delete from WSinschrijvingen 
-                        where DiscordId=?
-                        and actueel = 'ja'
-                        """
-                logger.info(f"query {query}, discordid: {usermap['discordid']}")
-
-                cur.execute(query, [usermap['discordid']])
-                conn.commit()
-                self._feedback(content=f"Helaas, {usermap['discordalias']} je doet niet meer mee met de volgende ws", delete_after=3)
-                await self.update_ws_inschrijvingen_tabel(ctx, wsq_channel)
-            return None
-        elif args[0] in ['p', 'plan', 'planner']:
-            action = 'planner'
-        else:
-            await ctx.send("not in the Admin role")
 
 ######################################################################################################
 #  command ws  (inschrijvingen)
@@ -230,23 +166,16 @@ class WhiteStar(Robin):
     async def ws(self, ctx, *args):
         conn = self.conn
         bot = self.bot
-        usermap = self.getusermap(str(ctx.author), str(ctx.author))
+        usermap = self._getusermap(str(ctx.author.id))
         cur = conn.cursor()
-        query = """
-        select * from WSstatus
-        """
-        cur.execute(query)
-        ws_status = cur.fetchone()
+        # query = """
+        # select * from WSstatus
+        # """
+        # cur.execute(query)
+        # ws_status = cur.fetchone()
         wsin_channel_id = int(os.getenv("WSIN_CHANNEL"))
         wsin_channel = bot.get_channel(int(os.getenv("WSIN_CHANNEL")))
         wslist_channel = bot.get_channel(int(os.getenv("WSLIST_CHANNEL")))
-
-
-        # new_ticket_channel_overwrites = {
-        #     ctx.guild.default_role: discord.PermissionOverwrite(send_messages=False)
-        # }
-        # await wsin_channel.edit(overwrites=new_ticket_channel_overwrites)
-        # await wsin_channel.set_permissions(ctx.guild.default_role, send_messages=False)
 
 
         if ctx.channel != wsin_channel:
@@ -256,19 +185,6 @@ class WhiteStar(Robin):
             except Exception as e: 
                 logger.info(f"message deletion failed {e}")
             return None
-        if rows_same_role == 100:
-            # already registerd with the same role, do nothing..
-            self._feedback(msg=f"{usermap['DiscordAlias']} is al ingeschreven als {action}", delete_after=3, delete_message=True)
-            return None
-        elif rows_different_role == 1:
-            # already registerd as a different role, update
-            query = """
-                    update WSinschrijvingen set inschrijving=?, Opmerkingen=?
-                    where DiscordId = ? and actueel = 'ja'
-                    """
-            cur.execute(query, [action, comment, usermap['discordid']])
-            conn.commit()
-            self._feedback(msg=f"Gefeliciteerd, {usermap['discordalias']} je bent nu {action} voor de volgende ws", delete_after=3)
         else:
             comment = ''
             if len(args) == 0:
@@ -277,53 +193,57 @@ class WhiteStar(Robin):
                 return None
             elif len(args) > 1:
                 # there is a comment
-                comment = self.sanitize(' '.join(args))
+                comment = self.sanitize(' '.join(args[1:]))
             
             if args[0] in ['i', 'in']:
                 action = 'speler'
             elif args[0] in ['u', 'uit', 'o', 'out']:
                 action = 'out'
                 query = """
-                        select * from WSinschrijvingen where DiscordId = ? and actueel = 'ja'
+                        select * from WSinschrijvingen where Id = ? and actueel = 'ja'
                         """
-                cur.execute(query, [usermap['discordid']])
+                cur.execute(query, [usermap['Id']])
                 if len(cur.fetchall()) == 0:
                     await ctx.send(content=f"{usermap['discordalias']}, je stond nog niet ingeschreven voor de volgende ws", delete_after=3)
                 else:
                     query = """
                             delete from WSinschrijvingen 
-                            where DiscordId=?
+                            where Id=?
                             and actueel = 'ja'
                             """
-                    logger.info(f"query {query}, discordid: {usermap['discordid']}")
+                    # logger.info(f"query {query}, Id: {usermap['Id']}")
 
-                    cur.execute(query, [usermap['discordid']])
+                    cur.execute(query, [usermap['Id']])
                     conn.commit()
-                    await ctx.send(content=f"Helaas, {usermap['discordalias']} je doet niet meer mee met de volgende ws", delete_after=3)
+                    await ctx.send(content=f"Helaas, {usermap['discordalias']} je doet niet meer mee met de volgende ws", delete_after=1)
                     await self.update_ws_inschrijvingen_tabel(ctx, wslist_channel)
-                try:
-                    await ctx.message.delete()
-                except Exception as e: 
-                    logger.info(f"message deletion failed {e}")
-                return None
+
+                    async for message in wsin_channel.history(limit=50):
+                        # await ctx.send(content=f"messageauthor.id: {message.author.id}, ctx {ctx.author.id}")
+                        if message.author.id == ctx.author.id:  
+                            try:
+                                await message.delete()
+                            except Exception as e: 
+                                logger.info(f"historic message deletion failed {e}")
+                    return None
  
             elif args[0] in ['p', 'plan', 'planner']:
                 action = 'planner'
             elif args[0] in ['close', 'sluit']:
-                if await in_role(self, ctx, 'Moderator'):
+                if await Roles.in_role(self, ctx, 'Moderator'):
                     await wsin_channel.set_permissions(ctx.guild.default_role, send_messages=False)
-                    await ctx.send(content=f"Inschrijving gesloten")
+                    await ctx.send(content=f"Inschrijving gesloten door {ctx.author.name}")
                     return None
             elif args[0] in ['open' ]:
-                if await in_role(self, ctx, 'Moderator'):
+                if await Roles.in_role(self, ctx, 'Moderator'):
                     await wsin_channel.set_permissions(ctx.guild.default_role, send_messages=True)
-                    await ctx.send(content=f"Inschrijving geopend")
+                    await ctx.send(content=f"Inschrijving geopend door {ctx.author.name}")
                     return None
             elif args[0] in ['clear']:
-                if await in_role(self, ctx, 'Moderator'):
+                if await Roles.in_role(self, ctx, 'Moderator'):
                     await wsin_channel.purge(limit=100)
                     await wsin_channel.set_permissions(ctx.guild.default_role, send_messages=True)
-                    await ctx.send(content=f"Inschrijving geopend")
+                    await ctx.send(content=f"Inschrijving geopend door {ctx.author.name}")
                     query = """
                             update WSinschrijvingen 
                             set actueel = 'nee'
@@ -332,70 +252,79 @@ class WhiteStar(Robin):
                     conn.commit()
                     await self.update_ws_inschrijvingen_tabel(ctx, wslist_channel)
                     return None
-            elif args[0] in ['info']:
-                await ctx.send(content=f"Current WS is {ws_status[0]}, delete_after=3")
+            # elif args[0] in ['info']:
+            #     await ctx.send(content=f"Current WS is {ws_status[0]}, delete_after=3")
 
             else:
                 await ctx.send("Ongeldige input")
                 await ctx.send_help(ctx.command)
                 return None
-            logger.info(f"usermap['discordid']: {usermap['discordid']}")  
-            logger.info(f"comment: {comment}")  
 
             # is member already registered
             query = """
-                    select * from WSinschrijvingen where DiscordId = ? and inschrijving = ? and actueel = 'ja'
+                    select * from WSinschrijvingen where Id = ? and inschrijving = ? and actueel = 'ja'
                     """
 
-            cur.execute(query, [usermap['discordid'], action])
+            cur.execute(query, [usermap['Id'], action])
             rows_same_role = len(cur.fetchall())
 
             query = """
-                    select * from WSinschrijvingen where DiscordId = ? and actueel = 'ja'
+                    select * from WSinschrijvingen where Id = ? and inschrijving <> ? and actueel = 'ja'
                     """
 
-            cur.execute(query, [usermap['discordid']])
+            cur.execute(query, [usermap['Id'], action])
             rows_different_role = len(cur.fetchall())
 
-
-            if rows_same_role == 100:
+            if rows_same_role == 1:
                 # already registerd with the same role, do nothing..
-                await ctx.send(f"{usermap['DiscordAlias']} is al ingeschreven als {action}")
+                await ctx.send(f"{usermap['discordalias']} is al ingeschreven als {action}")
                 return None
             elif rows_different_role == 1:
                 # already registerd as a different role, update
                 query = """
                         update WSinschrijvingen set inschrijving=?, Opmerkingen=?
-                        where DiscordId = ? and actueel = 'ja'
+                        where Id = ? and actueel = 'ja'
                         """
-                cur.execute(query, [action, comment, usermap['discordid']])
+                cur.execute(query, [action, comment, usermap['Id']])
                 conn.commit()
-                # try:
-                #     await ctx.message.delete()
-                # except Exception as e: 
-                #     logger.info(f"message deletion failed {e}")
                 await ctx.send(content=f"Gefeliciteerd, {usermap['discordalias']} je bent nu {action} voor de volgende ws", delete_after=3)
             else:
                 # not yet registerd, insert
                 query = """
-                        insert into WSinschrijvingen (DiscordId, inschrijving, Inschrijftijd, Opmerkingen, actueel)
+                        insert into WSinschrijvingen (Id, inschrijving, Inschrijftijd, Opmerkingen, actueel)
                         values (?, ?, datetime('now'), ?, 'ja')
                         """
-                cur.execute(query, [usermap['discordid'], action, comment])
+                cur.execute(query, [usermap['Id'], action, comment])
                 conn.commit()
-                # try:
-                #     await ctx.message.delete()
-                # except Exception as e: 
-                #     logger.info(f"message deletion failed {e}")
                 await ctx.send(content=f"Gefeliciteerd, {usermap['discordalias']} je bent nu {action} voor de volgende ws", delete_after=3)
-            await self.update_ws_inschrijvingen_tabel(ctx, wslist_channel)
-            cur.execute(query, [usermap['discordid'], action, comment])
+        await self.update_ws_inschrijvingen_tabel(ctx, wslist_channel)
+
+    @commands.command()
+    async def updateusermap(self, ctx, *args):
+        """
+        Get the mapping for discordalias and gsheetalias
+        Id is the key for the selection.
+        If Id is not yet in usermap table it will be added 
+        with the provided alias.
+        """
+        if await Roles.in_role(self, ctx, 'Moderator'):
+            conn = self.conn
+            usermap = {}
+            cur = conn.cursor()
+
+            guild = ctx.guild
+            members = guild.members
+            select_query = "select * from usermap where Id=?"
+            for member in members:
+                cur.execute(select_query, [member.Id])
+                if len(cur.fetchall()) == 0:
+                    query = "insert into usermap (Id, DiscordAlias) values (?, ?)"
+                    cur.execute(query, [member.id, member.display_name ])
+                else:
+                    pass
             conn.commit()
-            self._feedback(msg=f"Gefeliciteerd, {usermap['discordalias']} je bent nu {action} voor de volgende ws", delete_after=3)
-        await self.update_ws_inschrijvingen_tabel(ctx, wsq_channel)
-
-
-
+        else:
+            pass
  
 
 
