@@ -230,17 +230,17 @@ class WhiteStar(Robin):
             elif args[0] in ['p', 'plan', 'planner']:
                 action = 'planner'
             elif args[0] in ['close', 'sluit']:
-                if await Roles.in_role(self, ctx, 'Moderator'):
+                if await Roles.in_role(self, ctx, 'Moderator') or await Roles.in_role(self, ctx, 'Bot Bouwers'):
                     await wsin_channel.set_permissions(ctx.guild.default_role, send_messages=False)
                     await ctx.send(content=f"Inschrijving gesloten door {ctx.author.name}")
                     return None
             elif args[0] in ['open' ]:
-                if await Roles.in_role(self, ctx, 'Moderator'):
+                if await Roles.in_role(self, ctx, 'Moderator') or await Roles.in_role(self, ctx, 'Bot Bouwers'):
                     await wsin_channel.set_permissions(ctx.guild.default_role, send_messages=True)
                     await ctx.send(content=f"Inschrijving geopend door {ctx.author.name}")
                     return None
             elif args[0] in ['clear']:
-                if await Roles.in_role(self, ctx, 'Moderator'):
+                if await Roles.in_role(self, ctx, 'Moderator') or await Roles.in_role(self, ctx, 'Bot Bouwers'):
                     await wsin_channel.purge(limit=100)
                     await wsin_channel.set_permissions(ctx.guild.default_role, send_messages=True)
                     await ctx.send(content=f"Inschrijving geopend door {ctx.author.name}")
@@ -316,7 +316,7 @@ class WhiteStar(Robin):
             members = guild.members
             select_query = "select * from usermap where Id=?"
             for member in members:
-                cur.execute(select_query, [member.Id])
+                cur.execute(select_query, [member.id])
                 if len(cur.fetchall()) == 0:
                     logger.info(f"updated {member.display_name}")
                     query = "insert into usermap (Id, DiscordAlias) values (?, ?)"
