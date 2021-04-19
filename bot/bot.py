@@ -4,7 +4,7 @@ from loguru import logger
 import sqlite3
 import sys
 
-from modules import whitestar, ping, roles
+from modules import whitestar, ping, roles, scheduler
 
 db_file = 'data/hades.db'
 
@@ -44,6 +44,7 @@ def new_bot(command_prefix: str, description: str) -> discord.ext.commands.bot:
         bot.add_cog(ping.Ping(bot))
         bot.add_cog(whitestar.WhiteStar(bot, conn))
         bot.add_cog(roles.Roles(bot, conn))
+        # bot.add_cog(scheduler.Scheduler(bot, conn))
 
 
     return bot

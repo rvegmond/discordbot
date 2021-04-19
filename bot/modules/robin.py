@@ -10,7 +10,6 @@ class Robin(commands.Cog):
         self.conn = conn
         logger.info(f"Class {type(self).__name__} initialized ")
 
-
     def _sanitize(self, msg_in: str, maxlength=200) -> str:
         """
         Sanitize the message in, remove forbidden characters.
@@ -39,7 +38,7 @@ class Robin(commands.Cog):
 
     async def _feedback(self, ctx, msg: str, delete_after=None, delete_message=False) -> str:
         """
-        Send feedback to the user after a message is posted. 
+        Send feedback to the user after a message is posted.
         The original message can be deleted.
         The feedback will be sent to the original channel.
 
@@ -47,12 +46,12 @@ class Robin(commands.Cog):
           msg:            the message to send
           delete_after:   how long to wait to delete the feedback message (default keep)
           delete_message: delete the original message (default keep)
-        """ 
+        """
         await ctx.send(content=msg, delete_after=delete_after)
         if delete_message:
             try:
                 await ctx.message.delete()
-            except Exception as e: 
+            except Exception as e:
                 logger.info(f"message deletion failed {e}")
                 return f"message deletion failed {e}"
         return "feedback sent successful"
@@ -70,15 +69,15 @@ class Robin(commands.Cog):
         query = f"select Id, DiscordId, discordalias, gsheetalias from usermap where Id=?"
         cur.execute(query, [Id])
         row = cur.fetchone()
-        usermap = {'Id': row[0], 'discordid': row[1], 'discordalias': row[2], 'gsheetalias': row[3]} 
+        usermap = {'Id': row[0], 'discordid': row[1], 'discordalias': row[2], 'gsheetalias': row[3]}
         logger.info(f"usermap: discordid->{usermap['discordid']}, discordalias->{usermap['discordalias']}, gsheetalias->{usermap['gsheetalias']}")
 
         return(usermap)
 
     # @commands.command()
-    def _rolemembers(self, ctx, *args): # Always same role, no input needed
+    def _rolemembers(self, ctx, *args):  # Always same role, no input needed
         guild = ctx.guild
-        role_name = args[0] 
+        role_name = args[0]
         role_id = get(guild.roles, name=role_name)
 
         members = []
@@ -86,4 +85,3 @@ class Robin(commands.Cog):
         for t in x:
             members.append(t.id)
         return members
-

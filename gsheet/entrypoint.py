@@ -5,7 +5,6 @@ import sqlite3
 from datetime import datetime
 
 
-
 def create_connection(db_file):
     """ create a database connection to the SQLite database
         specified by db_file
@@ -16,10 +15,10 @@ def create_connection(db_file):
     try:
         conn = sqlite3.connect(db_file)
         return conn
-    except Error as e:
+    except Exception as e:
         print(e)
-
     return conn
+
 
 def create_gsheet_table(conn, worksheet):
     """ create a database connection to the SQLite database
@@ -33,13 +32,14 @@ def create_gsheet_table(conn, worksheet):
         query = f"alter table gsheet rename to gsheet{timestamp};"
         print("{}".format(query))
         cur.execute(query)
-    except:
+    except Exception as e:
         print("table doesn't exist.")
     header_list = worksheet.row_values(1)
     query = "create table gsheet ('" + "','".join(header_list) + "');"
     print("{}".format(query))
     cur.execute(query)
     conn.commit()
+
 
 def insert_gsheet_into_table(conn, worksheet):
     """ create a database connection to the SQLite database
@@ -57,7 +57,7 @@ def insert_gsheet_into_table(conn, worksheet):
     cur = conn.cursor()
     query = "delete from gsheet"
     result = cur.execute(query)
- 
+
     query = "insert into gsheet values (?"
     for i in range(len(header_list) - 1):
         query += ", ?"
@@ -69,9 +69,7 @@ def insert_gsheet_into_table(conn, worksheet):
     conn.commit()
 
 
-
 def main():
-
     conn = create_connection('/data/hades.db')
 
     gc = gspread.service_account()
@@ -81,10 +79,9 @@ def main():
     # Update a range of cells using the top left corner address
     worksheet = wks.worksheet("Modules")
 
-    cur = conn.cursor()
-    # create_gsheet_table(conn, worksheet)
     insert_gsheet_into_table(conn, worksheet)
     conn.close()
+
 
 if __name__ == '__main__':
     main()
