@@ -99,7 +99,7 @@ class WhiteStar(Robin):
                 left join UserMap um 
                 on w.Id = um.Id
                 where actueel = 'ja'
-                order by Inschrijving desc, Inschrijftijd asc
+                order by Inschrijving asc, Inschrijftijd asc
                 """
         cur.execute(query)
         msg = ''
@@ -117,7 +117,7 @@ class WhiteStar(Robin):
                 select *
                 from WSinschrijvingen w 
                 where w.actueel = 'ja'
-                and w.inschrijving = 'plan'
+                and w.inschrijving = 'planner'
                 """
         cur.execute(query)
         num_planners = len(cur.fetchall())
@@ -127,7 +127,7 @@ class WhiteStar(Robin):
                 select *
                 from WSinschrijvingen w 
                 where w.actueel = 'ja'
-                and w.inschrijving = 'in'
+                and w.inschrijving = 'speler'
                 """
         # async for message in channel.history(limit=2):
         #     await message.delete()
@@ -200,7 +200,7 @@ class WhiteStar(Robin):
                 return None
             elif len(args) > 1:
                 # there is a comment
-                comment = self.sanitize(' '.join(args[1:]))
+                comment = self._sanitize(' '.join(args[1:]))
             
             if args[0] in ['i', 'in']:
                 action = 'speler'
