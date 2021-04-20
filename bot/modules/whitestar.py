@@ -252,6 +252,7 @@ class WhiteStar(Robin):
                         "met 30 inschrijvingen worden er 2 wssen gestart maar er moeten dan wel minimaal **4 planners** zijn."
                         "\n")
                     await wsin_channel.purge(limit=100)
+                    await wslist_channel.purge(limit=100)
                     await wsin_channel.set_permissions(ctx.guild.default_role, send_messages=True)
                     await ctx.send(content=msg)
                     query = """
@@ -413,7 +414,7 @@ class WhiteStar(Robin):
             await ctx.send(content="Terug bericht klopt niet.")
             await ctx.send_help(ctx.command)
         await comeback_channel[ws].send(msg)
-        await self._feedback(msg=f"{usermap['DiscordAlias']}, volgende keer hopelijk meer succes met je {shiptype}", delete_after=3, delete_message=True)
+        await self._feedback(msg=f"{usermap['DiscordAlias']}, volgende keer hopelijk meer succes met je {shiptype}", delete_after=3,W  delete_message=True)
 
     @tasks.loop(minutes=1)
     async def return_scheduler(self):
