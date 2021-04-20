@@ -20,15 +20,16 @@ class Robin(commands.Cog):
           maxlenght: maximum length of the string
         """
         forbidden = ['@', '#']
+        trunctext = ' .. truncated'
         logger.info(f"msg_in: {msg_in}")
         if len(msg_in) > maxlength:
-            tmplength = maxlength - len(' .. truncated')
+            tmplength = maxlength - len(trunctext)
             logger.info(f"tmplength {tmplength}")
             if tmplength < 0:
-                msg_out = ' .. truncated'
+                msg_out = trunctext
             else:
                 msg_out = msg_in[:tmplength]
-                msg_out += ' .. truncated'
+                msg_out += trunctext
         else:
             msg_out = msg_in
 
@@ -56,7 +57,7 @@ class Robin(commands.Cog):
                 return f"message deletion failed {e}"
         return "feedback sent successful"
 
-    def _getusermap(self, Id):
+    def _getusermap(self, id):
         """
         Get the mapping for discordalias and gsheetalias
         Id is the key for the selection.
@@ -67,7 +68,7 @@ class Robin(commands.Cog):
         cur = conn.cursor()
 
         query = f"select Id, DiscordId, discordalias, gsheetalias from usermap where Id=?"
-        cur.execute(query, [Id])
+        cur.execute(query, [id])
         row = cur.fetchone()
         usermap = {'Id': row[0], 'discordid': row[1], 'discordalias': row[2], 'gsheetalias': row[3]}
         logger.info(f"usermap: discordid->{usermap['discordid']}, discordalias->{usermap['discordalias']}, gsheetalias->{usermap['gsheetalias']}")

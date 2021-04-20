@@ -14,7 +14,6 @@ def create_connection(db_file):
     conn = None
     try:
         conn = sqlite3.connect(db_file)
-        return conn
     except Exception as e:
         print(e)
     return conn
@@ -33,7 +32,7 @@ def create_gsheet_table(conn, worksheet):
         print("{}".format(query))
         cur.execute(query)
     except Exception as e:
-        print("table doesn't exist.")
+        print(f"table doesn't exist. {e}")
     header_list = worksheet.row_values(1)
     query = "create table gsheet ('" + "','".join(header_list) + "');"
     print("{}".format(query))
@@ -47,16 +46,14 @@ def insert_gsheet_into_table(conn, worksheet):
     :param db_file: database file
     :return: Connection object or None
     """
-    # list_of_lists = worksheet.get_all_values()
 
     header_list = worksheet.row_values(1)
 
-    # print("{}".format(type(list_of_lists)))
     list_of_lists = worksheet.get_all_values()
     list_of_lists.pop(0)
     cur = conn.cursor()
     query = "delete from gsheet"
-    result = cur.execute(query)
+    cur.execute(query)
 
     query = "insert into gsheet values (?"
     for i in range(len(header_list) - 1):

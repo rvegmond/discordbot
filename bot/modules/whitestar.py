@@ -1,7 +1,5 @@
 import discord
 import os
-# import signal
-# from datetime import datetime
 import datetime
 from discord.ext import commands, tasks
 from loguru import logger
@@ -77,7 +75,7 @@ class WhiteStar(Robin):
                 msg += "\n"
             except Exception as e:
                 logger.info(f"error: {e}")
-                pass
+                return None
             conn.commit()
         await channel.send(msg)
         await ctx.send(content=f"Dank, {usermap['discordalias']} je ws-status is nu bijgewerkt", delete_after=3)
@@ -133,8 +131,6 @@ class WhiteStar(Robin):
                 where w.actueel='ja'
                 and w.inschrijving='in'
                 """
-        # async for message in channel.history(limit=2):
-        #     await message.delete()
         cur.execute(query)
         num_players = len(cur.fetchall())
 
@@ -334,7 +330,6 @@ class WhiteStar(Robin):
         """
         if await Roles.in_role(self, ctx, 'Moderator') or await Roles.in_role(self, ctx, 'Bot Bouwers'):
             conn = self.conn
-            usermap = {}
             cur = conn.cursor()
 
             guild = ctx.guild
@@ -362,10 +357,12 @@ class WhiteStar(Robin):
     )
     async def terug(self, ctx, *args):
         conn = self.conn
-        bot = self.bot
+
+        comeback_channel = {}
+        comeback_channel['ws1'] = self.bot.get_channel(int(os.getenv('WS1_COMEBACK_CHANNEL')))
+        comeback_channel['ws2'] = self.bot.get_channel(int(os.getenv('WS2_COMEBACK_CHANNEL')))
 
         usermap = self._getusermap(int(ctx.author.id))
-        statusupdate = self._sanitize(' '.join(args), 100)
         cur = conn.cursor()
         if len(args) < 2 or len(args) > 3:
             # send help!
@@ -381,11 +378,8 @@ class WhiteStar(Robin):
         now = datetime.datetime.now()
         ws = None
         for wslist in ['ws1', 'ws2']:
-            if usermap['id'] in self._rolemembers(ctx, ws):
+            if usermap['Id'] in self._rolemembers(ctx, wslist):
                 ws = wslist
-        # if ws is None:
-        #     await ctx.send(content=("Je bent geen deelnemer aan een WS, je kunt dus ook geen schip een ws insturen")
-        #     return None
         if shiptype in ['bs', 'ukkie', 'drone']:
             try:
                 (hours, minutes) = notificationtime.split(':')
@@ -395,34 +389,46 @@ class WhiteStar(Robin):
                 returntime = now + datetime.timedelta(hours=int(hours), minutes=int(minutes))
                 returntime = returntime.strftime("%Y-%m-%d %H:%M")
                 notificationtime = notificationtime.strftime("%Y-%m-%d %H:%M")
-                await ctx.send(f"Id: {usermap['Id']}, returntime: {returntime}, notificationtime: {notificationtime}")
                 query = "insert into WSReturn (Id, WS, Shiptype, ReturnTime, NotificationTime) values (?, ?, ?, ?, ?)"
                 cur.execute(query, [usermap['Id'], ws, shiptype, returntime, notificationtime])
                 conn.commit()
             except Exception as e:
-                logger.info(f"taskscheduler failed: __{' '.join(args)}")
+                logger.info(f"taskscheduler failed {e}: __{' '.join(args)}")
                 await ctx.send_help(ctx.command)
+        query = (
+            "select um.DiscordAlias, ShipType, ReturnTime, NotificationTime "
+            "from WSReturn w "
+            "left join UserMap um "
+            "on um.Id  = w.Id "
+            "where w.NotificationTime > STRFTIME('%Y-%m-%d %H:%M', datetime('now', 'localtime'))"
+            "and w.ws = ?"
+        )
+        cur.execute(query, [ws])
+        result = cur.fetchall()
+        if len(result) > 0:
+            msg = "**Speler**  Schip  TerugTijd NotificatieTijd\n"
+            for row in result:
+                msg += f"**{row[0]}**   {row[1]}   {row[2]}   {row[3]}\n"
         else:
             await ctx.send(content="Terug bericht klopt niet.")
             await ctx.send_help(ctx.command)
+        await comeback_channel[ws].send(msg)
+        await self._feedback(msg=f"{usermap['DiscordAlias']}, volgende keer hopelijk meer succes met je {shiptype}", delete_after=3, delete_message=True)
 
     @tasks.loop(minutes=1)
     async def return_scheduler(self):
         conn = self.conn
-        client = discord.Client()
-        ws1_role_id = '832255254485663745'
-        channel = self.bot.get_channel(int(os.getenv('WS1_CHANNEL')))
+        ws_channel = {}
+        ws_channel['ws1'] = self.bot.get_channel(int(os.getenv('WS1_CHANNEL')))
+        ws_channel['ws2'] = self.bot.get_channel(int(os.getenv('WS2_CHANNEL')))
         cur = conn.cursor()
-        query = "select * from WSReturn w where w.NotificationTime=STRFTIME('%Y-%m-%d %H:%M', datetime('now', 'localtime'))"
+        query = (
+            "select Id, ws, ShipType, ReturnTime, NotificationTime "
+            "from WSReturn w "
+            "where w.NotificationTime=STRFTIME('%Y-%m-%d %H:%M', datetime('now', 'localtime'))"
+        )
         cur.execute(query)
         result = cur.fetchall()
         if len(result) > 0:
-            await channel.send(content="found some results")
             for row in result:
-                user = client.get_user(int(row[0]))
-                g: discord.Guild = client.guild
-                role = await g.get_roles(int(ws1_role_id))
-                if row[0] in role.members:
-                    await channel.send(f"<@{row[0]}>, je {row[1]} mag weer de WS in, ws1 ")
-                else:
-                    await channel.send(f"roles {role.members} mag weer de WS in, ws1 ")
+                await ws_channel[row[1]].send(f"<@{row[0]}>, je {row[2]} mag weer de WS in, ws1 ")

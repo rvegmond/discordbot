@@ -1,7 +1,6 @@
 
 import discord
 import os
-# import signal
 from datetime import datetime
 from discord.ext import commands
 from loguru import logger
