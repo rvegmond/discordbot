@@ -256,6 +256,7 @@ class WhiteStar(Robin):
                             "met 30 inschrijvingen worden er 2 wssen gestart maar er moeten dan wel minimaal **4 planners** zijn."
                             "\n")
                     await wsin_channel.purge(limit=100)
+                    await wslist_channel.purge(limit=100)
                     await wsin_channel.set_permissions(ctx.guild.default_role, send_messages=True)
                     await ctx.send(content=msg)
                     query = """
