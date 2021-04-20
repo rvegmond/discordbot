@@ -98,11 +98,11 @@ class WhiteStar(Robin):
         # Get all subscribers for the ws
         query = """
                 select um.DiscordAlias, w.inschrijving, w.Opmerkingen
-                from WSinschrijvingen w
-                left join UserMap um
-                on w.Id=um.Id
-                where actueel='ja'
-                order by Inschrijving desc, Inschrijftijd asc
+                from WSinschrijvingen w 
+                left join UserMap um 
+                on w.Id = um.Id
+                where actueel = 'ja'
+                order by Inschrijving asc, Inschrijftijd asc
                 """
         cur.execute(query)
         msg = ''
@@ -117,9 +117,9 @@ class WhiteStar(Robin):
         # get number of planners
         query = """
                 select *
-                from WSinschrijvingen w
-                where w.actueel='ja'
-                and w.inschrijving='plan'
+                from WSinschrijvingen w 
+                where w.actueel = 'ja'
+                and w.inschrijving = 'planner'
                 """
         cur.execute(query)
         num_planners = len(cur.fetchall())
@@ -127,9 +127,9 @@ class WhiteStar(Robin):
         # get number of players
         query = """
                 select *
-                from WSinschrijvingen w
-                where w.actueel='ja'
-                and w.inschrijving='in'
+                from WSinschrijvingen w 
+                where w.actueel = 'ja'
+                and w.inschrijving = 'speler'
                 """
         cur.execute(query)
         num_players = len(cur.fetchall())
@@ -197,8 +197,8 @@ class WhiteStar(Robin):
                 return None
             elif len(args) > 1:
                 # there is a comment
-                comment = self.sanitize(' '.join(args[1:]))
-
+                comment = self._sanitize(' '.join(args[1:]))
+            
             if args[0] in ['i', 'in']:
                 action = 'speler'
             elif args[0] in ['u', 'uit', 'o', 'out']:
