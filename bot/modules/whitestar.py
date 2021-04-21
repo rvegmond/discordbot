@@ -346,6 +346,31 @@ class WhiteStar(Robin):
             await ctx.send(f"usermap updated by {ctx.author.name}")
 
 ######################################################################################################
+#  command _update_comeback_channel
+######################################################################################################
+
+    async def _update_comeback_channel(self, comeback_channel, ws):
+        conn = self.conn
+        cur = conn.cursor()
+        query = (
+            "select um.DiscordAlias, ShipType, strftime('%a %H:%M', ReturnTime), strftime('%a %H:%M', NotificationTime)"
+            "from WSReturn w "
+            "left join UserMap um "
+            "on um.Id  = w.Id "
+            "where w.NotificationTime > STRFTIME('%Y-%m-%d %H:%M', datetime('now', 'localtime'))"
+            "and w.ws = ?"
+        )
+        cur.execute(query, [ws])
+        result = cur.fetchall()
+        await comeback_channel.purge(limit=100)
+        msg = "**Speler  Schip  TerugTijd NotificatieTijd**\n"
+
+        if len(result) > 0:
+            for row in result:
+                msg += f"**{row[0]}**   {row[1]}   {row[2]}   {row[3]}\n"
+        await comeback_channel.send(msg)
+
+######################################################################################################
 #  command terug
 ######################################################################################################
 
@@ -386,7 +411,7 @@ class WhiteStar(Robin):
             cur.execute(query, [usermap['Id'], shiptype])
             conn.commit()
             if len(cur.fetchall()) > 0:
-                query = "delete WSReturn where Id=? and Shiptype=?"
+                query = "delete from WSReturn where Id=? and Shiptype=?"
                 cur.execute(query, [usermap['Id'], shiptype])
                 conn.commit()
             try:
@@ -403,25 +428,8 @@ class WhiteStar(Robin):
             except Exception as e:
                 logger.info(f"taskscheduler failed {e}: __{' '.join(args)}")
                 await ctx.send_help(ctx.command)
-        query = (
-            "select um.DiscordAlias, ShipType, ReturnTime, NotificationTime "
-            "from WSReturn w "
-            "left join UserMap um "
-            "on um.Id  = w.Id "
-            "where w.NotificationTime > STRFTIME('%Y-%m-%d %H:%M', datetime('now', 'localtime'))"
-            "and w.ws = ?"
-        )
-        cur.execute(query, [ws])
-        result = cur.fetchall()
-        if len(result) > 0:
-            msg = "**Speler**  Schip  TerugTijd NotificatieTijd\n"
-            for row in result:
-                msg += f"**{row[0]}**   {row[1]}   {row[2]}   {row[3]}\n"
-        else:
-            await ctx.send(content="Terug bericht klopt niet.")
-            await ctx.send_help(ctx.command)
-        await comeback_channel[ws].send(msg)
-        await self._feedback(msg=f"{usermap['DiscordAlias']}, volgende keer hopelijk meer succes met je {shiptype}", delete_after=3, delete_message=True)
+        await self._update_comeback_channel(comeback_channel[ws], ws)
+        await self._feedback(ctx, msg=f"{usermap['discordalias']}, volgende keer hopelijk meer succes met je {shiptype}", delete_after=3, delete_message=True)
 
     @tasks.loop(minutes=1)
     async def return_scheduler(self):
@@ -429,9 +437,12 @@ class WhiteStar(Robin):
         ws_channel = {}
         ws_channel['ws1'] = self.bot.get_channel(int(os.getenv('WS1_CHANNEL')))
         ws_channel['ws2'] = self.bot.get_channel(int(os.getenv('WS2_CHANNEL')))
+        comeback_channel = {}
+        comeback_channel['ws1'] = self.bot.get_channel(int(os.getenv('WS1_COMEBACK_CHANNEL')))
+        comeback_channel['ws2'] = self.bot.get_channel(int(os.getenv('WS2_COMEBACK_CHANNEL')))
         cur = conn.cursor()
         query = (
-            "select Id, ws, ShipType, ReturnTime, NotificationTime "
+            "select Id, ws, ShipType, strftime('%a %H:%M', ReturnTime), NotificationTime "
             "from WSReturn w "
             "where w.NotificationTime=STRFTIME('%Y-%m-%d %H:%M', datetime('now', 'localtime'))"
         )
@@ -439,4 +450,5 @@ class WhiteStar(Robin):
         result = cur.fetchall()
         if len(result) > 0:
             for row in result:
-                await ws_channel[row[1]].send(f"<@{row[0]}>, je {row[2]} mag weer de WS in, ws1 ")
+                await ws_channel[row[1]].send(f"<@{row[0]}>, je {row[2]} mag weer de ws in, succes!")
+                await self._update_comeback_channel(comeback_channel[row[1]], row[1])
