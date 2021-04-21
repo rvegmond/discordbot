@@ -377,9 +377,13 @@ class WhiteStar(Robin):
     @commands.command(
         name="terug",
         help=(
-            "Met het status commando update je status in het status kanaal,"
-            " hiermee help je je mede ws-ers op de hoogte te houden hoe snel je kunt reageren."),
-        brief="Update je status in het status kanaal",
+            "Als je een schip verloren bent krijg je hiermee een seintje als je er weer in mag, "
+            "dit is ook erg handig voor je mede spelers en de planners.\n"
+            "!terug <schip> terugkomtijd  notificatietijd\n"
+            "!terug [bs|ukkie|drone uu:mm\n"
+            "uu:mm is de tijd die in Hades staat, de terugkomtijd wordt uitgerekend "
+            "Als je een terugkomtijd (ook uren en minuten) dan krijg je op dat moment een notificatie"),
+        brief="Meld de terugkomtijd van je schip aan.",
     )
     async def terug(self, ctx, *args):
         conn = self.conn
