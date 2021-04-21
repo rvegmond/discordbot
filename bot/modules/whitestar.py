@@ -380,7 +380,7 @@ class WhiteStar(Robin):
             "Als je een schip verloren bent krijg je hiermee een seintje als je er weer in mag, "
             "dit is ook erg handig voor je mede spelers en de planners.\n"
             "!terug <schip> terugkomtijd  notificatietijd\n\n"
-            "!terug [bs|ukkie|drone] uu:mm [uu:mm]\n\n"
+            "!terug {bs|ukkie|drone} uu:mm [uu:mm]\n\n"
             "uu:mm is de tijd die in Hades staat, de terugkomtijd wordt uitgerekend "
             "Als je een terugkomtijd (ook uren en minuten) dan krijg je op dat moment een notificatie"),
         brief="Meld de terugkomtijd van je schip aan.",
