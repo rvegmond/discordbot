@@ -8,7 +8,7 @@ class Robin(commands.Cog):
     def __init__(self, bot, conn=None):
         self.bot = bot
         self.conn = conn
-        logger.info(f"Class {type(self).__name__} initialized ")
+        logger.info(f"Class {type(self).__name__} initialized from Robin class")
 
     def _sanitize(self, msg_in: str, maxlength=200) -> str:
         """

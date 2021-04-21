@@ -58,16 +58,16 @@ class WhiteStar(Robin):
             for member in memberlist:
                 cur.execute(query, [member])
 
-            query = """
-                    select um.DiscordAlias,
-                        case when s.LastUpdate is null then "0-0-000" else s.LastUpdate end,
-                        case when s.StatusText is null then "Geen status ingevuld" else s.StatusText end
-                    from temp_ws tw
-                    left join UserMap um
-                    on um.Id=tw.Id
-                    left join Status s
-                    on s.Id=um.Id
-                    """
+            query = (
+                "select um.DiscordAlias,"
+                "case when s.LastUpdate is null then '0-0-000' else s.LastUpdate end,"
+                "case when s.StatusText is null then 'Geen status ingevuld' else s.StatusText end"
+                "from temp_ws tw"
+                "left join UserMap um"
+                "on um.Id=tw.Id"
+                "left join Status s"
+                "on s.Id=um.Id"
+            )
             try:
                 cur.execute(query)
                 for row in cur.fetchall():
@@ -96,14 +96,14 @@ class WhiteStar(Robin):
         cur = conn.cursor()
 
         # Get all subscribers for the ws
-        query = """
-                select um.DiscordAlias, w.inschrijving, w.Opmerkingen
-                from WSinschrijvingen w 
-                left join UserMap um 
-                on w.Id = um.Id
-                where actueel = 'ja'
-                order by Inschrijving asc, Inschrijftijd asc
-                """
+        query = (
+            "select um.DiscordAlias, w.inschrijving, w.Opmerkingen"
+            "from WSinschrijvingen w"
+            "left join UserMap um"
+            "on w.Id = um.Id"
+            "where actueel = 'ja'"
+            "order by Inschrijving asc, Inschrijftijd asc"
+        )
         cur.execute(query)
         msg = ''
         for row in cur.fetchall():
@@ -115,22 +115,22 @@ class WhiteStar(Robin):
         msg += "\n"
 
         # get number of planners
-        query = """
-                select *
-                from WSinschrijvingen w 
-                where w.actueel = 'ja'
-                and w.inschrijving = 'planner'
-                """
+        query = (
+            "select *"
+            "from WSinschrijvingen w"
+            "where w.actueel = 'ja'"
+            "and w.inschrijving = 'planner'"
+        )
         cur.execute(query)
         num_planners = len(cur.fetchall())
 
         # get number of players
-        query = """
-                select *
-                from WSinschrijvingen w 
-                where w.actueel = 'ja'
-                and w.inschrijving = 'speler'
-                """
+        query = (
+            "select *"
+            "from WSinschrijvingen w"
+            "where w.actueel = 'ja'"
+            "and w.inschrijving = 'speler'"
+        )
         cur.execute(query)
         num_players = len(cur.fetchall())
 
@@ -198,23 +198,23 @@ class WhiteStar(Robin):
             elif len(args) > 1:
                 # there is a comment
                 comment = self._sanitize(' '.join(args[1:]))
-            
+
             if args[0] in ['i', 'in']:
                 action = 'speler'
             elif args[0] in ['u', 'uit', 'o', 'out']:
                 action = 'out'
-                query = """
-                        select * from WSinschrijvingen where Id=? and actueel='ja'
-                        """
+                query = (
+                    "select * from WSinschrijvingen where Id=? and actueel='ja'"
+                )
                 cur.execute(query, [usermap['Id']])
                 if len(cur.fetchall()) == 0:
                     await ctx.send(content=f"{usermap['discordalias']}, je stond nog niet ingeschreven voor de volgende ws", delete_after=3)
                 else:
-                    query = """
-                            delete from WSinschrijvingen
-                            where Id=?
-                            and actueel='ja'
-                            """
+                    query = (
+                        "delete from WSinschrijvingen"
+                        "where Id=?"
+                        "and actueel='ja'"
+                    )
 
                     cur.execute(query, [usermap['Id']])
                     conn.commit()
@@ -255,10 +255,10 @@ class WhiteStar(Robin):
                     await wslist_channel.purge(limit=100)
                     await wsin_channel.set_permissions(ctx.guild.default_role, send_messages=True)
                     await ctx.send(content=msg)
-                    query = """
-                            update WSinschrijvingen
-                            set actueel='nee'
-                            """
+                    query = (
+                        "update WSinschrijvingen"
+                        "set actueel='nee'"
+                    )
                     cur.execute(query)
                     conn.commit()
                     await self.update_ws_inschrijvingen_tabel(ctx, wslist_channel)
@@ -272,16 +272,16 @@ class WhiteStar(Robin):
                 return None
 
             # is member already registered
-            query = """
-                    select * from WSinschrijvingen where Id=? and inschrijving=? and actueel='ja'
-                    """
+            query = (
+                "select * from WSinschrijvingen where Id=? and inschrijving=? and actueel='ja'"
+            )
 
             cur.execute(query, [usermap['Id'], action])
             rows_same_role = len(cur.fetchall())
 
-            query = """
-                    select * from WSinschrijvingen where Id=? and inschrijving <> ? and actueel='ja'
-                    """
+            query = (
+                "select * from WSinschrijvingen where Id=? and inschrijving <> ? and actueel='ja'"
+            )
 
             cur.execute(query, [usermap['Id'], action])
             rows_different_role = len(cur.fetchall())
@@ -292,19 +292,19 @@ class WhiteStar(Robin):
                 return None
             elif rows_different_role == 1:
                 # already registerd as a different role, update
-                query = """
-                        update WSinschrijvingen set inschrijving=?, Opmerkingen=?
-                        where Id=? and actueel='ja'
-                        """
+                query = (
+                    "update WSinschrijvingen set inschrijving=?, Opmerkingen=?"
+                    "where Id=? and actueel='ja'"
+                )
                 cur.execute(query, [action, comment, usermap['Id']])
                 conn.commit()
                 await ctx.send(content=f"Gefeliciteerd, {usermap['discordalias']} je bent nu {action} voor de volgende ws", delete_after=3)
             else:
                 # not yet registerd, insert
-                query = """
-                        insert into WSinschrijvingen (Id, inschrijving, Inschrijftijd, Opmerkingen, actueel)
-                        values (?, ?, datetime('now'), ?, 'ja')
-                        """
+                query = (
+                    "insert into WSinschrijvingen (Id, inschrijving, Inschrijftijd, Opmerkingen, actueel)"
+                    "values (?, ?, datetime('now'), ?, 'ja')"
+                )
                 cur.execute(query, [usermap['Id'], action, comment])
                 conn.commit()
                 await ctx.send(content=f"Gefeliciteerd, {usermap['discordalias']} je bent nu {action} voor de volgende ws", delete_after=3)
@@ -358,6 +358,7 @@ class WhiteStar(Robin):
     )
     async def terug(self, ctx, *args):
         conn = self.conn
+        breakpoint()
 
         comeback_channel = {}
         comeback_channel['ws1'] = self.bot.get_channel(int(os.getenv('WS1_COMEBACK_CHANNEL')))
@@ -365,14 +366,15 @@ class WhiteStar(Robin):
 
         usermap = self._getusermap(int(ctx.author.id))
         cur = conn.cursor()
-        if len(args) < 2 or len(args) > 3:
-            # send help!
-            await ctx.send_help(ctx.command)
-            return None
-        elif len(args) == 2:
+
+        if len(args) == 2:
             notificationtime = args[1]
         elif len(args) == 3:
             notificationtime = args[2]
+        else:
+            # send help!
+            await ctx.send_help(ctx.command)
+            return None
 
         shiptype = args[0].lower()
         returntime = args[1]
@@ -382,6 +384,13 @@ class WhiteStar(Robin):
             if usermap['Id'] in self._rolemembers(ctx, wslist):
                 ws = wslist
         if shiptype in ['bs', 'ukkie', 'drone']:
+            query = "select * from  WSReturn where Id=? and Shiptype=?"
+            cur.execute(query, [usermap['Id'], shiptype])
+            conn.commit()
+            if len(cur.fetchall()) > 0:
+                query = "delete WSReturn where Id=? and Shiptype=?"
+                cur.execute(query, [usermap['Id'], shiptype])
+                conn.commit()
             try:
                 (hours, minutes) = notificationtime.split(':')
                 notificationtime = now + datetime.timedelta(hours=int(hours), minutes=int(minutes))
@@ -414,7 +423,7 @@ class WhiteStar(Robin):
             await ctx.send(content="Terug bericht klopt niet.")
             await ctx.send_help(ctx.command)
         await comeback_channel[ws].send(msg)
-        await self._feedback(msg=f"{usermap['DiscordAlias']}, volgende keer hopelijk meer succes met je {shiptype}", delete_after=3,W  delete_message=True)
+        await self._feedback(msg=f"{usermap['DiscordAlias']}, volgende keer hopelijk meer succes met je {shiptype}", delete_after=3, delete_message=True)
 
     @tasks.loop(minutes=1)
     async def return_scheduler(self):
