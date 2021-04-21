@@ -358,8 +358,6 @@ class WhiteStar(Robin):
     )
     async def terug(self, ctx, *args):
         conn = self.conn
-        breakpoint()
-
         comeback_channel = {}
         comeback_channel['ws1'] = self.bot.get_channel(int(os.getenv('WS1_COMEBACK_CHANNEL')))
         comeback_channel['ws2'] = self.bot.get_channel(int(os.getenv('WS2_COMEBACK_CHANNEL')))

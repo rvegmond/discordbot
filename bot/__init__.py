@@ -1,7 +1,9 @@
 import os
 import bot
 from loguru import logger
-import sys
+
+sys.path.append(os.path.dirname(os.path.realpath(__file__)))
+
 
 ___VERSION___ = "[v0.1.0]"
 
