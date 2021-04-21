@@ -353,7 +353,7 @@ class WhiteStar(Robin):
         conn = self.conn
         cur = conn.cursor()
         query = (
-            "select um.DiscordAlias, ShipType, strftime('%a %H:%M', ReturnTime), strftime('%a %H:%M', NotificationTime)"
+            "select um.DiscordAlias, ShipType, ReturnTime, NotificationTime "
             "from WSReturn w "
             "left join UserMap um "
             "on um.Id  = w.Id "
@@ -363,7 +363,7 @@ class WhiteStar(Robin):
         cur.execute(query, [ws])
         result = cur.fetchall()
         await comeback_channel.purge(limit=100)
-        msg = "**Speler  Schip  TerugTijd NotificatieTijd**\n"
+        msg = "**Speler    Schip    TerugTijd     NotificatieTijd**\n"
 
         if len(result) > 0:
             for row in result:
@@ -442,7 +442,7 @@ class WhiteStar(Robin):
         comeback_channel['ws2'] = self.bot.get_channel(int(os.getenv('WS2_COMEBACK_CHANNEL')))
         cur = conn.cursor()
         query = (
-            "select Id, ws, ShipType, strftime('%a %H:%M', ReturnTime), NotificationTime "
+            "select Id, ws, ShipType, ReturnTime, NotificationTime "
             "from WSReturn w "
             "where w.NotificationTime=STRFTIME('%Y-%m-%d %H:%M', datetime('now', 'localtime'))"
         )
