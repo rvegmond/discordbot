@@ -5,7 +5,7 @@ import sqlite3
 import sys
 
 
-from modules import whitestar, ping, roles, scheduler
+from modules import whitestar, ping, roles
 import debugpy
 # debugpy.listen(("localhost", 5678))
 db_file = 'data/hades.db'
