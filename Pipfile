@@ -8,8 +8,13 @@ loguru = "*"
 discord = {py = "*"}
 
 [dev-packages]
+loguru = "*"
+discord = {py = "*"}
+pytest-cov = "*"
 debugpy = "*"
 pytest = "*"
+typing-extensions = "*"
+pylint = "*"
 
 [requires]
 python_version = "3"
