@@ -6,9 +6,10 @@ name = "pypi"
 [packages]
 loguru = "*"
 discord = {py = "*"}
-debugpy = "*"
 
 [dev-packages]
+debugpy = "*"
+pytest = "*"
 
 [requires]
 python_version = "3"

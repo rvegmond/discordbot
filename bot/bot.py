@@ -2,6 +2,8 @@ import discord
 from discord.ext import commands
 from loguru import logger
 import sqlite3
+import bot
+import os
 import sys
 
 
@@ -11,7 +13,16 @@ from modules import whitestar, ping, roles
 
 db_file = 'data/hades.db'
 
+___VERSION___ = "[v0.1.0]"
+
+
+
 # logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
+config = {
+    "handlers": [
+        {"sink": sys.stdout, "format": ___VERSION___ + " [{time:YYYY-MM-DD at HH:mm:ss}] [{level}]: {message}"}
+    ],
+}
 
 
 def generate_table(msg):
@@ -50,3 +61,10 @@ def new_bot(command_prefix: str, description: str) -> discord.ext.commands.bot:
         bot.add_cog(roles.Roles(bot, conn))
         # bot.add_cog(scheduler.Scheduler(bot, conn))
     return bot
+
+
+if __name__ == "__main__":
+    logger.configure(**config)
+    logger.info("Now loading...")
+    b = bot.new_bot(os.getenv("COMMAND_PREFIX", "!"), os.getenv("BOT_DESCRIPTION", "A discord bot"))
+    b.run(os.getenv("DISCORD_TOKEN"))
