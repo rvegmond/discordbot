@@ -1,10 +1,11 @@
-.DS_Store
 # config files!
+.DS_Store
 gsheet/config/*
 .DS_Store
 run_*
 .vscode*
 data/hades.db
+.scannerwork
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -8,8 +8,7 @@ class Robin(commands.Cog):
     def __init__(self, bot, conn=None):
         self.bot = bot
         self.conn = conn
-        logger.info(f"Class {type(self).__name__} initialized ")
-
+        logger.info(f"Class {type(self).__name__} initialized from Robin class")
 
     def _sanitize(self, msg_in: str, maxlength=200) -> str:
         """
@@ -21,15 +20,16 @@ class Robin(commands.Cog):
           maxlenght: maximum length of the string
         """
         forbidden = ['@', '#']
+        trunctext = ' .. truncated'
         logger.info(f"msg_in: {msg_in}")
         if len(msg_in) > maxlength:
-            tmplength = maxlength - len(' .. truncated')
+            tmplength = maxlength - len(trunctext)
             logger.info(f"tmplength {tmplength}")
             if tmplength < 0:
-                msg_out = ' .. truncated'
+                msg_out = trunctext
             else:
                 msg_out = msg_in[:tmplength]
-                msg_out += ' .. truncated'
+                msg_out += trunctext
         else:
             msg_out = msg_in
 
@@ -39,7 +39,7 @@ class Robin(commands.Cog):
 
     async def _feedback(self, ctx, msg: str, delete_after=None, delete_message=False) -> str:
         """
-        Send feedback to the user after a message is posted. 
+        Send feedback to the user after a message is posted.
         The original message can be deleted.
         The feedback will be sent to the original channel.
 
@@ -47,17 +47,17 @@ class Robin(commands.Cog):
           msg:            the message to send
           delete_after:   how long to wait to delete the feedback message (default keep)
           delete_message: delete the original message (default keep)
-        """ 
+        """
         await ctx.send(content=msg, delete_after=delete_after)
         if delete_message:
             try:
                 await ctx.message.delete()
-            except Exception as e: 
+            except Exception as e:
                 logger.info(f"message deletion failed {e}")
                 return f"message deletion failed {e}"
         return "feedback sent successful"
 
-    def _getusermap(self, Id):
+    def _getusermap(self, id):
         """
         Get the mapping for discordalias and gsheetalias
         Id is the key for the selection.
@@ -68,17 +68,17 @@ class Robin(commands.Cog):
         cur = conn.cursor()
 
         query = f"select Id, DiscordId, discordalias, gsheetalias from usermap where Id=?"
-        cur.execute(query, [Id])
+        cur.execute(query, [id])
         row = cur.fetchone()
-        usermap = {'Id': row[0], 'discordid': row[1], 'discordalias': row[2], 'gsheetalias': row[3]} 
+        usermap = {'Id': row[0], 'discordid': row[1], 'discordalias': row[2], 'gsheetalias': row[3]}
         logger.info(f"usermap: discordid->{usermap['discordid']}, discordalias->{usermap['discordalias']}, gsheetalias->{usermap['gsheetalias']}")
 
         return(usermap)
 
     # @commands.command()
-    def _rolemembers(self, ctx, *args): # Always same role, no input needed
+    def _rolemembers(self, ctx, *args):  # Always same role, no input needed
         guild = ctx.guild
-        role_name = args[0] 
+        role_name = args[0]
         role_id = get(guild.roles, name=role_name)
 
         members = []
@@ -86,4 +86,3 @@ class Robin(commands.Cog):
         for t in x:
             members.append(t.id)
         return members
-

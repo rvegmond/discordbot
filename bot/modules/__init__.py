@@ -1,9 +1,3 @@
-# import json
-
-# import requests
-# from discord.ext import commands
-# from loguru import logger
-
-
-def generate_table(msg):
-    return msg
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.realpath(__file__)))
