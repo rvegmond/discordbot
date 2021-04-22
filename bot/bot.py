@@ -6,8 +6,9 @@ import sys
 
 
 from modules import whitestar, ping, roles
-import debugpy
+# import debugpy
 # debugpy.listen(("localhost", 5678))
+
 db_file = 'data/hades.db'
 
 # logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
