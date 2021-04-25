@@ -62,5 +62,6 @@ def new_bot(command_prefix: str, description: str) -> discord.ext.commands.bot:
 if __name__ == "__main__":
     logger.configure(**config)
     logger.info("Now loading...")
-    b = new_bot(os.getenv("COMMAND_PREFIX", "!"), os.getenv("BOT_DESCRIPTION", "A discord bot"))
+    b = new_bot(command_prefix=os.getenv("COMMAND_PREFIX", "!"),
+                description=os.getenv("BOT_DESCRIPTION", f"A discord bot, running version {___VERSION___ }"))
     b.run(os.getenv("DISCORD_TOKEN"))
