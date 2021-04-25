@@ -15,6 +15,7 @@ debugpy = "*"
 pytest = "*"
 typing-extensions = "*"
 pylint = "*"
+pytest-asyncio = "*"
 
 [requires]
 python_version = "3"

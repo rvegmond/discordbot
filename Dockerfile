@@ -1,4 +1,4 @@
-FROM python:3-alpine3.12
+FROM --platform=$BUILDPLATFORM python:3-alpine3.12 as build
 
 RUN apk update && apk upgrade && apk add gcc musl-dev
 RUN mkdir bot
@@ -10,6 +10,7 @@ RUN pip install -r requirements.txt
 
 
 COPY bot.py __init__.py /bot/
+COPY modules /bot/modules
 
-ENTRYPOINT python __init__.py
+ENTRYPOINT python bot.py
 
