@@ -10,7 +10,7 @@ from modules import whitestar, ping, roles
 
 DB_FILE = 'data/hades.db'
 
-___VERSION___ = "[v1.0.0]"
+___VERSION___ = "[v1.1.0]"
 
 # logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 config = {
@@ -43,6 +43,9 @@ def create_connection():
 
 
 def new_bot(command_prefix: str, description: str) -> discord.ext.commands.bot:
+    """ Create a new discordbot
+    """
+
     intents = discord.Intents.default()
     intents.members = True
     bot = commands.Bot(command_prefix=command_prefix, description=description, intents=intents)
