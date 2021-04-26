@@ -6,6 +6,6 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: install prereq
-      run: apt update && apt install -y pipenv
+      run: pip install pipenv
     - name: Run the test script.
       run: make test
