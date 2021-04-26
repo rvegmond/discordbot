@@ -5,5 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
+    - name: install prereq
+      run: apt update && apt install -y pipenv
     - name: Run the test script.
       run: make test
