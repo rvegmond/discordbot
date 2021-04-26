@@ -234,12 +234,12 @@ class WhiteStar(Robin):
                 action = 'planner'
             elif args[0] in ['close', 'sluit']:
                 if await Roles.in_role(self, ctx, 'Moderator') or await Roles.in_role(self, ctx, 'Bot Bouwers'):
-                    await wsin_channel.set_permissions(ctx.guild.default_role, send_messages=False)
+                    await wsin_channel.set_permissions(ws_role, send_messages=False)
                     await ctx.send(content=f"Inschrijving gesloten door {ctx.author.name}")
                     return None
             elif args[0] in ['open']:
                 if await Roles.in_role(self, ctx, 'Moderator') or await Roles.in_role(self, ctx, 'Bot Bouwers'):
-                    await wsin_channel.set_permissions(ctx.guild.default_role, send_messages=True)
+                    await wsin_channel.set_permissions(ws_role, send_messages=True)
                     await ctx.send(content=f"Inschrijving geopend door {ctx.author.name}")
                     return None
             elif args[0] in ['clear']:
@@ -248,13 +248,14 @@ class WhiteStar(Robin):
                         f"{ws_role.mention}, De WS inschrijving is geopend\n"
                         "Met `!ws plan` of `ws p` schrijf je je in als planner en speler\n"
                         "Met `!ws in` of `ws i` schrijf je je in als speler\n"
-                        f"Inschrijven kan alleen in {wsin_channel.mention}, het overzicht van de inschrijvinen komt in {wslist_channel.mention}"
+                        f"Inschrijven kan alleen in {wsin_channel.mention}, het overzicht van de inschrijvingen komt in {wslist_channel.mention}"
                         "\n"
                         "met 30 inschrijvingen worden er 2 wssen gestart maar er moeten dan wel minimaal **4 planners** zijn."
-                        "\n")
+                        "\n"
+                        "Elke __**Dinsdag**__ worden de inschrijvingen geopend ongeacht of er nog wssen lopen tot uiterlijk __**Woensdag**__")
                     await wsin_channel.purge(limit=100)
                     await wslist_channel.purge(limit=100)
-                    await wsin_channel.set_permissions(ctx.guild.default_role, send_messages=True)
+                    await wsin_channel.set_permissions(ws_role, send_messages=True)
                     await ctx.send(content=msg)
                     query = (
                         "update WSinschrijvingen "
