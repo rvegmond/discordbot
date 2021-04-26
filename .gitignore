@@ -6,6 +6,7 @@ run_*
 .vscode*
 data/hades.db
 .scannerwork
+Pipfile.lock
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

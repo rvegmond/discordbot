@@ -6,9 +6,16 @@ name = "pypi"
 [packages]
 loguru = "*"
 discord = {py = "*"}
-debugpy = "*"
 
 [dev-packages]
+loguru = "*"
+discord = {py = "*"}
+pytest-cov = "*"
+debugpy = "*"
+pytest = "*"
+typing-extensions = "*"
+pylint = "*"
+pytest-asyncio = "*"
 
 [requires]
 python_version = "3"
