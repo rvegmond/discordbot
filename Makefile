@@ -14,5 +14,5 @@ test: init ## deploy vpc stack
 	-Dsonar.host.url=http://34.242.26.33:9000 \
 	-Dsonar.login=9730658187a22892a674847fb7a9081843f3909c
 
-init: Pipfile.lock ## initializes the python environment
+init: ## initializes the python environment
 	pipenv install --dev
