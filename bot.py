@@ -10,7 +10,7 @@ from modules import whitestar, ping, roles
 
 DB_FILE = 'data/hades.db'
 
-___VERSION___ = "[v1.1.0]"
+___VERSION___ = "[v1.1.1]"
 
 # logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 config = {
