@@ -1,7 +1,7 @@
 import unittest
 import pytest
 from mock import MagicMock
-from modules.roles import Roles
+from bot.modules.roles import Roles
 
 
 @pytest.mark.asyncio

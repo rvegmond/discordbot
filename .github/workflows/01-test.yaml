@@ -9,9 +9,9 @@ jobs:
   sonarcloud:
     name: SonarCloud
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: bot
+    # defaults:
+    #   run:
+    #     working-directory: bot
     steps:
       - uses: actions/checkout@v2
         with:
@@ -19,7 +19,7 @@ jobs:
       - name: install prereq
         run: pip install pipenv  && pipenv install --dev
       - name: run pytest
-        run: pipenv run pytest --cov-report xml:test-results/coverage.xml --cov 
+        run: pipenv run pytest --cov-report xml:test-results/coverage.xml --cov bot
       - name: cat coverage
         run: cat test-results/coverage.xml 
       - name: SonarCloud Scan
