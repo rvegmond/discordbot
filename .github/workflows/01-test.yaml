@@ -9,9 +9,9 @@ jobs:
   sonarcloud:
     name: SonarCloud
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: bot
+    # defaults:
+    #   run:
+    #     working-directory: bot
     steps:
       - uses: actions/checkout@v2
         with:
