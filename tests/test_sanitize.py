@@ -1,5 +1,5 @@
 
-from ..modules.robin import Robin
+from src.modules.robin import Robin
 import pytest
 import sqlite3
 

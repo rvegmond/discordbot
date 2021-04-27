@@ -7,12 +7,8 @@ help:
 
 .PHONY: test
 test: init ## deploy vpc stack
-	@pipenv run pytest --cov-report xml:tests/test-results/coverage.xml --cov modules
-	~/tmp/sonar-scanner-4.6.0.2311-macosx/bin/sonar-scanner \
-	-Dsonar.projectKey=discordbot \
-	-Dsonar.sources=. \
-	-Dsonar.host.url=http://34.242.26.33:9000 \
-	-Dsonar.login=9730658187a22892a674847fb7a9081843f3909c
+	@pipenv run pytest --cov-report xml:tests/test-results/coverage.xml --cov tests/
+	~/tmp/sonar-scanner-4.6.0.2311-macosx/bin/sonar-scanner 
 
 init: ## initializes the python environment
 	pipenv install --dev
