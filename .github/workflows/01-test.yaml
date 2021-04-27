@@ -9,15 +9,17 @@ jobs:
   sonarcloud:
     name: SonarCloud
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: bot
     steps:
-
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       - name: install prereq
         run: pip install pipenv  && pipenv install --dev
       - name: run pytest
-        run: cd bot && pipenv run pytest --cov-report xml:tests/test-results/coverage.xml --cov tests/
+        run: pipenv run pytest --cov-report xml:tests/test-results/coverage.xml --cov tests/
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
