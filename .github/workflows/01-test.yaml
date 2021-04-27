@@ -16,8 +16,8 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - name: install prereq
-        run: pip install pipenv  && pipenv install --dev
+      # - name: install prereq
+      #   run: pip install pipenv  && pipenv install --dev
       - name: run test
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
