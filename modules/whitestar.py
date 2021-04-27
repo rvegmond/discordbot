@@ -246,8 +246,8 @@ class WhiteStar(Robin):
                 if await Roles.in_role(self, ctx, 'Moderator') or await Roles.in_role(self, ctx, 'Bot Bouwers'):
                     msg = (
                         f"{ws_role.mention}, De WS inschrijving is geopend\n"
-                        "Met `!ws plan` of `ws p` schrijf je je in als planner en speler\n"
-                        "Met `!ws in` of `ws i` schrijf je je in als speler\n"
+                        "Met `!ws plan` of `!ws p` schrijf je je in als planner en speler\n"
+                        "Met `!ws in` of `!ws i` schrijf je je in als speler\n"
                         f"Inschrijven kan alleen in {wsin_channel.mention}, het overzicht van de inschrijvingen komt in {wslist_channel.mention}"
                         "\n"
                         "met 30 inschrijvingen worden er 2 wssen gestart maar er moeten dan wel minimaal **4 planners** zijn."

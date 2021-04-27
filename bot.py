@@ -8,7 +8,7 @@ from modules import whitestar, ping, roles
 
 DB_FILE = 'data/hades.db'
 
-___VERSION___ = "[v1.1.0]"
+___VERSION___ = "[v1.1.1]"
 
 config = {
     "handlers": [
