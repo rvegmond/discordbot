@@ -19,7 +19,9 @@ jobs:
       - name: install prereq
         run: pip install pipenv  && pipenv install --dev
       - name: run pytest
-        run: pipenv run pytest --cov-report xml:tests/test-results/coverage.xml --cov tests/
+        run: pipenv run pytest --cov-report xml:test-results/coverage.xml --cov tests/
+      - name: cat coverage
+        run: cat test-results/coverage.xml 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
