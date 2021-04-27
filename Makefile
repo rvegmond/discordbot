@@ -7,8 +7,13 @@ help:
 
 .PHONY: test
 test: init ## deploy vpc stack
-	@pipenv run pytest --cov-report xml:tests/test-results/coverage.xml --cov tests/
-	~/tmp/sonar-scanner-4.6.0.2311-macosx/bin/sonar-scanner 
+	cd bot && pipenv run pytest --cov-report xml:tests/test-results/coverage.xml --cov
+	docker run \
+    --rm \
+	-e SONAR_HOST_URL="https://sonarcloud.io" \
+    -e SONAR_LOGIN=${SONAR_TOKEN} \
+    -v "${PWD}/bot:/usr/src" \
+    sonarsource/sonar-scanner-cli
 
 init: ## initializes the python environment
 	pipenv install --dev
