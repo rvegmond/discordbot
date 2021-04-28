@@ -4,6 +4,17 @@ from mock import MagicMock
 from modules.roles import Roles
 
 
+# @pytest.mark.asyncio
+# async def test_get_roles_ok():
+#     roles = Roles()
+#     role = MagicMock()
+#     role.name = 'testrole'
+#     ctx = MagicMock()
+#     ctx.guild.fetch_roles.return_value = [role]
+#     res = await roles._get_roles(ctx)
+#     assert res is f"role.name: testrole"
+
+
 @pytest.mark.asyncio
 async def test_in_role_ok():
     roles = Roles()
