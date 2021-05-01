@@ -72,7 +72,6 @@ class Robin(commands.Cog):
         cur.execute(query, [id])
         row = cur.fetchone()
         usermap = {'Id': row[0], 'discordid': row[1], 'discordalias': row[2], 'gsheetalias': row[3]}
-        print(f"usermap {usermap}")
         return(usermap)
 
     # @commands.command()
