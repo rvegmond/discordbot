@@ -17,5 +17,8 @@ async def test_update_usermap():
     Need to write the test, using mock db
     """
     whitestar = WhiteStar(bot)
+    ctx = MagicMock()
+    role = MagicMock()
+    role.name = 'testrole'
     res = True
     assert res is True

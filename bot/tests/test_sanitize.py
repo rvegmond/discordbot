@@ -1,6 +1,7 @@
 from modules.robin import Robin
 import pytest
 import sqlite3
+from mock import MagicMock, Mock, patch
 
 
 def test_sanitize():
@@ -25,3 +26,11 @@ def test_usermap():
     robin.conn = sqlite3.connect('tests/hades-test.db')
     res = robin._getusermap(1)
     assert res['discordid'] == 'discordid1'
+
+
+# def test_usermap_mockdb():
+#     robin = Robin()
+#     robin.conn = MagicMock()
+#     robin.conn.cursor().return_value.fetchone().return_value = ('1', 'discordid', 'discordalias', 'gsheetalias',)
+#     res = robin._getusermap('1')
+#     assert res['discordid'] == 'discordid'
