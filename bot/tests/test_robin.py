@@ -1,7 +1,7 @@
 from modules.robin import Robin
 import pytest
 import sqlite3
-from mock import MagicMock, Mock, patch
+from mock import MagicMock, Mock, patch, AsyncMock
 
 
 def test_sanitize():
@@ -18,6 +18,22 @@ def test_sanitize():
 async def test_feedback():
     robin = Robin()
     res = await robin._feedback(msg='Dit is een teststring')
+    assert res == 'feedback sent successful'
+
+
+@pytest.mark.asyncio
+async def test_feedback_ctx():
+    robin = Robin()
+    ctx = AsyncMock()
+    res = await robin._feedback(ctx, msg='Dit is een teststring')
+    assert res == 'feedback sent successful'
+
+
+@pytest.mark.asyncio
+async def test_feedback_delete():
+    robin = Robin()
+    ctx = AsyncMock()
+    res = await robin._feedback(ctx, msg='Dit is een teststring', delete_after=4)
     assert res == 'feedback sent successful'
 
 
