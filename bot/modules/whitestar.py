@@ -107,7 +107,10 @@ class WhiteStar(Robin):
         cur.execute(query)
         msg = ''
         i = 1
+        # max_players = 2
         for row in cur.fetchall():
+            # if i == max_players + 1:
+            #     msg += "\nReservelijst:\n"
             if row[1] == 'planner':
                 msg += f"**{i}. {row[0]} {row[1]} {row[2]}**\n"
             else:
@@ -369,8 +372,37 @@ class WhiteStar(Robin):
 
         if len(result) > 0:
             for row in result:
-                msg += f"**{row[0]}**   {row[1]}   {row[2]}   {row[3]}\n"
+                returntime = datetime.datetime.strptime(row[2], "%Y-%m-%d %H:%M").strftime("%a %H:%M")
+                notificationtime = datetime.datetime.strptime(row[3], "%Y-%m-%d %H:%M").strftime("%a %H:%M")
+                msg += f"**{row[0]}**   {row[1]}   {returntime}   {notificationtime}\n"
         await comeback_channel.send(msg)
+
+######################################################################################################
+#  _normalize_time
+######################################################################################################
+
+    def _normalize_time(self, intime):
+        now = datetime.datetime.now()
+
+        if 'u' in intime:
+            logger.info(f"found u {intime}")
+            (hours, minutes) = intime.replace('u', '').split(':')
+            intime = datetime.datetime(now.year, now.month, now.day, int(hours), int(minutes), 0)
+            if intime < now:
+                intime = intime + datetime.timedelta(days=1)
+            intime = intime.strftime("%Y-%m-%d %H:%M")
+        elif '.' in intime or ',' in intime:
+            logger.info(f"found . {intime}")
+            (hours, minutes) = intime.split('.')
+            intime = now + datetime.timedelta(hours=int(hours), minutes=int(minutes) * 6)  # calc minutes
+            intime = intime.strftime("%Y-%m-%d %H:%M")
+        elif ':' in intime:
+            logger.info(f"found : {intime}")
+            (hours, minutes) = intime.split(':')
+            intime = now + datetime.timedelta(hours=int(hours), minutes=int(minutes))
+            intime = intime.strftime("%Y-%m-%d %H:%M")
+        logger.info(f"return{intime}")
+        return(intime)
 
 ######################################################################################################
 #  command terug
@@ -381,9 +413,12 @@ class WhiteStar(Robin):
         help=(
             "Als je een schip verloren bent krijg je hiermee een seintje als je er weer in mag, "
             "dit is ook erg handig voor je mede spelers en de planners.\n"
-            "!terug <schip> terugkomtijd  notificatietijd\n\n"
-            "!terug {bs|ukkie|drone} uu:mm [uu:mm]\n\n"
-            "uu:mm is de tijd die in Hades staat, de terugkomtijd wordt uitgerekend "
+            "!terug <schip> terugkomtijd  notificatietijd\n"
+            "schiptype: bs of ukkie of drone\n"
+            "tijdnotatie (zowel terugkom als notificatietijd):\n"
+            " - XX:YY   uren en minuten worden bij de huidige tijd opgeteld (als je een schip kwijtraakt bv)\n"
+            " - XX:YYu is de tijd zoals op de klok, handig voor een notificatietijd, corrigeert voor de dag\n"
+            " - XX.Y    uren en 10en van uren, wordt omgerekend naar minuten (de tijd zoals in TM)\n"
             "Als je een terugkomtijd (ook uren en minuten) dan krijg je op dat moment een notificatie"),
         brief="Meld de terugkomtijd van je schip aan.",
     )
@@ -407,33 +442,32 @@ class WhiteStar(Robin):
 
         shiptype = args[0].lower()
         returntime = args[1]
-        now = datetime.datetime.now()
         ws = None
         for wslist in ['ws1', 'ws2']:
             if usermap['Id'] in self._rolemembers(ctx, wslist):
                 ws = wslist
-        if shiptype in ['bs', 'ukkie', 'drone']:
-            query = "select * from  WSReturn where Id=? and Shiptype=? "
-            cur.execute(query, [usermap['Id'], shiptype])
-            conn.commit()
-            if len(cur.fetchall()) > 0:
-                query = "delete from WSReturn where Id=? and Shiptype=? "
-                cur.execute(query, [usermap['Id'], shiptype])
-                conn.commit()
-            try:
-                (hours, minutes) = notificationtime.split(':')
-                notificationtime = now + datetime.timedelta(hours=int(hours), minutes=int(minutes))
 
-                (hours, minutes) = returntime.split(':')
-                returntime = now + datetime.timedelta(hours=int(hours), minutes=int(minutes))
-                returntime = returntime.strftime("%Y-%m-%d %H:%M")
-                notificationtime = notificationtime.strftime("%Y-%m-%d %H:%M")
-                query = "insert into WSReturn (Id, WS, Shiptype, ReturnTime, NotificationTime) values (?, ?, ?, ?, ?) "
-                cur.execute(query, [usermap['Id'], ws, shiptype, returntime, notificationtime])
-                conn.commit()
-            except Exception as e:
-                logger.info(f"taskscheduler failed {e}: __{' '.join(args)}")
-                await ctx.send_help(ctx.command)
+        if shiptype in ['bs', 'ukkie', 'drone']:
+            query = "select * from  WSReturn where Id=? and Shiptype=?"
+            cur.execute(query, [usermap['Id'], shiptype])
+            if len(cur.fetchall()) > 0:
+                query = "delete from WSReturn where Id=? and Shiptype=?"
+                cur.execute(query, [usermap['Id'], shiptype])
+        else:
+            # wrong shiptype, send help!
+            await ctx.send_help(ctx.command)
+            return None
+
+        try:
+            notificationtime = self._normalize_time(notificationtime)
+            returntime = self._normalize_time(returntime)
+            query = "insert into WSReturn (Id, WS, Shiptype, ReturnTime, NotificationTime) values (?, ?, ?, ?, ?) "
+            cur.execute(query, [usermap['Id'], ws, shiptype, returntime, notificationtime])
+            conn.commit()
+        except Exception as e:
+            logger.info(f"taskscheduler failed {e}: __{' '.join(args)}")
+            await ctx.send_help(ctx.command)
+
         await self._update_comeback_channel(comeback_channel[ws], ws)
         await self._feedback(ctx, msg=f"{usermap['discordalias']}, volgende keer hopelijk meer succes met je {shiptype}", delete_after=3, delete_message=True)
 
