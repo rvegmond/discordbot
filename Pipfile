@@ -16,6 +16,8 @@ pytest = "*"
 typing-extensions = "*"
 pylint = "*"
 pytest-asyncio = "*"
+mock = "*"
+pytest-mock = "*"
 
 [requires]
 python_version = "3"

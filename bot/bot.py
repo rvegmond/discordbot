@@ -5,14 +5,11 @@ import discord
 from discord.ext import commands
 from loguru import logger
 from modules import whitestar, ping, roles
-# import debugpy
-# debugpy.listen(("localhost", 5678))
 
-DB_FILE = 'data/hades.db'
+DB_FILE = '../data/hades.db'
 
 ___VERSION___ = "[v1.1.1]"
 
-# logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 config = {
     "handlers": [
         {"sink": sys.stdout,
