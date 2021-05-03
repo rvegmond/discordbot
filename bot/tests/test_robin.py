@@ -17,15 +17,24 @@ def test_sanitize():
 @pytest.mark.asyncio
 async def test_feedback():
     robin = Robin()
-    res = await robin._feedback(msg='Dit is een teststring')
+    ctx = AsyncMock()
+    res = await robin._feedback(ctx=ctx, msg='Dit is een teststring')
     assert res == 'feedback sent successful'
 
 
 @pytest.mark.asyncio
-async def test_feedback_ctx():
+async def test_feedback_delete_message_success():
     robin = Robin()
     ctx = AsyncMock()
-    res = await robin._feedback(ctx, msg='Dit is een teststring')
+    res = await robin._feedback(ctx=ctx, msg='Dit is een teststring', delete_message=7)
+    assert res == "Invallid option for delete_message 7"
+
+
+@pytest.mark.asyncio
+async def test_feedback_delete_message_fail():
+    robin = Robin()
+    ctx = AsyncMock()
+    res = await robin._feedback(ctx=ctx, msg='Dit is een teststring', delete_message=True)
     assert res == 'feedback sent successful'
 
 
@@ -33,7 +42,7 @@ async def test_feedback_ctx():
 async def test_feedback_delete():
     robin = Robin()
     ctx = AsyncMock()
-    res = await robin._feedback(ctx, msg='Dit is een teststring', delete_after=4)
+    res = await robin._feedback(ctx=ctx, msg='Dit is een teststring', delete_after=4)
     assert res == 'feedback sent successful'
 
 
