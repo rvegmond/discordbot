@@ -21,6 +21,21 @@ async def test_feedback():
     res = await robin._feedback(ctx=ctx, msg='Dit is een teststring')
     assert res == 'feedback sent successful'
 
+@pytest.mark.asyncio
+async def test_feedback_no_ctx():
+    robin = Robin()
+    res = await robin._feedback(msg='Dit is een teststring')
+    assert res == 'context not spedified'
+
+
+@pytest.mark.asyncio
+async def test_feedback_delete_failed():
+    robin = Robin()
+    ctx = AsyncMock()
+    ctx.message.delete.side_effect = Exception('Boom!')
+    res = await robin._feedback(ctx=ctx, msg='Dit is een teststring', delete_message=True)
+    assert res == 'message deletion failed Boom!'
+
 
 @pytest.mark.asyncio
 async def test_feedback_delete_message_success():

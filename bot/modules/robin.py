@@ -41,7 +41,7 @@ class Robin(commands.Cog):
         return(msg_out)
 
     async def _feedback(self,
-                        ctx: commands.Context,
+                        ctx: commands.Context = None,
                         msg: str = '',
                         delete_after: int = None,
                         delete_message: bool = False
