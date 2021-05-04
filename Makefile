@@ -12,7 +12,7 @@ full_test: init ## deploy vpc stack
     --rm \
 	-e SONAR_HOST_URL="https://sonarcloud.io" \
     -e SONAR_LOGIN=${SONAR_TOKEN} \
-    -v "${PWD}:/usr/src" \
+    -v "${PWD}/bot:/usr/src" \
     sonarsource/sonar-scanner-cli
 
 .PHONY: test
