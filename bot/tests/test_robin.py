@@ -48,7 +48,7 @@ async def test_feedback_delete():
 
 def test_usermap():
     robin = Robin()
-    robin.conn = sqlite3.connect('tests/hades-test.db')
+    robin.conn = sqlite3.connect('bot/tests/hades-test.db')
     res = robin._getusermap(1)
     assert res['discordid'] == 'discordid1'
 

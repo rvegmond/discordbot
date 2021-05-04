@@ -7,7 +7,7 @@ help:
 
 .PHONY: full_test
 full_test: init ## deploy vpc stack
-	cd bot && pipenv run pytest --cov-report xml:tests/test-results/coverage.xml --cov
+	pipenv run pytest --cov-report xml:bot/tests/test-results/coverage.xml --cov
 	docker run \
     --rm \
 	-e SONAR_HOST_URL="https://sonarcloud.io" \
@@ -17,7 +17,7 @@ full_test: init ## deploy vpc stack
 
 .PHONY: test
 test: init ## deploy vpc stack
-	cd bot && pipenv run pytest 
+	pipenv run pytest 
 
 init: ## initializes the python environment
 	pipenv install --dev
