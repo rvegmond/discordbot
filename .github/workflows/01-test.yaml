@@ -21,7 +21,7 @@ jobs:
       - name: run test
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: make test
+        run: make full_test
 #      - name: run pytest
 #        run: pipenv run pytest --cov-report xml:test-results/coverage.xml --cov 
       # - name: cat coverage
