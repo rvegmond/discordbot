@@ -10,7 +10,10 @@ class Robin(commands.Cog):
         self.conn = conn
         logger.info(f"Class {type(self).__name__} initialized from Robin class")
 
-    def _sanitize(self, msg_in: str, maxlength=200) -> str:
+    def _sanitize(self,
+                  msg_in: str,
+                  maxlength: int = 200
+                  ) -> str:
         """
         Sanitize the message in, remove forbidden characters.
         Truncate the message at maxlength (last bit will be replace with truncated)
