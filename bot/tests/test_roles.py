@@ -6,6 +6,7 @@ from mock.mock import patch
 
 
 def test_get_roles():
+    self = MagicMock()
     roles = Roles()
     req_role = "testrole"
     role = MagicMock()

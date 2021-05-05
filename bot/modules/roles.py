@@ -25,7 +25,7 @@ class Roles(Robin):
         hidden="True"
     )
     async def get_roles(self, ctx):
-        msg = _get_roles(ctx)
+        msg = self._get_roles(ctx)
         await self._feedback(ctx, msg)
 
     async def in_role(self, ctx, req_role: str):
