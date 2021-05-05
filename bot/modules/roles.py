@@ -10,21 +10,23 @@ from discord.utils import get
 
 class Roles(Robin):
 
-    # @commands.command(
-    #     name="get_roles",
-    #     help="Geeft een overzicht van alle rollen in de guild terug.",
-    #     brief="Geeft een overzicht van alle rollen in de guild terug.",
-    #     hidden="True"
-    # )
-    async def get_roles(self, ctx):
+    def _get_roles(self, ctx):
         g = ctx.guild
         all_roles = g.roles
         msg = ''
         for role in all_roles:
             msg += f"role.name: {role.name}\n"
-        await ctx.send(f"{msg}")
-        logger.info(f"{msg}")
         return msg
+
+    @commands.command(
+        name="get_roles",
+        help="Geeft een overzicht van alle rollen in de guild terug.",
+        brief="Geeft een overzicht van alle rollen in de guild terug.",
+        hidden="True"
+    )
+    async def get_roles(self, ctx):
+        msg = _get_roles(ctx)
+        await self._feedback(ctx, msg)
 
     async def in_role(self, ctx, req_role: str):
         for role in ctx.author.roles:
