@@ -444,7 +444,7 @@ class WhiteStar(Robin):
         returntime = args[1]
         ws = None
         for wslist in ['ws1', 'ws2']:
-            if usermap['Id'] in self._rolemembers(ctx, wslist):
+            if usermap['Id'] in Roles._rolemembers(ctx, wslist):
                 ws = wslist
 
         if shiptype in ['bs', 'ukkie', 'drone']:

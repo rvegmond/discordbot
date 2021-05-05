@@ -86,15 +86,3 @@ class Robin(commands.Cog):
         row = cur.fetchone()
         usermap = {'Id': row[0], 'discordid': row[1], 'discordalias': row[2], 'gsheetalias': row[3]}
         return(usermap)
-
-    # @commands.command()
-    def _rolemembers(self, ctx, *args):  # Always same role, no input needed
-        guild = ctx.guild
-        role_name = args[0]
-        role_id = get(guild.roles, name=role_name)
-
-        members = []
-        x = role_id.members
-        for t in x:
-            members.append(t.id)
-        return members

@@ -2,6 +2,7 @@ from modules.robin import Robin
 import pytest
 import sqlite3
 from mock import MagicMock, Mock, patch, AsyncMock
+from discord.utils import get
 
 
 def test_sanitize():
@@ -20,6 +21,7 @@ async def test_feedback():
     ctx = AsyncMock()
     res = await robin._feedback(ctx=ctx, msg='Dit is een teststring')
     assert res == 'feedback sent successful'
+
 
 @pytest.mark.asyncio
 async def test_feedback_no_ctx():
@@ -66,11 +68,3 @@ def test_usermap():
     robin.conn = sqlite3.connect('bot/tests/hades-test.db')
     res = robin._getusermap(1)
     assert res['discordid'] == 'discordid1'
-
-
-# def test_usermap_mockdb():
-#     robin = Robin()
-#     robin.conn = MagicMock()
-#     robin.conn.cursor().return_value.fetchone().return_value = ('1', 'discordid', 'discordalias', 'gsheetalias',)
-#     res = robin._getusermap('1')
-#     assert res['discordid'] == 'discordid'

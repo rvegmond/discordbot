@@ -12,13 +12,13 @@ class Roles(Robin):
 
     @commands.command(
         name="get_roles",
-        help=("Met het status commando update je status in het status kanaal,"
-              " hiermee help je je mede ws-ers op de hoogte te houden hoe snel je kunt reageren."),
+        help=("Geeft een overzicht van alle rollen in de guild terug."),
         brief="Hiermee update je je status in het status kanaal",
         hidden="True"
     )
     async def get_roles(self, ctx, *args):
-        g: discord.Guild = ctx.guild
+        # g: discord.Guild = ctx.guild
+        g = ctx.guild
 
         all_roles = await g.fetch_roles()
         msg = ''
@@ -32,3 +32,15 @@ class Roles(Robin):
             if role.name == req_role:
                 return True
         return False
+
+    # @commands.command()
+    def _rolemembers(self, ctx, *args):  # Always same role, no input needed
+        guild = ctx.guild
+        role_name = args[0]
+        role_id = get(guild.roles, name=role_name)
+
+        members = []
+        x = role_id.members
+        for t in x:
+            members.append(t.id)
+        return members
