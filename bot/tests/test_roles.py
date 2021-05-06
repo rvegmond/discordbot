@@ -5,7 +5,7 @@ from modules.roles import Roles
 from mock.mock import patch
 
 
-def test_get_roles():
+def test_get_all_roles():
     self = MagicMock()
     roles = Roles()
     req_role = "testrole"
@@ -13,7 +13,7 @@ def test_get_roles():
     role.name = req_role
     ctx = MagicMock()
     ctx.guild.roles = [role]
-    res = roles._get_roles(ctx)
+    res = roles._get_all_roles(ctx)
     assert res == "role.name: testrole\n"
 
 
