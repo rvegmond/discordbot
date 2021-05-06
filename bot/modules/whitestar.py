@@ -503,3 +503,17 @@ class WhiteStar(Robin):
             for row in result:
                 await ws_channel[row[1]].send(f"<@{row[0]}>, je {row[2]} mag weer de ws in, succes!")
                 await self._update_comeback_channel(comeback_channel[row[1]], row[1])
+
+    def dummy(self, ctx, *args):
+        conn = self.conn
+        query = (
+            "select Id "
+            "from WSReturn "
+        )
+        cur = conn.cursor()
+        cur.execute(query)
+        msg = []
+        result = cur.fetchall()
+        for row in result:
+            msg += f"{row[0]}\n"
+        return result
