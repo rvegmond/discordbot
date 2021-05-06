@@ -1,7 +1,7 @@
 import unittest
 import pytest
 from mock import MagicMock
-from modules.whitestar import WhiteStar
+from bot.modules.whitestar import WhiteStar
 import datetime 
 
 bot = MagicMock()
