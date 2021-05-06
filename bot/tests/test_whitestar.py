@@ -7,11 +7,29 @@ import datetime
 bot = MagicMock()
 
 
-def test_normalize_time():
+def test_normalize_time_colon():
     whitestar = WhiteStar(bot)
     now = datetime.datetime.now()
-    time = whitestar._normalize_time("18:00")
-    res_time = now + datetime.timedelta(hours=18)
+    time = whitestar._normalize_time("18:30")
+    res_time = now + datetime.timedelta(hours=18, minutes=30)
+    res_time = res_time.strftime("%Y-%m-%d %H:%M")
+    assert time == res_time
+
+
+def test_normalize_time_dot():
+    whitestar = WhiteStar(bot)
+    now = datetime.datetime.now()
+    time = whitestar._normalize_time("18.5")
+    res_time = now + datetime.timedelta(hours=18, minutes=30)
+    res_time = res_time.strftime("%Y-%m-%d %H:%M")
+    assert time == res_time
+
+
+def test_normalize_time_u():
+    whitestar = WhiteStar(bot)
+    now = datetime.datetime.now()
+    time = whitestar._normalize_time("18:30u")
+    res_time = datetime.datetime(now.year, now.month, now.day, int(18), int(30), 0)
     res_time = res_time.strftime("%Y-%m-%d %H:%M")
     assert time == res_time
 
