@@ -381,7 +381,18 @@ class WhiteStar(Robin):
 #  _normalize_time
 ######################################################################################################
 
-    def _normalize_time(self, intime):
+    def _normalize_time(self,
+                        intime: str
+                        ) -> str:
+        """
+        Translate the intime to a normal "clock" time.
+        The input can be hours from now, clock time or hours + hours/10
+
+        paramters:
+            intime:     The time to normalize 
+        Output:
+            intime:     The normalized time 
+        """
         now = datetime.datetime.now()
 
         if 'u' in intime:
