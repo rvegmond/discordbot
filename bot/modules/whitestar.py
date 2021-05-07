@@ -5,7 +5,8 @@ from discord.ext import commands, tasks
 from loguru import logger
 from .robin import Robin
 from .roles import Roles
-
+import locale
+locale.setlocale(locale.LC_ALL, "nl_NL")
 
 class WhiteStar(Robin):
     def __init__(self, bot, conn=None):
@@ -67,6 +68,11 @@ class WhiteStar(Robin):
                 "on um.Id=tw.Id "
                 "left join Status s "
                 "on s.Id=um.Id "
+            )
+            msg = (
+                "In dit kanaal staat een overzicht hoe snel de verwachte reactietijd van je mede ws teamgenoten is\n"
+                f"Je update je beschikbaarheid status met  **`{bot.command_prefix}status <bereikbaarheid>`** "
+                "Houdt je bericht duidelijk, kort en bondig (max 100 tekens)"
             )
             try:
                 cur.execute(query)
@@ -356,6 +362,7 @@ class WhiteStar(Robin):
 
     async def _update_comeback_channel(self, comeback_channel, ws):
         conn = self.conn
+        bot = self.bot
         cur = conn.cursor()
         query = (
             "select um.DiscordAlias, ShipType, ReturnTime, NotificationTime "
@@ -368,13 +375,26 @@ class WhiteStar(Robin):
         cur.execute(query, [ws])
         result = cur.fetchall()
         await comeback_channel.purge(limit=100)
-        msg = "**Speler    Schip    TerugTijd     NotificatieTijd**\n"
+        msg = (
+            f"In dit kanaal komt het overzicht wanneer je schip weer de ws in mag, dit kanaal is specifiek voor {ws}\n"
+            f"Met **`{bot.command_prefix}terug <schip> <terugkomtijd>`** geef je aan wanneer je schip weer terug de ws in mag."
+            "Het schip kan zijn *bs*, *ukkie* of *drone*. Voor de terugkomtijd kun je in twee formaten weergeven:\n"
+            " **uu:mm**  - dit geeft de tijd vanaf nu, dit is voor een ukkie of een bs of\n"
+            " **uu.t**   - dit is de tijd waarin t tienden van een uur zijn, dit is voor terugkomst van een drone.\n\n"
+            "Het is ook om een notificatietijd mee te geven, dit is dan de derde parameter. Dit is de tijd op de klok wanneer je de notificatie wilt ontvangen. "
+            "Als je deze niet meegeeft krijg je en notifiatie op het moment dat je schip de ws weer in mag. "
+            "Notificatietijd is in UU:MM, Robin houdt rekening met de dagwissel. Het commando is dan:\n"
+            " **`{bot.command_prefix}terug <schip> <terugkomtijd> <notificatietid>`** , bijvoorbeeld:\n"
+            f"`{bot.command_prefix}terug bs 17:00 8:00` - ik kan over 17 uur vanaf nu weer een bs insturen maar wil morgen om 8:00 pas een notificatie.\n"
+            "\n\n"
+            "**Speler     Schip     TerugTijd     NotificatieTijd**\n"
+        )
 
         if len(result) > 0:
             for row in result:
                 returntime = datetime.datetime.strptime(row[2], "%Y-%m-%d %H:%M").strftime("%a %H:%M")
                 notificationtime = datetime.datetime.strptime(row[3], "%Y-%m-%d %H:%M").strftime("%a %H:%M")
-                msg += f"**{row[0]}**   {row[1]}   {returntime}   {notificationtime}\n"
+                msg += f"**{row[0]}**      {row[1]}          {returntime}       {notificationtime}\n"
         await comeback_channel.send(msg)
 
 ######################################################################################################
@@ -383,15 +403,7 @@ class WhiteStar(Robin):
 
     def _normalize_time(self, intime):
         now = datetime.datetime.now()
-
-        if 'u' in intime:
-            logger.info(f"found u {intime}")
-            (hours, minutes) = intime.replace('u', '').split(':')
-            intime = datetime.datetime(now.year, now.month, now.day, int(hours), int(minutes), 0)
-            if intime < now:
-                intime = intime + datetime.timedelta(days=1)
-            intime = intime.strftime("%Y-%m-%d %H:%M")
-        elif '.' in intime or ',' in intime:
+        if '.' in intime or ',' in intime:
             logger.info(f"found . {intime}")
             (hours, minutes) = intime.split('.')
             intime = now + datetime.timedelta(hours=int(hours), minutes=int(minutes) * 6)  # calc minutes
@@ -430,23 +442,24 @@ class WhiteStar(Robin):
 
         usermap = self._getusermap(int(ctx.author.id))
         cur = conn.cursor()
+        returntime = self._normalize_time(args[1])
 
         if len(args) == 2:
-            notificationtime = args[1]
+            notificationtime = self._normalize_time(args[1])
         elif len(args) == 3:
-            notificationtime = args[2]
+            now = datetime.datetime.now()
+            intime = args[2]
+            (hours, minutes) = intime.split(':')
+            intime = datetime.datetime(now.year, now.month, now.day, int(hours), int(minutes), 0)
+            if intime < now:
+                intime = intime + datetime.timedelta(days=1)
+            notificationtime = intime.strftime("%Y-%m-%d %H:%M")
         else:
             # send help!
             await ctx.send_help(ctx.command)
             return None
 
         shiptype = args[0].lower()
-        returntime = args[1]
-        ws = None
-        for wslist in ['ws1', 'ws2']:
-            if usermap['Id'] in self._rolemembers(ctx, wslist):
-                ws = wslist
-
         if shiptype in ['bs', 'ukkie', 'drone']:
             query = "select * from  WSReturn where Id=? and Shiptype=?"
             cur.execute(query, [usermap['Id'], shiptype])
@@ -458,18 +471,23 @@ class WhiteStar(Robin):
             await ctx.send_help(ctx.command)
             return None
 
+        ws = None
+        for wslist in ['ws1', 'ws2']:
+            if usermap['Id'] in self._rolemembers(ctx, wslist):
+                ws = wslist
         try:
-            notificationtime = self._normalize_time(notificationtime)
-            returntime = self._normalize_time(returntime)
             query = "insert into WSReturn (Id, WS, Shiptype, ReturnTime, NotificationTime) values (?, ?, ?, ?, ?) "
             cur.execute(query, [usermap['Id'], ws, shiptype, returntime, notificationtime])
             conn.commit()
         except Exception as e:
-            logger.info(f"taskscheduler failed {e}: __{' '.join(args)}")
+            logger.info(f"insert failed {e}: __{' '.join(args)}")
             await ctx.send_help(ctx.command)
 
         await self._update_comeback_channel(comeback_channel[ws], ws)
-        await self._feedback(ctx, msg=f"{usermap['discordalias']}, volgende keer hopelijk meer succes met je {shiptype}", delete_after=3, delete_message=True)
+        if shiptype == 'drone':
+            await self._feedback(ctx, msg=f"{usermap['discordalias']}, succes met ophalen van relics, straks snel weer een nieuwe drone", delete_after=3, delete_message=True)
+        else:
+            await self._feedback(ctx, msg=f"Helaas, {usermap['discordalias']}, hopelijk volgende keer meer succes met je {shiptype}", delete_after=3, delete_message=True)
 
     @tasks.loop(minutes=1)
     async def return_scheduler(self):
