@@ -395,18 +395,13 @@ class WhiteStar(Robin):
             for row in result:
                 returntime = datetime.datetime.strptime(row[2], "%Y-%m-%d %H:%M").strftime("%a %H:%M")
                 notificationtime = datetime.datetime.strptime(row[3], "%Y-%m-%d %H:%M").strftime("%a %H:%M")
-<<<<<<< HEAD
-                msg += f"**{row[0]}**   {row[1]}   {returntime}   {notificationtime}\n"
-=======
                 msg += f"**{row[0]}**      {row[1]}          {returntime}       {notificationtime}\n"
->>>>>>> 6d1f152eb82403db8e653a033b5c1e164e5b835e
         await comeback_channel.send(msg)
 
 ######################################################################################################
 #  _normalize_time
 ######################################################################################################
 
-<<<<<<< HEAD
     def _normalize_time(self,
                         intime: str
                         ) -> str:
@@ -420,20 +415,7 @@ class WhiteStar(Robin):
             intime:     The normalized time 
         """
         now = datetime.datetime.now()
-
-        if 'u' in intime:
-            logger.info(f"found u {intime}")
-            (hours, minutes) = intime.replace('u', '').split(':')
-            intime = datetime.datetime(now.year, now.month, now.day, int(hours), int(minutes), 0)
-            if intime < now:
-                intime = intime + datetime.timedelta(days=1)
-            intime = intime.strftime("%Y-%m-%d %H:%M")
-        elif '.' in intime or ',' in intime:
-=======
-    def _normalize_time(self, intime):
-        now = datetime.datetime.now()
         if '.' in intime or ',' in intime:
->>>>>>> 6d1f152eb82403db8e653a033b5c1e164e5b835e
             logger.info(f"found . {intime}")
             (hours, minutes) = intime.split('.')
             intime = now + datetime.timedelta(hours=int(hours), minutes=int(minutes) * 6)  # calc minutes
@@ -490,9 +472,6 @@ class WhiteStar(Robin):
             return None
 
         shiptype = args[0].lower()
-<<<<<<< HEAD
-        returntime = args[1]
-=======
         if shiptype in ['bs', 'ukkie', 'drone']:
             query = "select * from  WSReturn where Id=? and Shiptype=?"
             cur.execute(query, [usermap['Id'], shiptype])
@@ -504,39 +483,16 @@ class WhiteStar(Robin):
             await ctx.send_help(ctx.command)
             return None
 
->>>>>>> 6d1f152eb82403db8e653a033b5c1e164e5b835e
         ws = None
         for wslist in ['ws1', 'ws2']:
             if usermap['Id'] in Roles._rolemembers(self, ctx=ctx, role_name=wslist):
                 ws = wslist
-<<<<<<< HEAD
-
-        if shiptype in ['bs', 'ukkie', 'drone']:
-            query = "select * from  WSReturn where Id=? and Shiptype=?"
-            cur.execute(query, [usermap['Id'], shiptype])
-            if len(cur.fetchall()) > 0:
-                query = "delete from WSReturn where Id=? and Shiptype=?"
-                cur.execute(query, [usermap['Id'], shiptype])
-        else:
-            # wrong shiptype, send help!
-            await ctx.send_help(ctx.command)
-            return None
-
         try:
-            notificationtime = self._normalize_time(notificationtime)
-            returntime = self._normalize_time(returntime)
-=======
-        try:
->>>>>>> 6d1f152eb82403db8e653a033b5c1e164e5b835e
             query = "insert into WSReturn (Id, WS, Shiptype, ReturnTime, NotificationTime) values (?, ?, ?, ?, ?) "
             cur.execute(query, [usermap['Id'], ws, shiptype, returntime, notificationtime])
             conn.commit()
         except Exception as e:
-<<<<<<< HEAD
-            logger.info(f"taskscheduler failed {e}: __{' '.join(args)}")
-=======
             logger.info(f"insert failed {e}: __{' '.join(args)}")
->>>>>>> 6d1f152eb82403db8e653a033b5c1e164e5b835e
             await ctx.send_help(ctx.command)
 
         await self._update_comeback_channel(comeback_channel[ws], ws)
