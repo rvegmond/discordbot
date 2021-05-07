@@ -6,7 +6,7 @@ from loguru import logger
 from .robin import Robin
 from .roles import Roles
 import locale
-locale.setlocale(locale.LC_ALL, "nl_NL.utf8")
+locale.setlocale(locale.LC_ALL, "nl_NL.UTF-8")
 
 
 class WhiteStar(Robin):

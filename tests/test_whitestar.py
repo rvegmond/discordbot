@@ -4,7 +4,6 @@ from mock import AsyncMock, MagicMock
 from bot.modules.whitestar import WhiteStar
 import datetime
 from mock.mock import patch
-
 bot = MagicMock()
 
 
