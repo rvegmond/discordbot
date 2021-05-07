@@ -384,7 +384,7 @@ class WhiteStar(Robin):
             "Het is ook om een notificatietijd mee te geven, dit is dan de derde parameter. Dit is de tijd op de klok wanneer je de notificatie wilt ontvangen. "
             "Als je deze niet meegeeft krijg je en notifiatie op het moment dat je schip de ws weer in mag. "
             "Notificatietijd is in UU:MM, Robin houdt rekening met de dagwissel. Het commando is dan:\n"
-            " **`{bot.command_prefix}terug <schip> <terugkomtijd> <notificatietid>`** , bijvoorbeeld:\n"
+            f" **`{bot.command_prefix}terug <schip> <terugkomtijd> <notificatietid>`** , bijvoorbeeld:\n"
             f"`{bot.command_prefix}terug bs 17:00 8:00` - ik kan over 17 uur vanaf nu weer een bs insturen maar wil morgen om 8:00 pas een notificatie.\n"
             "\n\n"
             "**Speler     Schip     TerugTijd     NotificatieTijd**\n"
