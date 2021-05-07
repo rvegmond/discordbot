@@ -26,17 +26,6 @@ def test_normalize_time_dot():
     assert time == res_time
 
 
-def test_normalize_time_u():
-    whitestar = WhiteStar(bot)
-    now = datetime.datetime.now()
-    time = whitestar._normalize_time("18:30u")
-    res_time = datetime.datetime(now.year, now.month, now.day, int(18), int(30), 0)
-    if res_time < now:
-        res_time = res_time + datetime.timedelta(days=1)
-    res_time = res_time.strftime("%Y-%m-%d %H:%M")
-    assert time == res_time
-
-
 # @pytest.mark.asyncio
 # async def test_update_comeback_channel():
 #     whitestar = WhiteStar(bot)
