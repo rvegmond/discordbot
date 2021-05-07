@@ -20,7 +20,7 @@ jobs:
         run: locale -a
       - name: SetLocale
         run: |
-          sudo apt-get update && sudo apt-get install tzdata locales -y
+          sudo apt-get update && sudo apt-get install tzdata locales -y && sudo locale-gen nl_NL.utf8
       - name: locale post
         run: locale -a
       - name: install prereq
