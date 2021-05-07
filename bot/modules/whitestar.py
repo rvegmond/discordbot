@@ -48,7 +48,11 @@ class WhiteStar(Robin):
         conn.commit()
 
         await channel.purge(limit=100)
-        msg = ''
+        msg = (
+            "In dit kanaal staat een overzicht hoe snel de verwachte reactietijd van je mede ws teamgenoten is\n"
+            f"Je update je beschikbaarheid status met  **`{bot.command_prefix}status <bereikbaarheid>`** "
+            "Houdt je bericht duidelijk, kort en bondig (max 100 tekens)"
+        )
         for i in ("ws1", "ws2"):
             msg += f"**{i.upper()}**\n"
 
@@ -69,11 +73,7 @@ class WhiteStar(Robin):
                 "left join Status s "
                 "on s.Id=um.Id "
             )
-            msg = (
-                "In dit kanaal staat een overzicht hoe snel de verwachte reactietijd van je mede ws teamgenoten is\n"
-                f"Je update je beschikbaarheid status met  **`{bot.command_prefix}status <bereikbaarheid>`** "
-                "Houdt je bericht duidelijk, kort en bondig (max 100 tekens)"
-            )
+
             try:
                 cur.execute(query)
                 for row in cur.fetchall():
