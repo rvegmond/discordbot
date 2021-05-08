@@ -10,6 +10,25 @@ from discord.utils import get
 
 class Roles(Robin):
 
+    @commands.command(
+        name="get_all_roles",
+        help="Geeft een overzicht van alle rollen in de guild terug.",
+        brief="Geeft een overzicht van alle rollen in de guild terug.",
+        hidden="True"
+    )
+    def all_roles(self,
+                  ctx: commands.Context
+                  ) -> str:
+        """
+        Get a list of all roles in the guild, lined up.
+        """
+        g = ctx.guild
+        all_roles = g.roles
+        msg = ''
+        for role in all_roles:
+            msg += f"role.name: {role.name}\n"
+        logger.info("msg: {msg}")
+
     def _get_all_roles(self,
                        ctx: commands.Context
                        ) -> str:
