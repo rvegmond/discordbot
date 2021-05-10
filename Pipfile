@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 loguru = "*"
 discord = {py = "*"}
+pylint = "*"
 
 [dev-packages]
 loguru = "*"

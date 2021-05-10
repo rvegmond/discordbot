@@ -17,4 +17,5 @@ class Ping(Robin):
         brief="Commando om te zien of de bot nog leeft.",
     )
     async def ping(self, ctx):
-        await self._ping(ctx)
+        await self._feedback(ctx, msg="pong")
+#        await self._ping(ctx)
