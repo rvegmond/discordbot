@@ -2,18 +2,6 @@ import unittest
 import pytest
 from mock import AsyncMock, MagicMock
 from mock.mock import patch
-
-# def mock_decorator():
-#     def decorator(f):
-#         @wraps(f)
-#         def decorated_function(*args, **kwargs):
-#             return f(*args, **kwargs)
-#         return decorated_function
-#     return decorator
-
-
-# patch('discord.ext.commands.command', mock_decorator).start()
-# # !important thing - import of app after patch()
 from bot.modules.roles import Roles
 
 # @pytest.mark.asyncio

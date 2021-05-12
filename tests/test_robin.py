@@ -1,16 +1,8 @@
 import pytest
 import sqlite3
 from mock import MagicMock, Mock, patch, AsyncMock
-from discord.utils import get
-# def mock_decorator():
-#     def decorator(f):
-#         @wraps(f)
-#         def decorated_function(*args, **kwargs):
-#             return f(*args, **kwargs)
-#         return decorated_function
-#     return decorator
-# patch('discord.ext.commands.command', mock_decorator).start()
 from bot.modules.robin import Robin
+
 
 def test_sanitize():
     robin = Robin()
