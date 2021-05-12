@@ -25,9 +25,9 @@ class WhiteStar(Robin):
         self.conn = conn
         self.return_scheduler.start()
         logger.info(f"Class {type(self).__name__} initialized ")
-######################################################################################################
+###################################################################################################
 #  command status
-######################################################################################################
+###################################################################################################
 
     @commands.command(
         name="status",
@@ -126,9 +126,9 @@ class WhiteStar(Robin):
             logger.info(f"message deletion failed {e}")
         conn.commit()
 
-######################################################################################################
+###################################################################################################
 #  function update_ws_inschrijvingen_tabel
-######################################################################################################
+###################################################################################################
 
     async def update_ws_inschrijvingen_tabel(self, ctx, wslist_channel):
         conn = self.conn
@@ -190,9 +190,9 @@ class WhiteStar(Robin):
                 await message.delete()
         await wslist_channel.send(msg)
 
-######################################################################################################
+###################################################################################################
 #  command ws  (inschrijvingen)
-######################################################################################################
+###################################################################################################
 
     @commands.command(
         name="ws",
@@ -231,7 +231,9 @@ class WhiteStar(Robin):
         ws_role = ctx.guild.get_role(int(os.getenv("WS_ROLE")))
 
         if ctx.channel != wsin_channel:
-            await ctx.send(content=f"{usermap['discordalias']}, je kunt alleen in kanaal <#{wsin_channel_id}> inschrijven, je bent nu nog **niet** ingeschreven!", delete_after=5)
+            await ctx.send(content=(
+                f"{usermap['discordalias']}, je kunt alleen in kanaal <#{wsin_channel_id}> "
+                f"inschrijven, je bent nu nog **niet** ingeschreven!"), delete_after=5)
             try:
                 await ctx.message.delete()
             except Exception as e:
@@ -256,7 +258,10 @@ class WhiteStar(Robin):
                 )
                 cur.execute(query, [usermap['Id']])
                 if len(cur.fetchall()) == 0:
-                    await ctx.send(content=f"{usermap['discordalias']}, je stond nog niet ingeschreven voor de volgende ws", delete_after=3)
+                    await ctx.send(
+                        content=f"{usermap['discordalias']}, je stond nog niet ingeschreven voor de volgende ws",
+                        delete_after=3
+                    )
                 else:
                     query = (
                         "delete from WSinschrijvingen "
@@ -266,7 +271,10 @@ class WhiteStar(Robin):
 
                     cur.execute(query, [usermap['Id']])
                     conn.commit()
-                    await ctx.send(content=f"Helaas, {usermap['discordalias']} je doet niet meer mee met de volgende ws", delete_after=1)
+                    await ctx.send(
+                        content=f"Helaas, {usermap['discordalias']} je doet niet meer mee met de volgende ws",
+                        delete_after=1
+                    )
                     await self.update_ws_inschrijvingen_tabel(ctx, wslist_channel)
 
                     async for message in wsin_channel.history(limit=50):
@@ -295,11 +303,12 @@ class WhiteStar(Robin):
                         f"{ws_role.mention}, De WS inschrijving is geopend\n"
                         "Met `!ws plan` of `!ws p` schrijf je je in als planner en speler\n"
                         "Met `!ws in` of `!ws i` schrijf je je in als speler\n"
-                        f"Inschrijven kan alleen in {wsin_channel.mention}, het overzicht van de inschrijvingen komt in {wslist_channel.mention}"
+                        f"Inschrijven kan alleen in {wsin_channel.mention}, het overzicht van de "
+                        f"inschrijvingen komt in {wslist_channel.mention}, met 30 inschrijvingen worden er 2 wssen"
+                        " gestart maar er moeten dan wel minimaal **4 planners** zijn."
                         "\n"
-                        "met 30 inschrijvingen worden er 2 wssen gestart maar er moeten dan wel minimaal **4 planners** zijn."
-                        "\n"
-                        "Elke __**Dinsdag**__ worden de inschrijvingen geopend ongeacht of er nog wssen lopen tot uiterlijk __**Woensdag**__")
+                        "Elke __**Dinsdag**__ worden de inschrijvingen geopend "
+                        "ongeacht of er nog wssen lopen tot uiterlijk __**Woensdag**__")
                     await wsin_channel.purge(limit=100)
                     await wslist_channel.purge(limit=100)
                     await wsin_channel.set_permissions(ws_role, send_messages=True)
@@ -347,7 +356,10 @@ class WhiteStar(Robin):
                 )
                 cur.execute(query, [action, comment, usermap['Id']])
                 conn.commit()
-                await ctx.send(content=f"Gefeliciteerd, {usermap['discordalias']} je bent nu {action} voor de volgende ws", delete_after=3)
+                await ctx.send(
+                    content=f"Gefeliciteerd, {usermap['discordalias']} je bent nu {action} voor de volgende ws",
+                    delete_after=3
+                )
             else:
                 # not yet registerd, insert
                 query = (
@@ -356,7 +368,10 @@ class WhiteStar(Robin):
                 )
                 cur.execute(query, [usermap['Id'], action, comment])
                 conn.commit()
-                await ctx.send(content=f"Gefeliciteerd, {usermap['discordalias']} je bent nu {action} voor de volgende ws", delete_after=3)
+                await ctx.send(
+                    content=f"Gefeliciteerd, {usermap['discordalias']} je bent nu {action} voor de volgende ws",
+                    delete_after=3
+                )
         await self.update_ws_inschrijvingen_tabel(ctx, wslist_channel)
 
 ######################################################################################################
