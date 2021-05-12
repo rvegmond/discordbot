@@ -1,12 +1,19 @@
 import discord
 import os
 import datetime
+from datetime import date, timedelta
 from discord.ext import commands, tasks
 from loguru import logger
 from .robin import Robin
 from .roles import Roles
 import locale
-locale.setlocale(locale.LC_ALL, "nl_NL.utf8")
+
+try:
+    locale.setlocale(locale.LC_ALL, "nl_NL.utf8")  #required running on linux
+    logger.info("running on linux")
+except locale.Error:
+    locale.setlocale(locale.LC_ALL, "nl_NL.UTF-8")  #required when running on MAC
+    logger.info("running on mac")
 
 
 class WhiteStar(Robin):
@@ -43,17 +50,18 @@ class WhiteStar(Robin):
             logger.info(f"{usermap['discordalias']} doesn't have a previous status set..")
             return None
 
-        now = datetime.datetime.now().strftime("%d-%m-%Y")
+        now = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")
         query = f"insert into status (Id, LastUpdate, StatusText) values (?, ?, ?) "
         cur.execute(query, [usermap['Id'], now, statusupdate])
         conn.commit()
 
         await channel.purge(limit=100)
         msg = (
-            "In dit kanaal staat een overzicht hoe snel de verwachte reactietijd van je mede ws teamgenoten is\n"
-            f"Je update je beschikbaarheid status met  **`{bot.command_prefix}status <bereikbaarheid>`** "
-            "Houdt je bericht duidelijk, kort en bondig (max 100 tekens)\n\n\n"
+            "In dit kanaal staat een overzicht hoe snel de verwachte reactietijd van je mede ws teamgenoten is "
+            f"Je update je beschikbaarheid status met  **`{bot.command_prefix}status <bereikbaarheid>`**\n"
+            "Houdt je bericht duidelijk, kort en bondig (max 100 tekens)\n"
         )
+        msg += u"\u2063"
         await channel.send(msg)
         for i in ("ws1", "ws2"):
             msg = f"**{i.upper()}**\n"
@@ -61,13 +69,13 @@ class WhiteStar(Robin):
             cur.execute("delete from temp_ws ")
 
             query = "insert into temp_ws (Id) values (?) "
-            memberlist = self._rolemembers(ctx, i)
+            memberlist = Roles._rolemembers(self, ctx=ctx, role_name=i)
             for member in memberlist:
                 cur.execute(query, [member])
 
             query = (
                 "select um.DiscordAlias, "
-                "case when s.LastUpdate is null then '0-0-000' else s.LastUpdate end, "
+                "case when s.LastUpdate is null then '01-01-1970 00:00:00' else s.LastUpdate end, "
                 "case when s.StatusText is null then 'Geen status ingevuld' else s.StatusText end "
                 "from temp_ws tw "
                 "left join UserMap um "
@@ -79,8 +87,26 @@ class WhiteStar(Robin):
             try:
                 cur.execute(query)
                 for row in cur.fetchall():
-                    msg += f"**{row[0]}** - {row[1]} - {row[2]}\n"
-                msg += "\n"
+                    yesterday = datetime.datetime.now() - timedelta(hours=36)
+                    weekago = datetime.datetime.now() - timedelta(days=5)
+                    user = row[0]
+                    try:
+                        lastupdate = datetime.datetime.strptime(row[1], '%d-%m-%Y %H:%M:%S')
+                    except Exception as e:
+                        logger.info(f"Exception: {e}")
+                        lastupdate = datetime.datetime.strptime(row[1], '%d-%m-%Y')
+                    status = row[2]
+                    logger.info(f"lastupdate: {lastupdate}")
+                    logger.info(f"yesterday: {yesterday}")
+                    nicedate = lastupdate.strftime("%a %d/%m %H:%M")
+                    if lastupdate < weekago:
+                        msg += f"~~{user} - {nicedate} - {status}~~\n"
+                    elif lastupdate <= yesterday:
+                        msg += f"{user} - {nicedate} - {status}\n"
+                    else:
+                        msg += f"**{user} - {nicedate} - {status}**\n"
+
+                msg += u"\u2063"
             except Exception as e:
                 logger.info(f"error: {e}")
                 return None
