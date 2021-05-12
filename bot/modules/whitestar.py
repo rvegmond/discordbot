@@ -7,7 +7,13 @@ from loguru import logger
 from .robin import Robin
 from .roles import Roles
 import locale
-locale.setlocale(locale.LC_ALL, "nl_NL.UTF-8")
+
+try:
+    locale.setlocale(locale.LC_ALL, "nl_NL.utf8")  #required running on linux
+    logger.info("running on linux")
+except locale.Error:
+    locale.setlocale(locale.LC_ALL, "nl_NL.UTF-8")  #required when running on MAC
+    logger.info("running on mac")
 
 
 class WhiteStar(Robin):
@@ -81,8 +87,8 @@ class WhiteStar(Robin):
             try:
                 cur.execute(query)
                 for row in cur.fetchall():
-                    yesterday = datetime.datetime.now() - timedelta(days=1)
-                    weekago = datetime.datetime.now() - timedelta(days=7)
+                    yesterday = datetime.datetime.now() - timedelta(hours=36)
+                    weekago = datetime.datetime.now() - timedelta(days=5)
                     user = row[0]
                     try:
                         lastupdate = datetime.datetime.strptime(row[1], '%d-%m-%Y %H:%M:%S')
