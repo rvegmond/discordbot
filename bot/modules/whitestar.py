@@ -1,12 +1,13 @@
 import discord
 import os
 import datetime
+from datetime import date, timedelta
 from discord.ext import commands, tasks
 from loguru import logger
 from .robin import Robin
 from .roles import Roles
 import locale
-locale.setlocale(locale.LC_ALL, "nl_NL.utf8")
+locale.setlocale(locale.LC_ALL, "nl_NL.UTF-8")
 
 
 class WhiteStar(Robin):
@@ -43,7 +44,7 @@ class WhiteStar(Robin):
             logger.info(f"{usermap['discordalias']} doesn't have a previous status set..")
             return None
 
-        now = datetime.datetime.now().strftime("%d-%m-%Y")
+        now = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")
         query = f"insert into status (Id, LastUpdate, StatusText) values (?, ?, ?) "
         cur.execute(query, [usermap['Id'], now, statusupdate])
         conn.commit()
@@ -60,13 +61,13 @@ class WhiteStar(Robin):
             cur.execute("delete from temp_ws ")
 
             query = "insert into temp_ws (Id) values (?) "
-            memberlist = self._rolemembers(ctx, i)
+            memberlist = Roles._rolemembers(self, ctx=ctx, role_name=i)
             for member in memberlist:
                 cur.execute(query, [member])
 
             query = (
                 "select um.DiscordAlias, "
-                "case when s.LastUpdate is null then '0-0-000' else s.LastUpdate end, "
+                "case when s.LastUpdate is null then '01-01-1970 00:00:00' else s.LastUpdate end, "
                 "case when s.StatusText is null then 'Geen status ingevuld' else s.StatusText end "
                 "from temp_ws tw "
                 "left join UserMap um "
@@ -78,7 +79,24 @@ class WhiteStar(Robin):
             try:
                 cur.execute(query)
                 for row in cur.fetchall():
-                    msg += f"**{row[0]}** - {row[1]} - {row[2]}\n"
+                    yesterday = datetime.datetime.now() - timedelta(days=1)
+                    weekago = datetime.datetime.now() - timedelta(days=7)
+                    user = row[0]
+                    try:
+                        lastupdate = datetime.datetime.strptime(row[1], '%d-%m-%Y %H:%M:%S')
+                    except:
+                        lastupdate = datetime.datetime.strptime(row[1], '%d-%m-%Y')
+                    status = row[2]
+                    logger.info(f"lastupdate: {lastupdate}")
+                    logger.info(f"yesterday: {yesterday}")
+                    if lastupdate < weekago:
+                        msg += f"~~{user} - {lastupdate} - {status}~~\n"
+                    elif lastupdate <= yesterday:
+                        msg += f"_{user} - {lastupdate} - {status}_\n"
+                    else:
+                        msg += f"**{user}** - {lastupdate} - {status}\n"
+                        
+
                 msg += "\n"
             except Exception as e:
                 logger.info(f"error: {e}")
