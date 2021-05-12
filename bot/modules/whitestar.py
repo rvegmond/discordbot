@@ -51,10 +51,11 @@ class WhiteStar(Robin):
 
         await channel.purge(limit=100)
         msg = (
-            "In dit kanaal staat een overzicht hoe snel de verwachte reactietijd van je mede ws teamgenoten is\n"
-            f"Je update je beschikbaarheid status met  **`{bot.command_prefix}status <bereikbaarheid>`** "
-            "Houdt je bericht duidelijk, kort en bondig (max 100 tekens)\n\n\n"
+            "In dit kanaal staat een overzicht hoe snel de verwachte reactietijd van je mede ws teamgenoten is "
+            f"Je update je beschikbaarheid status met  **`{bot.command_prefix}status <bereikbaarheid>`**\n"
+            "Houdt je bericht duidelijk, kort en bondig (max 100 tekens)\n"
         )
+        msg += u"\u2063"
         await channel.send(msg)
         for i in ("ws1", "ws2"):
             msg = f"**{i.upper()}**\n"
@@ -85,20 +86,21 @@ class WhiteStar(Robin):
                     user = row[0]
                     try:
                         lastupdate = datetime.datetime.strptime(row[1], '%d-%m-%Y %H:%M:%S')
-                    except:
+                    except Exception as e:
+                        logger.info(f"Exception: {e}")
                         lastupdate = datetime.datetime.strptime(row[1], '%d-%m-%Y')
                     status = row[2]
                     logger.info(f"lastupdate: {lastupdate}")
                     logger.info(f"yesterday: {yesterday}")
+                    nicedate = lastupdate.strftime("%a %d/%m %H:%M")
                     if lastupdate < weekago:
-                        msg += f"~~{user} - {lastupdate} - {status}~~\n"
+                        msg += f"~~{user} - {nicedate} - {status}~~\n"
                     elif lastupdate <= yesterday:
-                        msg += f"_{user} - {lastupdate} - {status}_\n"
+                        msg += f"{user} - {nicedate} - {status}\n"
                     else:
-                        msg += f"**{user}** - {lastupdate} - {status}\n"
-                        
+                        msg += f"**{user} - {nicedate} - {status}**\n"
 
-                msg += "\n"
+                msg += u"\u2063"
             except Exception as e:
                 logger.info(f"error: {e}")
                 return None
