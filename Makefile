@@ -19,7 +19,7 @@ full_test: init ## deploy vpc stack
 .PHONY: test
 test: init ## deploy vpc stack
 	pipenv run pytest 
-	pylint bot/ tests/ -r n — msg-template='/path}:{line}: [{msg_id}({symbol}), {obj}] {msg}' | tee tests/test-results/pylint.txt
+	# pylint bot/ tests/ -r n — msg-template='/path}:{line}: [{msg_id}({symbol}), {obj}] {msg}' | tee tests/test-results/pylint.txt
 
 .PHONY: init
 init: ## initializes the python environment
