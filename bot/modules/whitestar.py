@@ -55,8 +55,9 @@ class WhiteStar(Robin):
             f"Je update je beschikbaarheid status met  **`{bot.command_prefix}status <bereikbaarheid>`** "
             "Houdt je bericht duidelijk, kort en bondig (max 100 tekens)\n\n\n"
         )
+        await channel.send(msg)
         for i in ("ws1", "ws2"):
-            msg += f"**{i.upper()}**\n"
+            msg = f"**{i.upper()}**\n"
 
             cur.execute("delete from temp_ws ")
 
@@ -102,7 +103,7 @@ class WhiteStar(Robin):
                 logger.info(f"error: {e}")
                 return None
             conn.commit()
-        await channel.send(msg)
+            await channel.send(msg)
         await ctx.send(content=f"Dank, {usermap['discordalias']} je ws-status is nu bijgewerkt", delete_after=3)
 
         try:
