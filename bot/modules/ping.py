@@ -6,9 +6,6 @@ from .robin import Robin
 
 class Ping(Robin):
 
-    async def _ping(self, ctx):
-        await self._feedback(ctx, msg="pong")
-
     @commands.command(
         name="ping",
         help=("Commando om te zien of de bot nog leeft."
@@ -18,4 +15,3 @@ class Ping(Robin):
     )
     async def ping(self, ctx):
         await self._feedback(ctx, msg="pong")
-#        await self._ping(ctx)

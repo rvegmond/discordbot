@@ -11,36 +11,6 @@ from discord.utils import get
 class Roles(Robin):
 
     @commands.command(
-        name="tza",
-        help="Geeft een overzicht van alle rollen in de guild terug.",
-        brief="Geeft een overzicht van alle rollen in de guild terug.",
-        hidden="True"
-    )
-    async def tza(self, ctx: commands.Context) -> str:
-        """
-        Get a list of all roles in the guild, lined up.
-        """
-        g = ctx.guild
-        all_roles = g.roles
-        msg = ''
-        for role in all_roles:
-            msg = f"role.name: {role.name}\n"
-        await self._feedback(ctx, msg)
-
-    def _get_all_roles(self,
-                       ctx: commands.Context
-                       ) -> str:
-        """
-        Get a list of all roles in the guild, lined up.
-        """
-        g = ctx.guild
-        all_roles = g.roles
-        msg = ''
-        for role in all_roles:
-            msg += f"role.name: {role.name}\n"
-        return msg
-
-    @commands.command(
         name="get_all_roles",
         help="Geeft een overzicht van alle rollen in de guild terug.",
         brief="Geeft een overzicht van alle rollen in de guild terug.",
@@ -52,8 +22,12 @@ class Roles(Robin):
         """
         Get a list of all roles in the guild, lined up. (wrapper function)
         """
-        msg = self._get_roles(ctx)
-        await self._feedback(ctx, msg)
+        g = ctx.guild
+        all_roles = g.roles
+        msg = ''
+        for role in all_roles:
+            msg += f"role.name: {role.name}\n"
+        await self._feedback(ctx, msg=msg)
 
     async def in_role(self,
                       ctx: commands.Context,

@@ -4,30 +4,18 @@ from mock import AsyncMock, MagicMock
 from mock.mock import patch
 from bot.modules.roles import Roles
 
-# @pytest.mark.asyncio
-# @patch('bot.modules.roles.Roles._feedback')
-# async def test_tza(mocked_feedback):
-#     self = AsyncMock()
-#     roles = Roles()
-#     req_role = "testrole"
-#     role = MagicMock()
-#     role.name = req_role
-#     ctx = AsyncMock()
-#     ctx.guild.roles = [role]
-#     await roles.tza(self, ctx)
-#     mocked_feedback.assert_called_once_with(ctx, msg='role.name: testrole fout\n')
 
-
-def test_get_all_roles():
-    self = MagicMock()
+@pytest.mark.asyncio
+@patch('bot.modules.roles.Roles._feedback')
+async def test_get_all_roles(mocked_feedback):
     roles = Roles()
-    req_role = "testrole"
+    ctx = AsyncMock()
     role = MagicMock()
+    req_role = "testrole"
     role.name = req_role
-    ctx = MagicMock()
     ctx.guild.roles = [role]
-    res = roles._get_all_roles(ctx)
-    assert res == "role.name: testrole\n"
+    await roles.get_all_roles(ctx)
+    mocked_feedback.assert_called_once_with(ctx, msg='role.name: testrole\n')
 
 
 @pytest.mark.asyncio

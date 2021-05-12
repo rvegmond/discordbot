@@ -8,7 +8,7 @@ help:
 .PHONY: full_test
 full_test: init ## deploy vpc stack
 	pipenv run pytest --cov-report xml:tests/test-results/coverage.xml --cov
-	pylint bot/ tests/ -r n — msg-template='/path}:{line}: [{msg_id}({symbol}), {obj}] {msg}' | tee tests/test-results/pylint.txt
+	pipenv run pylint bot/ tests/ -r n — msg-template='/path}:{line}: [{msg_id}({symbol}), {obj}] {msg}' | tee tests/test-results/pylint.txt
 	docker run \
     --rm \
 	-e SONAR_HOST_URL="https://sonarcloud.io" \
@@ -19,7 +19,7 @@ full_test: init ## deploy vpc stack
 .PHONY: test
 test: init ## deploy vpc stack
 	pipenv run pytest 
-	# pylint bot/ tests/ -r n — msg-template='/path}:{line}: [{msg_id}({symbol}), {obj}] {msg}' | tee tests/test-results/pylint.txt
+	pipenv run pylint bot/ tests/ -r n — msg-template='/path}:{line}: [{msg_id}({symbol}), {obj}] {msg}' | tee tests/test-results/pylint.txt
 
 .PHONY: init
 init: ## initializes the python environment
