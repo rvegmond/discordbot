@@ -118,7 +118,7 @@ class WhiteStar(Robin):
         await ctx.send(
             content=f"Dank, {usermap['discordalias']} je ws-status is nu bijgewerkt",
             delete_after=3
-            )
+        )
 
         try:
             await ctx.message.delete()
