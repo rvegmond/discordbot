@@ -10,7 +10,10 @@ class Robin(commands.Cog):
         self.conn = conn
         logger.info(f"Class {type(self).__name__} initialized from Robin class")
 
-    def _sanitize(self, msg_in: str, maxlength=200) -> str:
+    def _sanitize(self,
+                  msg_in: str,
+                  maxlength: int = 200
+                  ) -> str:
         """
         Sanitize the message in, remove forbidden characters.
         Truncate the message at maxlength (last bit will be replace with truncated)
@@ -37,7 +40,12 @@ class Robin(commands.Cog):
             msg_out = msg_out.replace(nogo, '_')
         return(msg_out)
 
-    async def _feedback(self, ctx=None, msg='', delete_after=None, delete_message=False) -> str:
+    async def _feedback(self,
+                        ctx: commands.Context = None,
+                        msg: str = '',
+                        delete_after: int = None,
+                        delete_message: bool = False
+                        ) -> str:
         """
         Send feedback to the user after a message is posted.
         The original message can be deleted.
@@ -48,14 +56,19 @@ class Robin(commands.Cog):
           delete_after:   how long to wait to delete the feedback message (default keep)
           delete_message: delete the original message (default keep)
         """
-        if ctx is not None:
-            await ctx.send(content=msg, delete_after=delete_after)
-            if delete_message:
-                try:
-                    await ctx.message.delete()
-                except Exception as e:
-                    logger.info(f"message deletion failed {e}")
-                    return f"message deletion failed {e}"
+        if delete_message is not True and delete_message is not False:
+            return f"Invallid option for delete_message {delete_message}"
+
+        if ctx is None:
+            return "context not spedified"
+
+        await ctx.send(content=msg, delete_after=delete_after)
+        if delete_message:
+            try:
+                await ctx.message.delete()
+            except Exception as e:
+                logger.info(f"message deletion failed {e}")
+                return f"message deletion failed {e}"
         return "feedback sent successful"
 
     def _getusermap(self, id):
@@ -73,15 +86,3 @@ class Robin(commands.Cog):
         row = cur.fetchone()
         usermap = {'Id': row[0], 'discordid': row[1], 'discordalias': row[2], 'gsheetalias': row[3]}
         return(usermap)
-
-    # @commands.command()
-    def _rolemembers(self, ctx, *args):  # Always same role, no input needed
-        guild = ctx.guild
-        role_name = args[0]
-        role_id = get(guild.roles, name=role_name)
-
-        members = []
-        x = role_id.members
-        for t in x:
-            members.append(t.id)
-        return members

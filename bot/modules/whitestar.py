@@ -6,7 +6,8 @@ from loguru import logger
 from .robin import Robin
 from .roles import Roles
 import locale
-locale.setlocale(locale.LC_ALL, "nl_NL")
+locale.setlocale(locale.LC_ALL, "nl_NL.utf8")
+
 
 class WhiteStar(Robin):
     def __init__(self, bot, conn=None):
@@ -402,7 +403,18 @@ class WhiteStar(Robin):
 #  _normalize_time
 ######################################################################################################
 
-    def _normalize_time(self, intime):
+    def _normalize_time(self,
+                        intime: str
+                        ) -> str:
+        """
+        Translate the intime to a normal "clock" time.
+        The input can be hours from now, clock time or hours + hours/10
+
+        paramters:
+            intime:     The time to normalize 
+        Output:
+            intime:     The normalized time 
+        """
         now = datetime.datetime.now()
         if '.' in intime or ',' in intime:
             logger.info(f"found . {intime}")
@@ -474,7 +486,7 @@ class WhiteStar(Robin):
 
         ws = None
         for wslist in ['ws1', 'ws2']:
-            if usermap['Id'] in self._rolemembers(ctx, wslist):
+            if usermap['Id'] in Roles._rolemembers(self, ctx=ctx, role_name=wslist):
                 ws = wslist
         try:
             query = "insert into WSReturn (Id, WS, Shiptype, ReturnTime, NotificationTime) values (?, ?, ?, ?, ?) "
@@ -511,3 +523,17 @@ class WhiteStar(Robin):
             for row in result:
                 await ws_channel[row[1]].send(f"<@{row[0]}>, je {row[2]} mag weer de ws in, succes!")
                 await self._update_comeback_channel(comeback_channel[row[1]], row[1])
+
+    def dummy(self, ctx, *args):
+        conn = self.conn
+        query = (
+            "select Id "
+            "from WSReturn "
+        )
+        cur = conn.cursor()
+        cur.execute(query)
+        msg = []
+        result = cur.fetchall()
+        for row in result:
+            msg += f"{row[0]}\n"
+        return result
