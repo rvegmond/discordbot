@@ -1,12 +1,12 @@
-import discord
+import locale
 import os
 import datetime
-from datetime import date, timedelta
+from datetime import timedelta
 from discord.ext import commands, tasks
 from loguru import logger
+import discord
 from .robin import Robin
 from .roles import Roles
-import locale
 
 try:
     locale.setlocale(locale.LC_ALL, "nl_NL.utf8")  # required running on linux
@@ -17,6 +17,9 @@ except locale.Error:
 
 
 class WhiteStar(Robin):
+    """
+    The class that contains the Whitestar functions
+    """
     def __init__(self, bot, conn=None):
         self.bot = bot
         self.conn = conn
@@ -112,7 +115,10 @@ class WhiteStar(Robin):
                 return None
             conn.commit()
             await channel.send(msg)
-        await ctx.send(content=f"Dank, {usermap['discordalias']} je ws-status is nu bijgewerkt", delete_after=3)
+        await ctx.send(
+            content=f"Dank, {usermap['discordalias']} je ws-status is nu bijgewerkt",
+            delete_after=3
+            )
 
         try:
             await ctx.message.delete()
@@ -172,7 +178,11 @@ class WhiteStar(Robin):
         cur.execute(query)
         num_players = len(cur.fetchall())
 
-        msg += f"**Planners:** {num_planners}, **Spelers:** {num_players}, **Totaal:** {num_planners+num_players}"
+        msg += (
+            f"**Planners:** {num_planners}, ",
+            f"**Spelers:** {num_players}, ",
+            f"**Totaal:** {num_planners+num_players}"
+        )
         msg += "\n"
 
         async for message in wslist_channel.history(limit=20):
