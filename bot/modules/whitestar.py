@@ -4,7 +4,6 @@ import datetime
 from datetime import timedelta
 from discord.ext import commands, tasks
 from loguru import logger
-import discord
 from .robin import Robin
 from .roles import Roles
 

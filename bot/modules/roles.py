@@ -1,14 +1,14 @@
 
-import discord
 import os
-from datetime import datetime
 from discord.ext import commands
 from loguru import logger
 from .robin import Robin
 
 
 class Roles(Robin):
-
+    """
+    The class that contains the Role related functions
+    """
     @commands.command(
         name="get_all_roles",
         help="Geeft een overzicht van alle rollen in de guild terug.",
@@ -21,8 +21,8 @@ class Roles(Robin):
         """
         Get a list of all roles in the guild, lined up. (wrapper function)
         """
-        g = ctx.guild
-        all_roles = g.roles
+        guild = ctx.guild
+        all_roles = guild.roles
         msg = ''
         for role in all_roles:
             msg += f"role.name: {role.name}\n"
@@ -32,12 +32,17 @@ class Roles(Robin):
                       ctx: commands.Context,
                       req_role: str
                       ) -> bool:
+        """
+        Check if the author of the message is a member of the specified role.
+
+        paramters:
+          req_role:        The role where to check membership on.
+        """
         for role in ctx.author.roles:
             if role.name == req_role:
                 return True
         return False
 
-    # @commands.command()
     def _rolemembers(self,
                      ctx: commands.Context,
                      role_name: str
