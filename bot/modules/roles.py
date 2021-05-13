@@ -5,7 +5,6 @@ from datetime import datetime
 from discord.ext import commands
 from loguru import logger
 from .robin import Robin
-from discord.utils import get
 
 
 class Roles(Robin):
@@ -49,11 +48,13 @@ class Roles(Robin):
         paramters:
           role_name:        The role where to get the members of.
         """
-        guild = ctx.guild
-        role_id = get(guild.roles, name=role_name)
-
         members = []
-        x = role_id.members
-        for t in x:
-            members.append(t.id)
+        guild = ctx.guild
+        for role in guild.roles:
+            if role.name == role_name:
+                logger.info(f"found members for {role_name}")
+                role_members = role.members
+                break
+        for role_member in role_members:
+            members.append(role_member.id)
         return members

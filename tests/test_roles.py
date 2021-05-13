@@ -52,3 +52,19 @@ async def test_in_role_nok():
     ctx.author.roles = [role]
     res = await roles.in_role(ctx, req_role)
     assert res is False
+
+
+def test_get_rolemembers():
+    roles = Roles()
+    ctx = MagicMock()
+    role = MagicMock()
+    member1 = MagicMock()
+    member1.id = 'testuser1'
+    member2 = MagicMock()
+    member2.id = 'testuser2'
+    req_role = "testrole"
+    role.name = req_role
+    role.members = [member1, member2]
+    ctx.guild.roles = [role]
+    result = roles._rolemembers(ctx, req_role)
+    assert result == ['testuser1', 'testuser2']
