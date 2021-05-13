@@ -244,7 +244,7 @@ class WhiteStar(Robin):
                 # send help!
                 await ctx.send_help(ctx.command)
                 return None
-            elif len(args) > 1:
+            if len(args) > 1:
                 # there is a comment
                 comment = _sanitize(' '.join(args[1:]))
 
@@ -371,9 +371,9 @@ class WhiteStar(Robin):
                 )
         await self.update_ws_inschrijvingen_tabel(ctx, wslist_channel)
 
-######################################################################################################
+###################################################################################################
 #  command updateusermap
-######################################################################################################
+###################################################################################################
 
     @commands.command(
         name="updateusermap",
@@ -406,9 +406,9 @@ class WhiteStar(Robin):
             conn.commit()
             await ctx.send(f"usermap updated by {ctx.author.name}")
 
-######################################################################################################
+###################################################################################################
 #  command _update_comeback_channel
-######################################################################################################
+###################################################################################################
 
     async def _update_comeback_channel(self, comeback_channel, ws):
         conn = self.conn
@@ -426,17 +426,20 @@ class WhiteStar(Robin):
         result = cur.fetchall()
         await comeback_channel.purge(limit=100)
         msg = (
-            f"In dit kanaal komt het overzicht wanneer je schip weer de ws in mag, dit kanaal is specifiek voor {ws}\n"
-            f"Met **`{bot.command_prefix}terug <schip> <terugkomtijd>`** geef je aan wanneer je schip weer terug de ws in mag."
-            "Het schip kan zijn *bs*, *ukkie* of *drone*. Voor de terugkomtijd kun je in twee formaten weergeven:\n"
+            f"In dit kanaal komt het overzicht wanneer je schip weer de ws in mag, dit kanaal is "
+            f"specifiek voor {ws}. Met **`{bot.command_prefix}terug <schip> <terugkomtijd>`** geef "
+            "je aan wanneer je schip weer terug de ws in mag. Het schip kan zijn *bs*, *ukkie* of "
+            "*drone*. Voor de terugkomtijd kun je in twee formaten weergeven:\n"
             " **uu:mm**  - dit geeft de tijd vanaf nu, dit is voor een ukkie of een bs of\n"
-            " **uu.t**   - dit is de tijd waarin t tienden van een uur zijn, dit is voor terugkomst van een drone.\n\n"
-            "Het is ook om een notificatietijd mee te geven, dit is dan de derde parameter. Dit is de tijd op de klok wanneer je de notificatie wilt ontvangen. "
-            "Als je deze niet meegeeft krijg je en notifiatie op het moment dat je schip de ws weer in mag. "
-            "Notificatietijd is in UU:MM, Robin houdt rekening met de dagwissel. Het commando is dan:\n"
-            f" **`{bot.command_prefix}terug <schip> <terugkomtijd> <notificatietid>`** , bijvoorbeeld:\n"
-            f"`{bot.command_prefix}terug bs 17:00 8:00` - ik kan over 17 uur vanaf nu weer een bs insturen maar wil morgen om 8:00 pas een notificatie.\n"
-            "\n\n"
+            " **uu.t**   - dit is de tijd waarin t tienden van een uur zijn, dit is voor drones.\n"
+            "Het is ook om een notificatietijd mee te geven, dit is dan de derde parameter. "
+            "Dit is de tijd op de klok wanneer je de notificatie wilt ontvangen. Als je deze niet "
+            "meegeeft krijg je en notifiatie op het moment dat je schip de ws weer in mag. "
+            "Notificatietijd is in UU:MM, Robin houdt rekening met de dagwissel. Het commando is:\n"
+            f" **`{bot.command_prefix}terug <schip> <terugkomtijd> <notificatietid>`**, bv.:\n"
+            f"`{bot.command_prefix}terug bs 17:00 8:00` - ik kan over 17 uur vanaf nu weer een bs "
+            "insturen maar wil morgen om 8:00 pas een notificatie."
+            u"\u2063"
             "**Speler     Schip     TerugTijd     NotificatieTijd**\n"
         )
 
@@ -448,9 +451,9 @@ class WhiteStar(Robin):
         await comeback_channel.send(msg)
 
 
-######################################################################################################
+###################################################################################################
 #  command terug
-######################################################################################################
+###################################################################################################
 
     @commands.command(
         name="terug",
@@ -460,10 +463,11 @@ class WhiteStar(Robin):
             "!terug <schip> terugkomtijd  notificatietijd\n"
             "schiptype: bs of ukkie of drone\n"
             "tijdnotatie (zowel terugkom als notificatietijd):\n"
-            " - XX:YY   uren en minuten worden bij de huidige tijd opgeteld (als je een schip kwijtraakt bv)\n"
-            " - XX:YYu is de tijd zoals op de klok, handig voor een notificatietijd, corrigeert voor de dag\n"
-            " - XX.Y    uren en 10en van uren, wordt omgerekend naar minuten (de tijd zoals in TM)\n"
-            "Als je een terugkomtijd (ook uren en minuten) dan krijg je op dat moment een notificatie"),
+            " - XX:YY   uren, minuten worden bij huidige tijd geteld (bij verlies van een schip)\n"
+            " - XX:YYu is de tijd op de klok, is voor de notificatietijd, corrigeert voor de dag\n"
+            " - XX.Y    uren en 10en van uren, wordt omgerekend naar minuten (voor een drone)\n"
+            "Zonder opgave van notificatietijd, krijg je ene notificatie op het moment van je "
+            "terugkomtijd.\n"),
         brief="Meld de terugkomtijd van je schip aan.",
     )
     async def terug(self, ctx, *args):
@@ -508,7 +512,9 @@ class WhiteStar(Robin):
             if usermap['Id'] in _rolemembers(ctx=ctx, role_name=wslist):
                 ws = wslist
         try:
-            query = "insert into WSReturn (Id, WS, Shiptype, ReturnTime, NotificationTime) values (?, ?, ?, ?, ?) "
+            query = (
+                "insert into WSReturn (Id, WS, Shiptype, ReturnTime, NotificationTime) "
+                "values (?, ?, ?, ?, ?) ")
             cur.execute(query, [usermap['Id'], ws, shiptype, returntime, notificationtime])
             conn.commit()
         except Exception as e:
@@ -517,9 +523,25 @@ class WhiteStar(Robin):
 
         await self._update_comeback_channel(comeback_channel[ws], ws)
         if shiptype == 'drone':
-            await self._feedback(ctx, msg=f"{usermap['discordalias']}, succes met ophalen van relics, straks snel weer een nieuwe drone", delete_after=3, delete_message=True)
+            await self._feedback(
+                ctx,
+                msg=(
+                    f"{usermap['discordalias']}, succes met ophalen van "
+                    "relics, straks snel weer een nieuwe drone"
+                ),
+                delete_after=3,
+                delete_message=True
+            )
         else:
-            await self._feedback(ctx, msg=f"Helaas, {usermap['discordalias']}, hopelijk volgende keer meer succes met je {shiptype}", delete_after=3, delete_message=True)
+            await self._feedback(
+                ctx,
+                msg=(
+                    f"Helaas, {usermap['discordalias']}, hopelijk volgende "
+                    "keer meer succes met je {shiptype}"
+                ),
+                delete_after=3,
+                delete_message=True
+            )
 
     @tasks.loop(minutes=1)
     async def return_scheduler(self):
@@ -558,9 +580,9 @@ class WhiteStar(Robin):
         return result
 
 
-######################################################################################################
+###################################################################################################
 #  _normalize_time
-######################################################################################################
+###################################################################################################
 
 def _normalize_time(intime: str
                     ) -> str:
@@ -577,7 +599,7 @@ def _normalize_time(intime: str
     if '.' in intime or ',' in intime:
         logger.info(f"found . {intime}")
         (hours, minutes) = intime.split('.')
-        intime = now + datetime.timedelta(hours=int(hours), minutes=int(minutes) * 6)  # calc minutes
+        intime = now + datetime.timedelta(hours=int(hours), minutes=int(minutes) * 6)
         intime = intime.strftime("%Y-%m-%d %H:%M")
     elif ':' in intime:
         logger.info(f"found : {intime}")
