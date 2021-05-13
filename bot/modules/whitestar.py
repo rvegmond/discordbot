@@ -1,3 +1,6 @@
+"""
+All related to whitestar functionality
+"""
 import locale
 import os
 import datetime
@@ -439,40 +442,11 @@ class WhiteStar(Robin):
 
         if len(result) > 0:
             for row in result:
-                returntime = datetime.datetime.strptime(row[2], "%Y-%m-%d %H:%M").strftime("%a %H:%M")
-                notificationtime = datetime.datetime.strptime(row[3], "%Y-%m-%d %H:%M").strftime("%a %H:%M")
+                returntime = _normalize_time(row[2]).strftime("%a %H:%M")
+                notificationtime = _normalize_time(row[3]).strftime("%a %H:%M")
                 msg += f"**{row[0]}**      {row[1]}          {returntime}       {notificationtime}\n"
         await comeback_channel.send(msg)
 
-######################################################################################################
-#  _normalize_time
-######################################################################################################
-
-    def _normalize_time(self,
-                        intime: str
-                        ) -> str:
-        """
-        Translate the intime to a normal "clock" time.
-        The input can be hours from now, clock time or hours + hours/10
-
-        paramters:
-            intime:     The time to normalize
-        Output:
-            intime:     The normalized time
-        """
-        now = datetime.datetime.now()
-        if '.' in intime or ',' in intime:
-            logger.info(f"found . {intime}")
-            (hours, minutes) = intime.split('.')
-            intime = now + datetime.timedelta(hours=int(hours), minutes=int(minutes) * 6)  # calc minutes
-            intime = intime.strftime("%Y-%m-%d %H:%M")
-        elif ':' in intime:
-            logger.info(f"found : {intime}")
-            (hours, minutes) = intime.split(':')
-            intime = now + datetime.timedelta(hours=int(hours), minutes=int(minutes))
-            intime = intime.strftime("%Y-%m-%d %H:%M")
-        logger.info(f"return{intime}")
-        return(intime)
 
 ######################################################################################################
 #  command terug
@@ -500,10 +474,10 @@ class WhiteStar(Robin):
 
         usermap = self._getusermap(int(ctx.author.id))
         cur = conn.cursor()
-        returntime = self._normalize_time(args[1])
+        returntime = _normalize_time(args[1])
 
         if len(args) == 2:
-            notificationtime = self._normalize_time(args[1])
+            notificationtime = _normalize_time(args[1])
         elif len(args) == 3:
             now = datetime.datetime.now()
             intime = args[2]
@@ -511,7 +485,7 @@ class WhiteStar(Robin):
             intime = datetime.datetime(now.year, now.month, now.day, int(hours), int(minutes), 0)
             if intime < now:
                 intime = intime + datetime.timedelta(days=1)
-            notificationtime = intime.strftime("%Y-%m-%d %H:%M")
+            notificationtime = _normalize_time(intime)
         else:
             # send help!
             await ctx.send_help(ctx.command)
@@ -582,3 +556,33 @@ class WhiteStar(Robin):
         for row in result:
             msg += f"{row[0]}\n"
         return result
+
+
+######################################################################################################
+#  _normalize_time
+######################################################################################################
+
+def _normalize_time(intime: str
+                    ) -> str:
+    """
+    Translate the intime to a normal "clock" time.
+    The input can be hours from now, clock time or hours + hours/10
+
+    paramters:
+        intime:     The time to normalize
+    Output:
+        intime:     The normalized time
+    """
+    now = datetime.datetime.now()
+    if '.' in intime or ',' in intime:
+        logger.info(f"found . {intime}")
+        (hours, minutes) = intime.split('.')
+        intime = now + datetime.timedelta(hours=int(hours), minutes=int(minutes) * 6)  # calc minutes
+        intime = intime.strftime("%Y-%m-%d %H:%M")
+    elif ':' in intime:
+        logger.info(f"found : {intime}")
+        (hours, minutes) = intime.split(':')
+        intime = now + datetime.timedelta(hours=int(hours), minutes=int(minutes))
+        intime = intime.strftime("%Y-%m-%d %H:%M")
+    logger.info(f"return{intime}")
+    return intime
