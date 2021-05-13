@@ -1,5 +1,6 @@
-
-import os
+"""
+This file contains the Roles Class, all functions related to roles should be in here.
+"""
 from discord.ext import commands
 from loguru import logger
 from .robin import Robin
