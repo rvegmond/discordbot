@@ -1,3 +1,6 @@
+"""
+The main file for the bot Robin.
+"""
 import sqlite3
 import os
 import sys
@@ -19,10 +22,6 @@ config = {
 }
 
 
-def generate_table(msg):
-    return msg
-
-
 def create_connection():
     """ create a database connection to the SQLite database
         specified by db_file
@@ -33,8 +32,8 @@ def create_connection():
     try:
         conn = sqlite3.connect(DB_FILE)
         logger.info(f"connected successful to {DB_FILE}")
-    except Exception as e:
-        logger.info(f"connection failed {e}")
+    except Exception as error:
+        logger.info(f"connection failed {error}")
         sys.exit(3)
 
     return conn
@@ -64,5 +63,5 @@ if __name__ == "__main__":
     logger.configure(**config)
     logger.info("Now loading...")
     b = new_bot(command_prefix=os.getenv("COMMAND_PREFIX", "!"),
-                description=os.getenv("BOT_DESCRIPTION", f"A discord bot, running version {___VERSION___ }"))
+                description=os.getenv("BOT_DESCRIPTION", f"Robin, version {___VERSION___ }"))
     b.run(os.getenv("DISCORD_TOKEN"))
