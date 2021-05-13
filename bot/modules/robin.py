@@ -59,6 +59,7 @@ class Robin(commands.Cog):
         usermap = {'Id': row[0], 'discordid': row[1], 'discordalias': row[2], 'gsheetalias': row[3]}
         return(usermap)
 
+
 def _sanitize(msg_in: str,
               maxlength: int = 200
              ) -> str:
