@@ -383,7 +383,7 @@ class WhiteStar(Robin):
         brief="Update de usermap tabel",
         hidden="True",
     )
-    async def updateusermap(self, ctx, *args):
+    async def updateusermap(self, ctx):
         """
         Get the mapping for discordalias and gsheetalias
         Id is the key for the selection.
@@ -565,7 +565,7 @@ class WhiteStar(Robin):
                 await ws_channel[row[1]].send(f"<@{row[0]}>, je {row[2]} mag weer de ws in, succes!")
                 await self._update_comeback_channel(comeback_channel[row[1]], row[1])
 
-    def dummy(self, ctx, *args):
+    def dummy(self, ctx):
         conn = self.conn
         query = (
             "select Id "
