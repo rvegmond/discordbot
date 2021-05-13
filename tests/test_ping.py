@@ -1,12 +1,17 @@
+"""
+testing the functions and classes in ping.py
+"""
 import pytest
-import sys
-from mock import AsyncMock, MagicMock, patch
+from mock import AsyncMock, patch
 from bot.modules.ping import Ping
 
 
 @pytest.mark.asyncio
 @patch('bot.modules.ping.Ping._feedback')
 async def test_ping(mocked_feedback):
+    """
+    test_ping, expecting pong
+    """
     ping = Ping()
     ctx = AsyncMock()
     await ping.ping(ctx)

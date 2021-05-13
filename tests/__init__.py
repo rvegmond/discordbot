@@ -1,3 +1,6 @@
+"""
+the content of this file should cover the generic functionality..
+"""
 import os
 import sys
 from mock import patch

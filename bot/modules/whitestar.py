@@ -59,8 +59,9 @@ class WhiteStar(Robin):
 
         await channel.purge(limit=100)
         msg = (
-            "In dit kanaal staat een overzicht hoe snel de verwachte reactietijd van je mede ws teamgenoten is "
-            f"Je update je beschikbaarheid status met  **`{bot.command_prefix}status <bereikbaarheid>`**\n"
+            "In dit kanaal staat een overzicht hoe snel de verwachte reactietijd van je mede ws "
+            "teamgenoten is Je update je beschikbaarheid status met "
+            f"**`{bot.command_prefix}status <bereikbaarheid>`**\n"
             "Houdt je bericht duidelijk, kort en bondig (max 100 tekens)\n"
         )
         msg += u"\u2063"
@@ -202,8 +203,9 @@ class WhiteStar(Robin):
             " uit/u              - afmelden voor de volgende ws (als je aangemeld was)\n"
             "\n"
             "\n"
-            "Inschrijven kan **alleen** in het #ws-inschrijvingen kanaal. Het overzicht komt in #ws-inschrijflijst\n"
-            "Updaten van je rol (speler -> planner) kan door je in te schrijven met je nieuwe rol.\n"
+            "Inschrijven kan **alleen** in het #ws-inschrijvingen kanaal. Het overzicht komt in "
+            "#ws-inschrijflijst. Updaten van je rol (speler -> planner) kan door je in te "
+            "schrijven met je nieuwe rol.\n"
             "inschrijven planner met !ws plan\n"
             "inschrijven als speler met !ws in\n"
             "uitschrijven kan met !ws out\n"
@@ -219,11 +221,6 @@ class WhiteStar(Robin):
         bot = self.bot
         usermap = self._getusermap(str(ctx.author.id))
         cur = conn.cursor()
-        # query="""
-        # select * from WSstatus
-        # """
-        # cur.execute(query)
-        # ws_status=cur.fetchone()
         wsin_channel_id = int(os.getenv("WSIN_CHANNEL"))
         wsin_channel = bot.get_channel(int(os.getenv("WSIN_CHANNEL")))
         wslist_channel = bot.get_channel(int(os.getenv("WSLIST_CHANNEL")))
@@ -258,7 +255,7 @@ class WhiteStar(Robin):
                 cur.execute(query, [usermap['Id']])
                 if len(cur.fetchall()) == 0:
                     await ctx.send(
-                        content=f"{usermap['discordalias']}, je stond nog niet ingeschreven voor de volgende ws",
+                        content=f"{usermap['discordalias']}, je stond nog niet ingeschreven.. ",
                         delete_after=3
                     )
                 else:
@@ -271,7 +268,7 @@ class WhiteStar(Robin):
                     cur.execute(query, [usermap['Id']])
                     conn.commit()
                     await ctx.send(
-                        content=f"Helaas, {usermap['discordalias']} je doet niet meer mee met de volgende ws",
+                        content=f"Helaas, {usermap['discordalias']} je doet niet mee met komende ws",
                         delete_after=1
                     )
                     await self.update_ws_inschrijvingen_tabel(ctx, wslist_channel)
@@ -287,7 +284,8 @@ class WhiteStar(Robin):
             elif args[0] in ['p', 'plan', 'planner']:
                 action = 'planner'
             elif args[0] in ['close', 'sluit']:
-                if await Roles.in_role(self, ctx, 'Moderator') or await Roles.in_role(self, ctx, 'Bot Bouwers'):
+                if (await Roles.in_role(self, ctx, 'Moderator') or await Roles.in_role(self, ctx, 'Bot Bouwers')):
+
                     await wsin_channel.set_permissions(ws_role, send_messages=False)
                     await ctx.send(content=f"Inschrijving gesloten door {ctx.author.name}")
                     return None
@@ -303,8 +301,8 @@ class WhiteStar(Robin):
                         "Met `!ws plan` of `!ws p` schrijf je je in als planner en speler\n"
                         "Met `!ws in` of `!ws i` schrijf je je in als speler\n"
                         f"Inschrijven kan alleen in {wsin_channel.mention}, het overzicht van de "
-                        f"inschrijvingen komt in {wslist_channel.mention}, met 30 inschrijvingen worden er 2 wssen"
-                        " gestart maar er moeten dan wel minimaal **4 planners** zijn."
+                        f"inschrijvingen komt in {wslist_channel.mention}, met 30 inschrijvingen "
+                        "worden er 2 wsen gestart, op voorwaarde van minimaal **4 planners** zijn."
                         "\n"
                         "Elke __**Dinsdag**__ worden de inschrijvingen geopend "
                         "ongeacht of er nog wssen lopen tot uiterlijk __**Woensdag**__")
@@ -320,9 +318,6 @@ class WhiteStar(Robin):
                     conn.commit()
                     await self.update_ws_inschrijvingen_tabel(ctx, wslist_channel)
                     return None
-            # elif args[0] in ['info']:
-            #     await ctx.send(content=f"Current WS is {ws_status[0]}, delete_after=3")
-
             else:
                 await ctx.send("Ongeldige input")
                 await ctx.send_help(ctx.command)

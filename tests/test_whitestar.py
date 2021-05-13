@@ -1,14 +1,17 @@
-import unittest
-import pytest
-from mock import AsyncMock, MagicMock
+"""
+these tests should cover functions and classes in robin.py
+"""
 import datetime
-from mock.mock import patch
+from mock import MagicMock
 from bot.modules.whitestar import WhiteStar
 
 bot = MagicMock()
 
 
 def test_normalize_time_colon():
+    """
+    check to see normalized time in "clock" time from now
+    """
     whitestar = WhiteStar(bot)
     now = datetime.datetime.now()
     time = whitestar._normalize_time("18:30")
@@ -18,6 +21,9 @@ def test_normalize_time_colon():
 
 
 def test_normalize_time_dot():
+    """
+    check to see normalized time in "dot" time from now
+    """
     whitestar = WhiteStar(bot)
     now = datetime.datetime.now()
     time = whitestar._normalize_time("18.5")
@@ -26,21 +32,10 @@ def test_normalize_time_dot():
     assert time == res_time
 
 
-# @pytest.mark.asyncio
-# async def test_update_comeback_channel():
-#     whitestar = WhiteStar(bot)
-#     nu = str("2021-05-31 12:00")
-#     result = ['John', 'BS', nu, nu]
-#     comeback_channel = AsyncMock()
-#     whitestar.conn = MagicMock()
-#     ctx = MagicMock()
-#     whitestar.conn = MagicMock()
-#     whitestar.conn.cursor().fetchall.return_value = result
-#     res = await whitestar._update_comeback_channel(comeback_channel, 'ws_')
-#     # comeback_channel.assert_called_once_with('John')
-
-
 def test_dummy():
+    """
+    Dummy test to experiment with testing.
+    """
     whitestar = WhiteStar(bot)
     result = ['John', 'Bill']
     whitestar.conn = MagicMock()
@@ -49,16 +44,3 @@ def test_dummy():
     whitestar.conn.cursor().fetchall.return_value = result
     res = whitestar.dummy(ctx)
     assert res[0] == 'John'
-
-
-# @pytest.mark.asyncio
-# async def test_update_usermap():
-#     """
-#     Need to write the test, using mock db
-#     """
-#     whitestar = WhiteStar(bot)
-#     ctx = MagicMock()
-#     role = MagicMock()
-#     role.name = 'testrole'
-#     res = True
-#     assert res is True

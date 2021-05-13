@@ -1,16 +1,18 @@
-import discord
+"""
+This file contains the main functions and classes for Robin.
+"""
 from discord.ext import commands
 from loguru import logger
-from discord.utils import get
 
 
 class Robin(commands.Cog):
+    """
+    The master class for Robin. 
+    """
     def __init__(self, bot=None, conn=None):
         self.bot = bot
         self.conn = conn
         logger.info(f"Class {type(self).__name__} initialized from Robin class")
-
-
 
     async def _feedback(self,
                         ctx: commands.Context = None,
@@ -38,12 +40,12 @@ class Robin(commands.Cog):
         if delete_message:
             try:
                 await ctx.message.delete()
-            except Exception as e:
-                logger.info(f"message deletion failed {e}")
-                return f"message deletion failed {e}"
+            except Exception as error:
+                logger.info(f"message deletion failed {error}")
+                return f"message deletion failed {error}"
         return "feedback sent successful"
 
-    def _getusermap(self, id):
+    def _getusermap(self, memberid):
         """
         Get the mapping for discordalias and gsheetalias
         Id is the key for the selection.
@@ -53,16 +55,16 @@ class Robin(commands.Cog):
         usermap = {}
         cur = conn.cursor()
 
-        query = f"select Id, DiscordId, discordalias, gsheetalias from usermap where Id=?"
-        cur.execute(query, [id])
+        query = "select Id, DiscordId, discordalias, gsheetalias from usermap where Id=?"
+        cur.execute(query, [memberid])
         row = cur.fetchone()
         usermap = {'Id': row[0], 'discordid': row[1], 'discordalias': row[2], 'gsheetalias': row[3]}
-        return(usermap)
+        return usermap
 
 
 def _sanitize(msg_in: str,
               maxlength: int = 200
-             ) -> str:
+              ) -> str:
     """
     Sanitize the message in, remove forbidden characters.
     Truncate the message at maxlength (last bit will be replace with truncated)
@@ -87,4 +89,4 @@ def _sanitize(msg_in: str,
 
     for nogo in forbidden:
         msg_out = msg_out.replace(nogo, '_')
-    return(msg_out)
+    return msg_out
