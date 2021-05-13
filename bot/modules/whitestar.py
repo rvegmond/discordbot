@@ -4,8 +4,8 @@ import datetime
 from datetime import timedelta
 from discord.ext import commands, tasks
 from loguru import logger
-from .robin import Robin
-from .roles import Roles
+from .robin import Robin, _sanitize
+from .roles import Roles, _rolemembers
 
 try:
     locale.setlocale(locale.LC_ALL, "nl_NL.utf8")  # required running on linux
@@ -42,7 +42,7 @@ class WhiteStar(Robin):
         status_channel = int(os.getenv("STATUS_CHANNEL"))
         channel = bot.get_channel(status_channel)
         usermap = self._getusermap(int(ctx.author.id))
-        statusupdate = self._sanitize(' '.join(args), 100)
+        statusupdate = _sanitize(' '.join(args), 100)
         cur = conn.cursor()
         logger.info(f"New status from {usermap['discordalias']}: {statusupdate} ")
         query = f"delete from status where Id='{usermap['Id']}' "
@@ -71,7 +71,7 @@ class WhiteStar(Robin):
             cur.execute("delete from temp_ws ")
 
             query = "insert into temp_ws (Id) values (?) "
-            memberlist = Roles._rolemembers(self, ctx=ctx, role_name=i)
+            memberlist = _rolemembers(ctx=ctx, role_name=i)
             for member in memberlist:
                 cur.execute(query, [member])
 
@@ -246,7 +246,7 @@ class WhiteStar(Robin):
                 return None
             elif len(args) > 1:
                 # there is a comment
-                comment = self._sanitize(' '.join(args[1:]))
+                comment = _sanitize(' '.join(args[1:]))
 
             if args[0] in ['i', 'in']:
                 action = 'speler'
@@ -536,7 +536,7 @@ class WhiteStar(Robin):
 
         ws = None
         for wslist in ['ws1', 'ws2']:
-            if usermap['Id'] in Roles._rolemembers(self, ctx=ctx, role_name=wslist):
+            if usermap['Id'] in _rolemembers(ctx=ctx, role_name=wslist):
                 ws = wslist
         try:
             query = "insert into WSReturn (Id, WS, Shiptype, ReturnTime, NotificationTime) values (?, ?, ?, ?, ?) "

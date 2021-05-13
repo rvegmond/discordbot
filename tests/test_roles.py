@@ -55,7 +55,6 @@ async def test_in_role_nok():
 
 
 def test_get_rolemembers():
-    roles = Roles()
     ctx = MagicMock()
     role = MagicMock()
     member1 = MagicMock()
@@ -66,5 +65,5 @@ def test_get_rolemembers():
     role.name = req_role
     role.members = [member1, member2]
     ctx.guild.roles = [role]
-    result = roles._rolemembers(ctx, req_role)
+    result = _rolemembers(ctx, req_role)
     assert result == ['testuser1', 'testuser2']

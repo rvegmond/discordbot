@@ -1,17 +1,16 @@
 import pytest
 import sqlite3
 from mock import MagicMock, Mock, patch, AsyncMock
-from bot.modules.robin import Robin
+from bot.modules.robin import Robin, _sanitize
 
 
 def test_sanitize():
-    robin = Robin()
-    assert robin._sanitize(msg_in='Dit is een teststring') == 'Dit is een teststring'
-    assert robin._sanitize(msg_in='TestString met een at @') == 'TestString met een at _'
-    assert robin._sanitize(msg_in='TestString met een hash #') == 'TestString met een hash _'
-    assert robin._sanitize(msg_in='TestString met een hash #') == 'TestString met een hash _'
-    assert robin._sanitize(msg_in='TestString met een lange string', maxlength=20) == 'TestStr .. truncated'
-    assert robin._sanitize(msg_in='Korte TestString', maxlength=12) == ' .. truncated'
+    assert _sanitize(msg_in='Dit is een teststring') == 'Dit is een teststring'
+    assert _sanitize(msg_in='TestString met een at @') == 'TestString met een at _'
+    assert _sanitize(msg_in='TestString met een hash #') == 'TestString met een hash _'
+    assert _sanitize(msg_in='TestString met een hash #') == 'TestString met een hash _'
+    assert _sanitize(msg_in='TestString met een lange string', maxlength=20) == 'TestStr .. truncated'
+    assert _sanitize(msg_in='Korte TestString', maxlength=12) == ' .. truncated'
 
 
 @pytest.mark.asyncio
