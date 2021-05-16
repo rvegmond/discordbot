@@ -49,13 +49,13 @@ class WhiteStar(Robin):
         )
         msg += u"\u2063"
         await channel.send(msg)
-        for i in ("ws1", "ws2"):
-            msg = f"**{i.upper()}**\n"
+        for this_ws in ("ws1", "ws2"):
+            msg = f"**{this_ws.upper()}**\n"
 
             cur.execute("delete from temp_ws ")
 
             query = "insert into temp_ws (Id) values (?) "
-            memberlist = _rolemembers(ctx=ctx, role_name=i)
+            memberlist = _rolemembers(ctx=ctx, role_name=this_ws)
             for member in memberlist:
                 cur.execute(query, [member])
 
@@ -126,7 +126,7 @@ class WhiteStar(Robin):
             return None
 
         now = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-        query = f"insert into status (Id, LastUpdate, StatusText) values (?, ?, ?) "
+        query = "insert into status (Id, LastUpdate, StatusText) values (?, ?, ?) "
         cur.execute(query, [usermap['Id'], now, statusupdate])
         conn.commit()
         self.update_status_table(ctx)
