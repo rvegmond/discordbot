@@ -27,39 +27,19 @@ class WhiteStar(Robin):
         self.conn = conn
         self.return_scheduler.start()
         logger.info(f"Class {type(self).__name__} initialized ")
+
 ###################################################################################################
 #  command status
 ###################################################################################################
 
-    @commands.command(
-        name="status",
-        help=("Met het status commando update je status in het status kanaal,"
-              " hiermee help je je mede ws-ers op de hoogte te houden hoe snel je kunt reageren."
-              ),
-        brief="Update je status in het status kanaal",
-    )
-    async def status(self, ctx, *args):
+    async def update_status_table(self, ctx):
+        """
+        updating status table in status channel
+        """
         conn = self.conn
         bot = self.bot
-
         status_channel = int(os.getenv("STATUS_CHANNEL"))
         channel = bot.get_channel(status_channel)
-        usermap = self._getusermap(int(ctx.author.id))
-        statusupdate = _sanitize(' '.join(args), 100)
-        cur = conn.cursor()
-        logger.info(f"New status from {usermap['discordalias']}: {statusupdate} ")
-        query = f"delete from status where Id='{usermap['Id']}' "
-        try:
-            cur.execute(query)
-        except Exception as e:
-            logger.info(f"{usermap['discordalias']} doesn't have a previous status set..")
-            return None
-
-        now = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-        query = f"insert into status (Id, LastUpdate, StatusText) values (?, ?, ?) "
-        cur.execute(query, [usermap['Id'], now, statusupdate])
-        conn.commit()
-
         await channel.purge(limit=100)
         msg = (
             "In dit kanaal staat een overzicht hoe snel de verwachte reactietijd van je mede ws "
@@ -118,6 +98,39 @@ class WhiteStar(Robin):
                 return None
             conn.commit()
             await channel.send(msg)
+
+###################################################################################################
+#  command status
+###################################################################################################
+
+    @commands.command(
+        name="status",
+        help=("Met het status commando update je status in het status kanaal,"
+              " hiermee help je je mede ws-ers op de hoogte te houden hoe snel je kunt reageren."
+              ),
+        brief="Update je status in het status kanaal",
+    )
+    async def status(self, ctx, *args):
+        conn = self.conn
+        bot = self.bot
+
+        usermap = self._getusermap(int(ctx.author.id))
+        statusupdate = _sanitize(' '.join(args), 100)
+        cur = conn.cursor()
+        logger.info(f"New status from {usermap['discordalias']}: {statusupdate} ")
+        query = f"delete from status where Id='{usermap['Id']}' "
+        try:
+            cur.execute(query)
+        except Exception as e:
+            logger.info(f"{usermap['discordalias']} doesn't have a previous status set..")
+            return None
+
+        now = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+        query = f"insert into status (Id, LastUpdate, StatusText) values (?, ?, ?) "
+        cur.execute(query, [usermap['Id'], now, statusupdate])
+        conn.commit()
+        self.update_status_table(ctx)
+
         await ctx.send(
             content=f"Dank, {usermap['discordalias']} je ws-status is nu bijgewerkt",
             delete_after=3
@@ -454,7 +467,6 @@ class WhiteStar(Robin):
 ###################################################################################################
 #  command terug
 ###################################################################################################
-
     @commands.command(
         name="terug",
         help=(
