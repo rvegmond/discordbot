@@ -146,7 +146,11 @@ class WhiteStar(Robin):
 #  function update_ws_inschrijvingen_tabel
 ###################################################################################################
 
-    async def update_ws_inschrijvingen_tabel(self, ctx, wslist_channel):
+    async def update_ws_inschrijvingen_tabel(self, wslist_channel):
+        """
+        This wil write the list of "inschrijvingen" to the wslist_channel,
+        it is based on the contents of the sqlite table
+        """
         conn = self.conn
         bot = self.bot
         cur = conn.cursor()
@@ -163,10 +167,7 @@ class WhiteStar(Robin):
         cur.execute(query)
         msg = ''
         i = 1
-        # max_players = 2
         for row in cur.fetchall():
-            # if i == max_players + 1:
-            #     msg += "\nReservelijst:\n"
             if row[1] == 'planner':
                 msg += f"**{i}. {row[0]} {row[1]} {row[2]}**\n"
             else:
@@ -233,6 +234,10 @@ class WhiteStar(Robin):
         brief="Schrijf jezelf in voor de volgende ws",
     )
     async def ws(self, ctx, *args):
+        """
+        The function to handle the ws inschrijvingen related stuff
+        TODO refactor, rename and simplify
+        """
         conn = self.conn
         bot = self.bot
         usermap = self._getusermap(str(ctx.author.id))
@@ -245,99 +250,98 @@ class WhiteStar(Robin):
         if ctx.channel != wsin_channel:
             await ctx.send(content=(
                 f"{usermap['discordalias']}, je kunt alleen in kanaal <#{wsin_channel_id}> "
-                f"inschrijven, je bent nu nog **niet** ingeschreven!"), delete_after=5)
+                "inschrijven, je bent nu nog **niet** ingeschreven!"), delete_after=5)
             try:
                 await ctx.message.delete()
             except Exception as e:
                 logger.info(f"message deletion failed {e}")
             return None
-        else:
-            comment = ''
-            if len(args) == 0:
-                # send help!
-                await ctx.send_help(ctx.command)
-                return None
-            if len(args) > 1:
-                # there is a comment
-                comment = _sanitize(' '.join(args[1:]))
+        comment = ''
+        if len(args) == 0:
+            # send help!
+            await ctx.send_help(ctx.command)
+            return None
+        if len(args) > 1:
+            # there is a comment
+            comment = _sanitize(' '.join(args[1:]))
 
-            if args[0] in ['i', 'in']:
-                action = 'speler'
-            elif args[0] in ['u', 'uit', 'o', 'out']:
-                action = 'out'
-                query = (
-                    "select * from WSinschrijvingen where Id=? and actueel='ja' "
+        if args[0] in ['i', 'in']:
+            action = 'speler'
+        elif args[0] in ['u', 'uit', 'o', 'out']:
+            action = 'out'
+            query = (
+                "select * from WSinschrijvingen where Id=? and actueel='ja' "
+            )
+            cur.execute(query, [usermap['Id']])
+            if len(cur.fetchall()) == 0:
+                await ctx.send(
+                    content=f"{usermap['discordalias']}, je stond nog niet ingeschreven.. ",
+                    delete_after=3
                 )
-                cur.execute(query, [usermap['Id']])
-                if len(cur.fetchall()) == 0:
-                    await ctx.send(
-                        content=f"{usermap['discordalias']}, je stond nog niet ingeschreven.. ",
-                        delete_after=3
-                    )
-                else:
-                    query = (
-                        "delete from WSinschrijvingen "
-                        "where Id=? "
-                        "and actueel='ja' "
-                    )
-
-                    cur.execute(query, [usermap['Id']])
-                    conn.commit()
-                    await ctx.send(
-                        content=f"Helaas, {usermap['discordalias']} je doet niet mee met komende ws",
-                        delete_after=1
-                    )
-                    await self.update_ws_inschrijvingen_tabel(ctx, wslist_channel)
-
-                    async for message in wsin_channel.history(limit=50):
-                        if message.author.id == ctx.author.id:
-                            try:
-                                await message.delete()
-                            except Exception as e:
-                                logger.info(f"historic message deletion failed {e}")
-                    return None
-
-            elif args[0] in ['p', 'plan', 'planner']:
-                action = 'planner'
-            elif args[0] in ['close', 'sluit']:
-                if (await Roles.in_role(self, ctx, 'Moderator') or await Roles.in_role(self, ctx, 'Bot Bouwers')):
-
-                    await wsin_channel.set_permissions(ws_role, send_messages=False)
-                    await ctx.send(content=f"Inschrijving gesloten door {ctx.author.name}")
-                    return None
-            elif args[0] in ['open']:
-                if await Roles.in_role(self, ctx, 'Moderator') or await Roles.in_role(self, ctx, 'Bot Bouwers'):
-                    await wsin_channel.set_permissions(ws_role, send_messages=True)
-                    await ctx.send(content=f"Inschrijving geopend door {ctx.author.name}")
-                    return None
-            elif args[0] in ['clear']:
-                if await Roles.in_role(self, ctx, 'Moderator') or await Roles.in_role(self, ctx, 'Bot Bouwers'):
-                    msg = (
-                        f"{ws_role.mention}, De WS inschrijving is geopend\n"
-                        "Met `!ws plan` of `!ws p` schrijf je je in als planner en speler\n"
-                        "Met `!ws in` of `!ws i` schrijf je je in als speler\n"
-                        f"Inschrijven kan alleen in {wsin_channel.mention}, het overzicht van de "
-                        f"inschrijvingen komt in {wslist_channel.mention}, met 30 inschrijvingen "
-                        "worden er 2 wsen gestart, op voorwaarde van minimaal **4 planners** zijn."
-                        "\n"
-                        "Elke __**Dinsdag**__ worden de inschrijvingen geopend "
-                        "ongeacht of er nog wssen lopen tot uiterlijk __**Woensdag**__")
-                    await wsin_channel.purge(limit=100)
-                    await wslist_channel.purge(limit=100)
-                    await wsin_channel.set_permissions(ws_role, send_messages=True)
-                    await ctx.send(content=msg)
-                    query = (
-                        "update WSinschrijvingen "
-                        "set actueel='nee' "
-                    )
-                    cur.execute(query)
-                    conn.commit()
-                    await self.update_ws_inschrijvingen_tabel(ctx, wslist_channel)
-                    return None
             else:
-                await ctx.send("Ongeldige input")
-                await ctx.send_help(ctx.command)
+                query = (
+                    "delete from WSinschrijvingen "
+                    "where Id=? "
+                    "and actueel='ja' "
+                )
+
+                cur.execute(query, [usermap['Id']])
+                conn.commit()
+                await ctx.send(
+                    content=f"Helaas, {usermap['discordalias']} je doet niet mee met komende ws",
+                    delete_after=1
+                )
+                await self.update_ws_inschrijvingen_tabel(wslist_channel)
+
+                async for message in wsin_channel.history(limit=50):
+                    if message.author.id == ctx.author.id:
+                        try:
+                            await message.delete()
+                        except Exception as error:
+                            logger.info(f"historic message deletion failed {error}")
                 return None
+
+        elif args[0] in ['p', 'plan', 'planner']:
+            action = 'planner'
+        elif args[0] in ['close', 'sluit']:
+            if (await Roles.in_role(self, ctx, 'Moderator') or await Roles.in_role(self, ctx, 'Bot Bouwers')):
+
+                await wsin_channel.set_permissions(ws_role, send_messages=False)
+                await ctx.send(content=f"Inschrijving gesloten door {ctx.author.name}")
+                return None
+        elif args[0] in ['open']:
+            if await Roles.in_role(self, ctx, 'Moderator') or await Roles.in_role(self, ctx, 'Bot Bouwers'):
+                await wsin_channel.set_permissions(ws_role, send_messages=True)
+                await ctx.send(content=f"Inschrijving geopend door {ctx.author.name}")
+                return None
+        elif args[0] in ['clear']:
+            if await Roles.in_role(self, ctx, 'Moderator') or await Roles.in_role(self, ctx, 'Bot Bouwers'):
+                msg = (
+                    f"{ws_role.mention}, De WS inschrijving is geopend\n"
+                    "Met `!ws plan` of `!ws p` schrijf je je in als planner en speler\n"
+                    "Met `!ws in` of `!ws i` schrijf je je in als speler\n"
+                    f"Inschrijven kan alleen in {wsin_channel.mention}, het overzicht van de "
+                    f"inschrijvingen komt in {wslist_channel.mention}, met 30 inschrijvingen "
+                    "worden er 2 wsen gestart, op voorwaarde van minimaal **4 planners** zijn."
+                    "\n"
+                    "Elke __**Dinsdag**__ worden de inschrijvingen geopend "
+                    "ongeacht of er nog wssen lopen tot uiterlijk __**Woensdag**__")
+                await wsin_channel.purge(limit=100)
+                await wslist_channel.purge(limit=100)
+                await wsin_channel.set_permissions(ws_role, send_messages=True)
+                await ctx.send(content=msg)
+                query = (
+                    "update WSinschrijvingen "
+                    "set actueel='nee' "
+                )
+                cur.execute(query)
+                conn.commit()
+                await self.update_ws_inschrijvingen_tabel(wslist_channel)
+                return None
+        else:
+            await ctx.send("Ongeldige input")
+            await ctx.send_help(ctx.command)
+            return None
 
             # is member already registered
             query = (
@@ -382,7 +386,7 @@ class WhiteStar(Robin):
                     content=f"Gefeliciteerd, {usermap['discordalias']} je bent nu {action} voor de volgende ws",
                     delete_after=3
                 )
-        await self.update_ws_inschrijvingen_tabel(ctx, wslist_channel)
+        await self.update_ws_inschrijvingen_tabel(wslist_channel)
 
 ###################################################################################################
 #  command updateusermap
