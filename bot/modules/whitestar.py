@@ -246,8 +246,10 @@ class WhiteStar(Robin):
         wsin_channel = bot.get_channel(int(os.getenv("WSIN_CHANNEL")))
         wslist_channel = bot.get_channel(int(os.getenv("WSLIST_CHANNEL")))
         ws_role = ctx.guild.get_role(int(os.getenv("WS_ROLE")))
+        comment = ''
 
         if ctx.channel != wsin_channel:
+            """ Trying to post in the wrong channel """
             await ctx.send(content=(
                 f"{usermap['discordalias']}, je kunt alleen in kanaal <#{wsin_channel_id}> "
                 "inschrijven, je bent nu nog **niet** ingeschreven!"), delete_after=5)
@@ -256,13 +258,15 @@ class WhiteStar(Robin):
             except Exception as e:
                 logger.info(f"message deletion failed {e}")
             return None
-        comment = ''
+
         if len(args) == 0:
+            """ no arguments """
             # send help!
             await ctx.send_help(ctx.command)
             return None
+
         if len(args) > 1:
-            # there is a comment
+            """ more than 1 argument """
             comment = _sanitize(' '.join(args[1:]))
 
         if args[0] in ['i', 'in']:
@@ -343,49 +347,49 @@ class WhiteStar(Robin):
             await ctx.send_help(ctx.command)
             return None
 
-            # is member already registered
+        # is member already registered
+        query = (
+            "select * from WSinschrijvingen where Id=? and inschrijving=? and actueel='ja' "
+        )
+
+        cur.execute(query, [usermap['Id'], action])
+        rows_same_role = len(cur.fetchall())
+
+        query = (
+            "select * from WSinschrijvingen where Id=? and inschrijving <> ? and actueel='ja' "
+        )
+
+        cur.execute(query, [usermap['Id'], action])
+        rows_different_role = len(cur.fetchall())
+
+        if rows_same_role == 1:
+            # already registerd with the same role, do nothing..
+            await ctx.send(f"{usermap['discordalias']} is al ingeschreven als {action}")
+            return None
+        elif rows_different_role == 1:
+            # already registerd as a different role, update
             query = (
-                "select * from WSinschrijvingen where Id=? and inschrijving=? and actueel='ja' "
+                "update WSinschrijvingen set inschrijving=?, Opmerkingen=? "
+                "where Id=? and actueel='ja' "
             )
-
-            cur.execute(query, [usermap['Id'], action])
-            rows_same_role = len(cur.fetchall())
-
+            cur.execute(query, [action, comment, usermap['Id']])
+            conn.commit()
+            await ctx.send(
+                content=f"Gefeliciteerd, {usermap['discordalias']} je bent nu {action} voor de volgende ws",
+                delete_after=3
+            )
+        else:
+            # not yet registerd, insert
             query = (
-                "select * from WSinschrijvingen where Id=? and inschrijving <> ? and actueel='ja' "
+                "insert into WSinschrijvingen (Id, inschrijving, Inschrijftijd, Opmerkingen, actueel) "
+                "values (?, ?, datetime('now'), ?, 'ja') "
             )
-
-            cur.execute(query, [usermap['Id'], action])
-            rows_different_role = len(cur.fetchall())
-
-            if rows_same_role == 1:
-                # already registerd with the same role, do nothing..
-                await ctx.send(f"{usermap['discordalias']} is al ingeschreven als {action}")
-                return None
-            elif rows_different_role == 1:
-                # already registerd as a different role, update
-                query = (
-                    "update WSinschrijvingen set inschrijving=?, Opmerkingen=? "
-                    "where Id=? and actueel='ja' "
-                )
-                cur.execute(query, [action, comment, usermap['Id']])
-                conn.commit()
-                await ctx.send(
-                    content=f"Gefeliciteerd, {usermap['discordalias']} je bent nu {action} voor de volgende ws",
-                    delete_after=3
-                )
-            else:
-                # not yet registerd, insert
-                query = (
-                    "insert into WSinschrijvingen (Id, inschrijving, Inschrijftijd, Opmerkingen, actueel) "
-                    "values (?, ?, datetime('now'), ?, 'ja') "
-                )
-                cur.execute(query, [usermap['Id'], action, comment])
-                conn.commit()
-                await ctx.send(
-                    content=f"Gefeliciteerd, {usermap['discordalias']} je bent nu {action} voor de volgende ws",
-                    delete_after=3
-                )
+            cur.execute(query, [usermap['Id'], action, comment])
+            conn.commit()
+            await ctx.send(
+                content=f"Gefeliciteerd, {usermap['discordalias']} je bent nu {action} voor de volgende ws",
+                delete_after=3
+            )
         await self.update_ws_inschrijvingen_tabel(wslist_channel)
 
 ###################################################################################################
