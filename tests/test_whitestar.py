@@ -30,15 +30,15 @@ def test_normalize_time_dot():
     assert time == res_time
 
 
-def test_dummy():
-    """
-    Dummy test to experiment with testing.
-    """
-    whitestar = WhiteStar(bot)
-    result = ['John', 'Bill']
-    whitestar.conn = MagicMock()
-    ctx = MagicMock()
-    whitestar.conn = MagicMock()
-    whitestar.conn.cursor().fetchall.return_value = result
-    res = whitestar.dummy(ctx)
-    assert res[0] == 'John'
+# def test_dummy():
+#     """
+#     Dummy test to experiment with testing.
+#     """
+#     whitestar = WhiteStar(bot)
+#     result = [['John', 'Bill']]
+#     whitestar.conn = MagicMock()
+#     ctx = MagicMock()
+#     whitestar.conn = MagicMock()
+#     whitestar.conn.cursor().fetchall.return_value = result
+#     res = whitestar.dummy(ctx)
+#     assert res == 'John'
