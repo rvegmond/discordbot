@@ -22,7 +22,7 @@ class WhiteStar(Robin):
     """
     The class that contains the Whitestar functions
     """
-    def __init__(self, bot, conn=None):
+    def __init__(self, bot=None, conn=None):
         self.bot = bot
         self.conn = conn
         self.return_scheduler.start()
@@ -112,6 +112,9 @@ class WhiteStar(Robin):
         brief="Update je status in het status kanaal",
     )
     async def status(self, ctx, *args):
+        """
+        updating the status of ws participants
+        """
         conn = self.conn
 
         usermap = self._getusermap(int(ctx.author.id))
@@ -211,10 +214,18 @@ class WhiteStar(Robin):
 #  function _ws_entry
 ###################################################################################################
 
-    async def _ws_entry(self, ctx, action: str, cur, usermap, comment):
+    async def _ws_entry(self,
+                        ctx: commands.Context = None,
+                        action: str = '',
+                        cur=None,
+                        usermap: list = [],
+                        comment: str = ''):
         """
         Handle the entry for the ws
         """
+        bot = self.bot
+        conn = self.conn
+
         wsin_channel = bot.get_channel(int(os.getenv("WSIN_CHANNEL")))
         wslist_channel = bot.get_channel(int(os.getenv("WSLIST_CHANNEL")))
         query = (
@@ -256,18 +267,13 @@ class WhiteStar(Robin):
             # already registerd with the same role, do nothing..
             await ctx.send(f"{usermap['discordalias']} is al ingeschreven als {action}")
             return None
-        elif is_entered == 1:
+        if is_entered == 1:
             # already registerd as a different role, update
             query = (
                 "update WSinschrijvingen set inschrijving=?, Opmerkingen=? "
                 "where Id=? and actueel='ja' "
             )
             cur.execute(query, [action, comment, usermap['Id']])
-            conn.commit()
-            await ctx.send(
-                content=f"Gefeliciteerd, {usermap['discordalias']} je bent nu {action} voor de volgende ws",
-                delete_after=3
-            )
         else:
             # not yet registerd, insert
             query = (
@@ -275,11 +281,14 @@ class WhiteStar(Robin):
                 "values (?, ?, datetime('now'), ?, 'ja') "
             )
             cur.execute(query, [usermap['Id'], action, comment])
-            conn.commit()
-            await ctx.send(
-                content=f"Gefeliciteerd, {usermap['discordalias']} je bent nu {action} voor de volgende ws",
-                delete_after=3
-            )
+        conn.commit()
+        await ctx.send(
+            content=(
+                f"Gefeliciteerd, {usermap['discordalias']} "
+                f"je bent nu {action} voor de volgende ws"
+            ),
+            delete_after=3
+        )
 
 ###################################################################################################
 #  function _ws_admin
@@ -388,17 +397,17 @@ class WhiteStar(Robin):
             comment = _sanitize(' '.join(args[1:]))
 
         if args[0] in ['i', 'in']:
-            _ws_entry(ctx, action='speler', cur=cur, usermap=usermap, comment=comment)
+            self._ws_entry(ctx, action='speler', cur=cur, usermap=usermap, comment=comment)
         elif args[0] in ['p', 'plan', 'planner']:
-            _ws_entry(ctx, action='planner', cur=cur, usermap=usermap, comment=comment)
+            self._ws_entry(ctx, action='planner', cur=cur, usermap=usermap, comment=comment)
         elif args[0] in ['u', 'uit', 'o', 'out']:
-            _ws_entry(ctx, action='out', cur=cur, usermap=usermap, comment=comment)
+            self._ws_entry(ctx, action='out', cur=cur, usermap=usermap, comment=comment)
         elif args[0] in ['close', 'sluit']:
-            _ws_admin(ctx, action='close', cur=cur)
+            self.ws_admin(ctx, action='close', cur=cur)
         elif args[0] in ['open']:
-            _ws_admin(ctx, action='open', cur=cur)
+            self._ws_admin(ctx, action='open', cur=cur)
         elif args[0] in ['clear']:
-            _ws_admin(ctx, action='clear', cur=cur)
+            self._ws_admin(ctx, action='clear', cur=cur)
         else:
             await ctx.send("Ongeldige input")
             await ctx.send_help(ctx.command)
