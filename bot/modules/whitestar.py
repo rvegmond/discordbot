@@ -129,7 +129,7 @@ class WhiteStar(Robin):
         query = "insert into status (Id, LastUpdate, StatusText) values (?, ?, ?) "
         cur.execute(query, [usermap['Id'], now, statusupdate])
         conn.commit()
-        self.update_status_table(ctx)
+        await self.update_status_table(ctx)
 
         await ctx.send(
             content=f"Dank, {usermap['discordalias']} je ws-status is nu bijgewerkt",
@@ -446,7 +446,7 @@ class WhiteStar(Robin):
             for member in members:
                 cur.execute(select_query, [member.id])
                 if len(cur.fetchall()) == 0:
-                    logger.info(f"updated {member.display_name}")
+                    logger.info(f"inserted {member.display_name}")
                     query = "insert into usermap (Id, DiscordAlias) values (?, ?) "
                     cur.execute(query, [member.id, member.display_name])
             conn.commit()

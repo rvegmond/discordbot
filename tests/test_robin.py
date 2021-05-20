@@ -7,6 +7,8 @@ from mock import AsyncMock
 from bot.modules.robin import Robin, _sanitize, _feedback
 
 TESTSTRING = 'Dit is een teststring'
+robin = Robin()
+robin.conn = sqlite3.connect('tests/hades-test.db')
 
 
 def test_sanitize():
@@ -86,7 +88,5 @@ def test_usermap():
     """
     These tests will test update usermap.
     """
-    robin = Robin()
-    robin.conn = sqlite3.connect('tests/hades-test.db')
     res = robin._getusermap(1)
     assert res['discordid'] == 'discordid1'
