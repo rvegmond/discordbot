@@ -8,7 +8,7 @@ from bot.modules.roles import Roles, _rolemembers
 
 
 @pytest.mark.asyncio
-@patch('bot.modules.roles.Roles._feedback')
+@patch('bot.modules.roles._feedback')
 async def test_get_all_roles(mocked_feedback):
     """
     Testing to see if can get a listed output of all roles.

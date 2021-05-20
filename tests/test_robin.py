@@ -4,7 +4,7 @@ these tests should cover functions and classes in robin.py
 import sqlite3
 import pytest
 from mock import AsyncMock
-from bot.modules.robin import Robin, _sanitize
+from bot.modules.robin import Robin, _sanitize, _feedback
 
 
 def test_sanitize():
@@ -26,9 +26,8 @@ async def test_feedback():
     """
     These tests will check feedback result when everything is fine.
     """
-    robin = Robin()
     ctx = AsyncMock()
-    res = await robin._feedback(ctx=ctx, msg='Dit is een teststring')
+    res = await _feedback(ctx=ctx, msg='Dit is een teststring')
     assert res == 'feedback sent successful'
 
 
@@ -37,8 +36,7 @@ async def test_feedback_no_ctx():
     """
     These tests will check feedback result when contexts is nog spedified
     """
-    robin = Robin()
-    res = await robin._feedback(msg='Dit is een teststring')
+    res = await _feedback(msg='Dit is een teststring')
     assert res == 'context not spedified'
 
 
@@ -47,10 +45,9 @@ async def test_feedback_delete_failed():
     """
     These tests will check feedback result when deletion of msg failed.
     """
-    robin = Robin()
     ctx = AsyncMock()
     ctx.message.delete.side_effect = Exception('Boom!')
-    res = await robin._feedback(ctx=ctx, msg='Dit is een teststring', delete_message=True)
+    res = await _feedback(ctx=ctx, msg='Dit is een teststring', delete_message=True)
     assert res == 'message deletion failed Boom!'
 
 
@@ -59,9 +56,8 @@ async def test_feedback_delete_message_wrong_argument():
     """
     These tests will check feedback result when wrong argument is specified.
     """
-    robin = Robin()
     ctx = AsyncMock()
-    res = await robin._feedback(ctx=ctx, msg='Dit is een teststring', delete_message=7)
+    res = await _feedback(ctx=ctx, msg='Dit is een teststring', delete_message=7)
     assert res == "Invallid option for delete_message 7"
 
 
@@ -70,9 +66,8 @@ async def test_feedback_delete_message_fail():
     """
     These tests will check feedback result when deletion of msg succeeds.
     """
-    robin = Robin()
     ctx = AsyncMock()
-    res = await robin._feedback(ctx=ctx, msg='Dit is een teststring', delete_message=True)
+    res = await _feedback(ctx=ctx, msg='Dit is een teststring', delete_message=True)
     assert res == 'feedback sent successful'
 
 
@@ -81,9 +76,8 @@ async def test_feedback_delete():
     """
     These tests will check feedback result when deletion of msg succeeds.
     """
-    robin = Robin()
     ctx = AsyncMock()
-    res = await robin._feedback(ctx=ctx, msg='Dit is een teststring', delete_after=4)
+    res = await _feedback(ctx=ctx, msg='Dit is een teststring', delete_after=4)
     assert res == 'feedback sent successful'
 
 

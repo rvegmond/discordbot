@@ -3,7 +3,7 @@ This file contains the Roles Class, all functions related to roles should be in 
 """
 from discord.ext import commands
 from loguru import logger
-from .robin import Robin
+from .robin import Robin, _feedback
 
 
 class Roles(Robin):
@@ -27,7 +27,7 @@ class Roles(Robin):
         msg = ''
         for role in all_roles:
             msg += f"role.name: {role.name}\n"
-        await self._feedback(ctx, msg=msg)
+        await _feedback(ctx, msg=msg)
 
     async def in_role(self,
                       ctx: commands.Context,

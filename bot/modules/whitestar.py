@@ -79,8 +79,8 @@ class WhiteStar(Robin):
                     user = row[0]
                     try:
                         lastupdate = datetime.datetime.strptime(row[1], '%d-%m-%Y %H:%M:%S')
-                    except Exception as e:
-                        logger.info(f"Exception: {e}")
+                    except Exception as exception:
+                        logger.info(f"Exception: {exception}")
                         lastupdate = datetime.datetime.strptime(row[1], '%d-%m-%Y')
                     status = row[2]
                     logger.info(f"lastupdate: {lastupdate}")
@@ -94,8 +94,8 @@ class WhiteStar(Robin):
                         msg += f"**{user} - {nicedate} - {status}**\n"
 
                 msg += u"\u2063"
-            except Exception as e:
-                logger.info(f"error: {e}")
+            except Exception as exception:
+                logger.info(f"error: {exception}")
                 return None
             conn.commit()
             await channel.send(msg)
@@ -124,7 +124,7 @@ class WhiteStar(Robin):
         query = f"delete from status where Id='{usermap['Id']}' "
         try:
             cur.execute(query)
-        except Exception as e:
+        except Exception as exception:
             logger.info(f"{usermap['discordalias']} doesn't have a previous status set..")
             return None
 
@@ -141,8 +141,8 @@ class WhiteStar(Robin):
 
         try:
             await ctx.message.delete()
-        except Exception as e:
-            logger.info(f"message deletion failed {e}")
+        except Exception as exception:
+            logger.info(f"message deletion failed {exception}")
         conn.commit()
 
 ###################################################################################################
@@ -277,7 +277,8 @@ class WhiteStar(Robin):
         else:
             # not yet registerd, insert
             query = (
-                "insert into WSinschrijvingen (Id, inschrijving, Inschrijftijd, Opmerkingen, actueel) "
+                "insert into WSinschrijvingen "
+                "(Id, inschrijving, Inschrijftijd, Opmerkingen, actueel) "
                 "values (?, ?, datetime('now'), ?, 'ja') "
             )
             cur.execute(query, [usermap['Id'], action, comment])
@@ -298,11 +299,17 @@ class WhiteStar(Robin):
         """
         execute administrative tasks for the WS entry
         """
+        bot = self.bot
+        conn = self.conn
         wsin_channel = bot.get_channel(int(os.getenv("WSIN_CHANNEL")))
         wslist_channel = bot.get_channel(int(os.getenv("WSLIST_CHANNEL")))
         ws_role = ctx.guild.get_role(int(os.getenv("WS_ROLE")))
+
         # close
-        if not (await Roles.in_role(self, ctx, 'Moderator') or await Roles.in_role(self, ctx, 'Bot Bouwers')):
+        if not (
+            await Roles.in_role(self, ctx, 'Moderator')
+            or await Roles.in_role(self, ctx, 'Bot Bouwers')
+        ):
             _feedback(ctx=ctx, msg="You are not an admin", delete_after=5, delete_message=True)
             return None
 
@@ -434,7 +441,10 @@ class WhiteStar(Robin):
         If Id is not yet in usermap table it will be added
         with the provided alias.
         """
-        if await Roles.in_role(self, ctx, 'Moderator') or await Roles.in_role(self, ctx, 'Bot Bouwers'):
+        if (
+            await Roles.in_role(self, ctx, 'Moderator')
+            or await Roles.in_role(self, ctx, 'Bot Bouwers')
+        ):
             conn = self.conn
             cur = conn.cursor()
 
@@ -491,7 +501,7 @@ class WhiteStar(Robin):
             for row in result:
                 returntime = _normalize_time(row[2]).strftime("%a %H:%M")
                 notificationtime = _normalize_time(row[3]).strftime("%a %H:%M")
-                msg += f"**{row[0]}**      {row[1]}          {returntime}       {notificationtime}\n"
+                msg += f"**{row[0]}**      {row[1]}         {returntime}       {notificationtime}\n"
         await comeback_channel.send(msg)
 
 ###################################################################################################
@@ -560,13 +570,13 @@ class WhiteStar(Robin):
                 "values (?, ?, ?, ?, ?) ")
             cur.execute(query, [usermap['Id'], ws, shiptype, returntime, notificationtime])
             conn.commit()
-        except Exception as e:
-            logger.info(f"insert failed {e}: __{' '.join(args)}")
+        except Exception as exception:
+            logger.info(f"insert failed {exception}: __{' '.join(args)}")
             await ctx.send_help(ctx.command)
 
         await self._update_comeback_channel(comeback_channel[ws], ws)
         if shiptype == 'drone':
-            await self._feedback(
+            await _feedback(
                 ctx,
                 msg=(
                     f"{usermap['discordalias']}, succes met ophalen van "
@@ -576,7 +586,7 @@ class WhiteStar(Robin):
                 delete_message=True
             )
         else:
-            await self._feedback(
+            await _feedback(
                 ctx,
                 msg=(
                     f"Helaas, {usermap['discordalias']}, hopelijk volgende "
@@ -605,7 +615,7 @@ class WhiteStar(Robin):
         result = cur.fetchall()
         if len(result) > 0:
             for row in result:
-                await ws_channel[row[1]].send(f"<@{row[0]}>, je {row[2]} mag weer de ws in, succes!")
+                await ws_channel[row[1]].send(f"<@{row[0]}>, je {row[2]} mag de ws in, succes!")
                 await self._update_comeback_channel(comeback_channel[row[1]], row[1])
 
     def dummy(self, ctx):

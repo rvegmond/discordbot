@@ -2,7 +2,7 @@
 The contents of this file is to reflect happyness of robin.
 """
 from discord.ext import commands
-from .robin import Robin
+from .robin import Robin, _feedback
 
 
 class Ping(Robin):
@@ -20,4 +20,4 @@ class Ping(Robin):
         """
         Are you there Robin? should reply a pong.
         """
-        await self._feedback(ctx, msg="pong")
+        await _feedback(ctx, msg="pong")
