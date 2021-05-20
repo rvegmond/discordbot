@@ -218,14 +218,13 @@ class WhiteStar(Robin):
                         ctx: commands.Context = None,
                         action: str = '',
                         cur=None,
-                        usermap: list = [],
                         comment: str = ''):
         """
         Handle the entry for the ws
         """
         bot = self.bot
         conn = self.conn
-
+        usermap = self._getusermap(str(ctx.author.id))
         wsin_channel = bot.get_channel(int(os.getenv("WSIN_CHANNEL")))
         wslist_channel = bot.get_channel(int(os.getenv("WSLIST_CHANNEL")))
         query = (
@@ -350,7 +349,7 @@ class WhiteStar(Robin):
     @commands.command(
         name="ws",
         help=(
-            f"Met het ws commando schrijf je je in (of uit) voor de volgende ws, opties:\n"
+            "Met het ws commando schrijf je je in (of uit) voor de volgende ws, opties:\n"
             " plan/p [opmerking] - aanmelden als planner voor de volgende ws\n"
             " in/i [opmerking]   - aanmelden als speler voor de volgende ws\n"
             " uit/u              - afmelden voor de volgende ws (als je aangemeld was)\n"
@@ -394,13 +393,12 @@ class WhiteStar(Robin):
             return None
 
         if len(args) == 0:
-            """ no arguments """
-            # send help!
+            # no arguments, send help!
             await ctx.send_help(ctx.command)
             return None
 
         if len(args) > 1:
-            """ more than 1 argument """
+            # more than 1 argument, join
             comment = _sanitize(' '.join(args[1:]))
 
         if args[0] in ['i', 'in']:
@@ -410,7 +408,7 @@ class WhiteStar(Robin):
         elif args[0] in ['u', 'uit', 'o', 'out']:
             self._ws_entry(ctx, action='out', cur=cur, usermap=usermap, comment=comment)
         elif args[0] in ['close', 'sluit']:
-            self.ws_admin(ctx, action='close', cur=cur)
+            self._ws_admin(ctx, action='close', cur=cur)
         elif args[0] in ['open']:
             self._ws_admin(ctx, action='open', cur=cur)
         elif args[0] in ['clear']:
@@ -464,7 +462,7 @@ class WhiteStar(Robin):
 #  command _update_comeback_channel
 ###################################################################################################
 
-    async def _update_comeback_channel(self, comeback_channel, ws):
+    async def _update_comeback_channel(self, comeback_channel, which_ws):
         conn = self.conn
         bot = self.bot
         cur = conn.cursor()
@@ -476,7 +474,7 @@ class WhiteStar(Robin):
             "where w.NotificationTime > STRFTIME('%Y-%m-%d %H:%M', datetime('now', 'localtime')) "
             "and w.ws = ? "
         )
-        cur.execute(query, [ws])
+        cur.execute(query, [which_ws])
         result = cur.fetchall()
         await comeback_channel.purge(limit=100)
         msg = (
