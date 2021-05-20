@@ -79,8 +79,7 @@ class WhiteStar(Robin):
                     user = row[0]
                     try:
                         lastupdate = datetime.datetime.strptime(row[1], '%d-%m-%Y %H:%M:%S')
-                    except Exception as exception:
-                        logger.info(f"Exception: {exception}")
+                    except ValueError:
                         lastupdate = datetime.datetime.strptime(row[1], '%d-%m-%Y')
                     status = row[2]
                     logger.info(f"lastupdate: {lastupdate}")
@@ -122,11 +121,9 @@ class WhiteStar(Robin):
         cur = conn.cursor()
         logger.info(f"New status from {usermap['discordalias']}: {statusupdate} ")
         query = f"delete from status where Id='{usermap['Id']}' "
-        try:
-            cur.execute(query)
-        except Exception as exception:
+        cur.execute(query)
+        if cur.rowcount == 0:
             logger.info(f"{usermap['discordalias']} doesn't have a previous status set..")
-            return None
 
         now = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")
         query = "insert into status (Id, LastUpdate, StatusText) values (?, ?, ?) "
@@ -373,13 +370,11 @@ class WhiteStar(Robin):
         The function to handle the ws inschrijvingen related stuff
         TODO refactor, rename and simplify
         """
-        conn = self.conn
-        bot = self.bot
         usermap = self._getusermap(str(ctx.author.id))
-        cur = conn.cursor()
+        cur = self.conn.cursor()
         wsin_channel_id = int(os.getenv("WSIN_CHANNEL"))
-        wsin_channel = bot.get_channel(int(os.getenv("WSIN_CHANNEL")))
-        wslist_channel = bot.get_channel(int(os.getenv("WSLIST_CHANNEL")))
+        wsin_channel = self.bot.get_channel(int(os.getenv("WSIN_CHANNEL")))
+        wslist_channel = self.bot.get_channel(int(os.getenv("WSLIST_CHANNEL")))
         comment = ''
 
         if ctx.channel != wsin_channel:
@@ -402,11 +397,11 @@ class WhiteStar(Robin):
             comment = _sanitize(' '.join(args[1:]))
 
         if args[0] in ['i', 'in']:
-            self._ws_entry(ctx, action='speler', cur=cur, usermap=usermap, comment=comment)
+            self._ws_entry(ctx, action='speler', cur=cur, comment=comment)
         elif args[0] in ['p', 'plan', 'planner']:
-            self._ws_entry(ctx, action='planner', cur=cur, usermap=usermap, comment=comment)
+            self._ws_entry(ctx, action='planner', cur=cur, comment=comment)
         elif args[0] in ['u', 'uit', 'o', 'out']:
-            self._ws_entry(ctx, action='out', cur=cur, usermap=usermap, comment=comment)
+            self._ws_entry(ctx, action='out', cur=cur, comment=comment)
         elif args[0] in ['close', 'sluit']:
             self._ws_admin(ctx, action='close', cur=cur)
         elif args[0] in ['open']:
