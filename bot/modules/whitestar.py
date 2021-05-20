@@ -368,7 +368,6 @@ class WhiteStar(Robin):
     async def ws(self, ctx, *args):
         """
         The function to handle the ws inschrijvingen related stuff
-        TODO refactor, rename and simplify
         """
         usermap = self._getusermap(str(ctx.author.id))
         cur = self.conn.cursor()
@@ -378,7 +377,7 @@ class WhiteStar(Robin):
         comment = ''
 
         if ctx.channel != wsin_channel:
-            """ Trying to post in the wrong channel """
+            # Trying to post in the wrong channel
             msg = (
                 f"{usermap['discordalias']}, je kunt alleen in kanaal <#{wsin_channel_id}> "
                 "inschrijven, je bent nu nog **niet** ingeschreven!"
@@ -473,7 +472,7 @@ class WhiteStar(Robin):
         result = cur.fetchall()
         await comeback_channel.purge(limit=100)
         msg = (
-            f"In dit kanaal komt het overzicht wanneer je schip weer de ws in mag, dit kanaal is "
+            "In dit kanaal komt het overzicht wanneer je schip weer de ws in mag, dit kanaal is "
             f"specifiek voor {ws}. Met **`{bot.command_prefix}terug <schip> <terugkomtijd>`** geef "
             "je aan wanneer je schip weer terug de ws in mag. Het schip kan zijn *bs*, *ukkie* of "
             "*drone*. Voor de terugkomtijd kun je in twee formaten weergeven:\n"
