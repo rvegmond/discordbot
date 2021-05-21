@@ -189,10 +189,10 @@ class WhiteStar(Robin):
         )
         cur.execute(query)
         num_players = len(cur.fetchall())
-
+        logger.info(f"num_players: {num_players}, num_planners: {num_planners}")
         msg += (
-            f"**Planners:** {num_planners}, ",
-            f"**Spelers:** {num_players}, ",
+            f"**Planners:** {num_planners}, "
+            f"**Spelers:** {num_players}, "
             f"**Totaal:** {num_planners+num_players}"
         )
         msg += "\n"
@@ -209,7 +209,6 @@ class WhiteStar(Robin):
     async def _ws_entry(self,
                         ctx: commands.Context = None,
                         action: str = '',
-                        cur=None,
                         comment: str = ''):
         """
         Handle the entry for the ws
@@ -228,7 +227,7 @@ class WhiteStar(Robin):
         if action == 'out':
             if is_entered == 0:
                 msg = f"{usermap['discordalias']}, je stond nog niet ingeschreven.. "
-                _feedback(ctx=ctx, msg=msg, delete_after=3)
+                await _feedback(ctx=ctx, msg=msg, delete_after=3)
             else:
                 query = (
                     "delete from WSinschrijvingen "
@@ -238,7 +237,7 @@ class WhiteStar(Robin):
 
                 cur.execute(query, [usermap['Id']])
                 msg = f"Helaas, {usermap['discordalias']} je doet niet mee met komende ws"
-                _feedback(ctx=ctx, msg=msg, delete_after=3)
+                await _feedback(ctx=ctx, msg=msg, delete_after=3)
 
                 await self.update_ws_inschrijvingen_tabel(wslist_channel)
 
@@ -285,7 +284,7 @@ class WhiteStar(Robin):
 #  function _ws_admin
 ###################################################################################################
 
-    async def _ws_admin(self, ctx, action: str, cur):
+    async def _ws_admin(self, ctx, action: str):
         """
         execute administrative tasks for the WS entry
         """
@@ -300,7 +299,7 @@ class WhiteStar(Robin):
             await Roles.in_role(self, ctx, 'Moderator')
             or await Roles.in_role(self, ctx, 'Bot Bouwers')
         ):
-            _feedback(ctx=ctx, msg="You are not an admin", delete_after=5, delete_message=True)
+            await _feedback(ctx=ctx, msg="You are not an admin", delete_after=5, delete_message=True)
             return None
 
         if action == 'open':
@@ -363,7 +362,6 @@ class WhiteStar(Robin):
         The function to handle the ws inschrijvingen related stuff
         """
         usermap = self._getusermap(str(ctx.author.id))
-        cur = self.conn.cursor()
         wsin_channel_id = int(os.getenv("WSIN_CHANNEL"))
         wsin_channel = self.bot.get_channel(int(os.getenv("WSIN_CHANNEL")))
         wslist_channel = self.bot.get_channel(int(os.getenv("WSLIST_CHANNEL")))
@@ -376,7 +374,7 @@ class WhiteStar(Robin):
                 "inschrijven, je bent nu nog **niet** ingeschreven!"
             )
 
-            _feedback(ctx=ctx, msg=msg, delete_after=3, delete_message=True)
+            await _feedback(ctx=ctx, msg=msg, delete_after=3, delete_message=True)
             return None
 
         if len(args) == 0:
@@ -389,17 +387,17 @@ class WhiteStar(Robin):
             comment = _sanitize(' '.join(args[1:]))
 
         if args[0] in ['i', 'in']:
-            self._ws_entry(ctx, action='speler', cur=cur, comment=comment)
+            await self._ws_entry(ctx, action='speler', comment=comment)
         elif args[0] in ['p', 'plan', 'planner']:
-            self._ws_entry(ctx, action='planner', cur=cur, comment=comment)
+            await self._ws_entry(ctx, action='planner', comment=comment)
         elif args[0] in ['u', 'uit', 'o', 'out']:
-            self._ws_entry(ctx, action='out', cur=cur, comment=comment)
+            await self._ws_entry(ctx, action='out', comment=comment)
         elif args[0] in ['close', 'sluit']:
-            self._ws_admin(ctx, action='close', cur=cur)
+            await self._ws_admin(ctx, action='close')
         elif args[0] in ['open']:
-            self._ws_admin(ctx, action='open', cur=cur)
+            await self._ws_admin(ctx, action='open')
         elif args[0] in ['clear']:
-            self._ws_admin(ctx, action='clear', cur=cur)
+            await self._ws_admin(ctx, action='clear')
         else:
             await ctx.send("Ongeldige input")
             await ctx.send_help(ctx.command)
@@ -463,9 +461,9 @@ class WhiteStar(Robin):
         await comeback_channel.purge(limit=100)
         msg = (
             "In dit kanaal komt het overzicht wanneer je schip weer de ws in mag, dit kanaal is "
-            f"specifiek voor {ws}. Met **`{bot.command_prefix}terug <schip> <terugkomtijd>`** geef "
-            "je aan wanneer je schip weer terug de ws in mag. Het schip kan zijn *bs*, *ukkie* of "
-            "*drone*. Voor de terugkomtijd kun je in twee formaten weergeven:\n"
+            f"specifiek voor {which_ws}. Met **`{bot.command_prefix}terug <schip> <terugkomtijd>`**"
+            " geef je aan wanneer je schip weer terug de ws in mag. Het schip kan zijn *bs*, "
+            "*ukkie* of *drone*. Voor de terugkomtijd kun je in twee formaten weergeven:\n"
             " **uu:mm**  - dit geeft de tijd vanaf nu, dit is voor een ukkie of een bs of\n"
             " **uu.t**   - dit is de tijd waarin t tienden van een uur zijn, dit is voor drones.\n"
             "Het is ook om een notificatietijd mee te geven, dit is dan de derde parameter. "
@@ -481,8 +479,8 @@ class WhiteStar(Robin):
 
         if len(result) > 0:
             for row in result:
-                returntime = _normalize_time(row[2]).strftime("%a %H:%M")
-                notificationtime = _normalize_time(row[3]).strftime("%a %H:%M")
+                returntime = datetime.datetime.strptime(row[2], '%Y-%m-%d %H:%M').strftime("%a %H:%M")
+                notificationtime = datetime.datetime.strptime(row[3], '%Y-%m-%d %H:%M').strftime("%a %H:%M")
                 msg += f"**{row[0]}**      {row[1]}         {returntime}       {notificationtime}\n"
         await comeback_channel.send(msg)
 
@@ -515,15 +513,9 @@ class WhiteStar(Robin):
         returntime = _normalize_time(args[1])
 
         if len(args) == 2:
-            notificationtime = _normalize_time(args[1])
+            notificationtime = returntime
         elif len(args) == 3:
-            now = datetime.datetime.now()
-            intime = args[2]
-            (hours, minutes) = intime.split(':')
-            intime = datetime.datetime(now.year, now.month, now.day, int(hours), int(minutes), 0)
-            if intime < now:
-                intime = intime + datetime.timedelta(days=1)
-            notificationtime = _normalize_time(intime)
+            notificationtime = _normalize_time(args[2])
         else:
             # send help!
             await ctx.send_help(ctx.command)
@@ -613,16 +605,27 @@ def _normalize_time(intime: str
     Output:
         intime:     The normalized time
     """
+    logger.info(f"intime: {intime}")
     now = datetime.datetime.now()
+    logger.info(f"now: {now}")
     if '.' in intime or ',' in intime:
         logger.info(f"found . {intime}")
         (hours, minutes) = intime.split('.')
+        logger.info(f"hours: {hours}, minutes: {minutes}")
         intime = now + datetime.timedelta(hours=int(hours), minutes=int(minutes) * 6)
-        intime = intime.strftime("%Y-%m-%d %H:%M")
+    if 'u' in intime:
+        logger.info(f"found u {intime}")
+        intime = intime.replace('u', '')
+        (hours, minutes) = intime.split(':')
+        intime = datetime.datetime(now.year, now.month, now.day, int(hours), int(minutes), 0)
+        if intime < now:
+            intime = intime + datetime.timedelta(days=1)
     elif ':' in intime:
         logger.info(f"found : {intime}")
         (hours, minutes) = intime.split(':')
+        logger.info(f"hours: {hours}, minutes: {minutes}")
         intime = now + datetime.timedelta(hours=int(hours), minutes=int(minutes))
-        intime = intime.strftime("%Y-%m-%d %H:%M")
-    logger.info(f"return{intime}")
+        logger.info(f"intime: {intime}")
+    intime = intime.strftime("%Y-%m-%d %H:%M")
+    logger.info(f"return {intime}")
     return intime
