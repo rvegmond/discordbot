@@ -576,6 +576,9 @@ class WhiteStar(Robin):
 
     @tasks.loop(minutes=1)
     async def return_scheduler(self):
+        """
+        this is the "cron" for the comeback notifications
+        """
         cur = self.conn.cursor()
         ws_channel = {}
         ws_channel['ws1'] = self.bot.get_channel(int(os.getenv('WS1_CHANNEL')))

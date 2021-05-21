@@ -9,7 +9,6 @@ from discord.ext import commands
 from loguru import logger
 from modules import whitestar, ping, roles
 
-
 DB_FILE = '../data/hades.db'
 
 ___VERSION___ = "[v1.3.1]"
