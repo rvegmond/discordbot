@@ -613,7 +613,7 @@ def _normalize_time(intime: str
         (hours, minutes) = intime.split('.')
         logger.info(f"hours: {hours}, minutes: {minutes}")
         intime = now + datetime.timedelta(hours=int(hours), minutes=int(minutes) * 6)
-    if 'u' in intime:
+    elif 'u' in intime:
         logger.info(f"found u {intime}")
         intime = intime.replace('u', '')
         (hours, minutes) = intime.split(':')
