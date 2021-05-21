@@ -36,9 +36,8 @@ class WhiteStar(Robin):
         """
         updating status table in status channel
         """
-        conn = self.conn
         bot = self.bot
-        cur = conn.cursor()
+        cur = self.conn.cursor()
         status_channel = int(os.getenv("STATUS_CHANNEL"))
         channel = bot.get_channel(status_channel)
         await channel.purge(limit=100)
@@ -96,7 +95,6 @@ class WhiteStar(Robin):
             except Exception as exception:
                 logger.info(f"error: {exception}")
                 return None
-            conn.commit()
             await channel.send(msg)
 
 ###################################################################################################
@@ -114,11 +112,11 @@ class WhiteStar(Robin):
         """
         updating the status of ws participants
         """
-        conn = self.conn
 
         usermap = self._getusermap(int(ctx.author.id))
         statusupdate = _sanitize(' '.join(args), 100)
-        cur = conn.cursor()
+        cur = self.conn.cursor()
+
         logger.info(f"New status from {usermap['discordalias']}: {statusupdate} ")
         query = f"delete from status where Id='{usermap['Id']}' "
         cur.execute(query)
@@ -128,7 +126,6 @@ class WhiteStar(Robin):
         now = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")
         query = "insert into status (Id, LastUpdate, StatusText) values (?, ?, ?) "
         cur.execute(query, [usermap['Id'], now, statusupdate])
-        conn.commit()
         await self.update_status_table(ctx)
 
         await ctx.send(
@@ -140,7 +137,6 @@ class WhiteStar(Robin):
             await ctx.message.delete()
         except Exception as exception:
             logger.info(f"message deletion failed {exception}")
-        conn.commit()
 
 ###################################################################################################
 #  function update_ws_inschrijvingen_tabel
@@ -151,9 +147,8 @@ class WhiteStar(Robin):
         This wil write the list of "inschrijvingen" to the wslist_channel,
         it is based on the contents of the sqlite table
         """
-        conn = self.conn
         bot = self.bot
-        cur = conn.cursor()
+        cur = self.conn.cursor()
 
         # Get all subscribers for the ws
         query = (
@@ -220,7 +215,8 @@ class WhiteStar(Robin):
         Handle the entry for the ws
         """
         bot = self.bot
-        conn = self.conn
+        cur = self.conn.cursor()
+
         usermap = self._getusermap(str(ctx.author.id))
         wsin_channel = bot.get_channel(int(os.getenv("WSIN_CHANNEL")))
         wslist_channel = bot.get_channel(int(os.getenv("WSLIST_CHANNEL")))
@@ -241,7 +237,6 @@ class WhiteStar(Robin):
                 )
 
                 cur.execute(query, [usermap['Id']])
-                conn.commit()
                 msg = f"Helaas, {usermap['discordalias']} je doet niet mee met komende ws"
                 _feedback(ctx=ctx, msg=msg, delete_after=3)
 
@@ -278,7 +273,6 @@ class WhiteStar(Robin):
                 "values (?, ?, datetime('now'), ?, 'ja') "
             )
             cur.execute(query, [usermap['Id'], action, comment])
-        conn.commit()
         await ctx.send(
             content=(
                 f"Gefeliciteerd, {usermap['discordalias']} "
@@ -296,7 +290,7 @@ class WhiteStar(Robin):
         execute administrative tasks for the WS entry
         """
         bot = self.bot
-        conn = self.conn
+        cur = self.conn.cursor()
         wsin_channel = bot.get_channel(int(os.getenv("WSIN_CHANNEL")))
         wslist_channel = bot.get_channel(int(os.getenv("WSLIST_CHANNEL")))
         ws_role = ctx.guild.get_role(int(os.getenv("WS_ROLE")))
@@ -336,7 +330,6 @@ class WhiteStar(Robin):
                 "set actueel='nee' "
             )
             cur.execute(query)
-            conn.commit()
             await self.update_ws_inschrijvingen_tabel(wslist_channel)
             return None
 ###################################################################################################
@@ -437,8 +430,7 @@ class WhiteStar(Robin):
             await Roles.in_role(self, ctx, 'Moderator')
             or await Roles.in_role(self, ctx, 'Bot Bouwers')
         ):
-            conn = self.conn
-            cur = conn.cursor()
+            cur = self.conn.cursor()
 
             guild = ctx.guild
             members = guild.members
@@ -449,7 +441,6 @@ class WhiteStar(Robin):
                     logger.info(f"inserted {member.display_name}")
                     query = "insert into usermap (Id, DiscordAlias) values (?, ?) "
                     cur.execute(query, [member.id, member.display_name])
-            conn.commit()
             await ctx.send(f"usermap updated by {ctx.author.name}")
 
 ###################################################################################################
@@ -457,9 +448,8 @@ class WhiteStar(Robin):
 ###################################################################################################
 
     async def _update_comeback_channel(self, comeback_channel, which_ws):
-        conn = self.conn
+        cur = self.conn.cursor()
         bot = self.bot
-        cur = conn.cursor()
         query = (
             "select um.DiscordAlias, ShipType, ReturnTime, NotificationTime "
             "from WSReturn w "
@@ -516,13 +506,12 @@ class WhiteStar(Robin):
         brief="Meld de terugkomtijd van je schip aan.",
     )
     async def terug(self, ctx, *args):
-        conn = self.conn
+        cur = self.conn.cursor()
         comeback_channel = {}
         comeback_channel['ws1'] = self.bot.get_channel(int(os.getenv('WS1_COMEBACK_CHANNEL')))
         comeback_channel['ws2'] = self.bot.get_channel(int(os.getenv('WS2_COMEBACK_CHANNEL')))
 
         usermap = self._getusermap(int(ctx.author.id))
-        cur = conn.cursor()
         returntime = _normalize_time(args[1])
 
         if len(args) == 2:
@@ -561,7 +550,6 @@ class WhiteStar(Robin):
                 "insert into WSReturn (Id, WS, Shiptype, ReturnTime, NotificationTime) "
                 "values (?, ?, ?, ?, ?) ")
             cur.execute(query, [usermap['Id'], ws, shiptype, returntime, notificationtime])
-            conn.commit()
         except Exception as exception:
             logger.info(f"insert failed {exception}: __{' '.join(args)}")
             await ctx.send_help(ctx.command)
@@ -590,14 +578,13 @@ class WhiteStar(Robin):
 
     @tasks.loop(minutes=1)
     async def return_scheduler(self):
-        conn = self.conn
+        cur = self.conn.cursor()
         ws_channel = {}
         ws_channel['ws1'] = self.bot.get_channel(int(os.getenv('WS1_CHANNEL')))
         ws_channel['ws2'] = self.bot.get_channel(int(os.getenv('WS2_CHANNEL')))
         comeback_channel = {}
         comeback_channel['ws1'] = self.bot.get_channel(int(os.getenv('WS1_COMEBACK_CHANNEL')))
         comeback_channel['ws2'] = self.bot.get_channel(int(os.getenv('WS2_COMEBACK_CHANNEL')))
-        cur = conn.cursor()
         query = (
             "select Id, ws, ShipType, ReturnTime, NotificationTime "
             "from WSReturn w "
@@ -609,20 +596,6 @@ class WhiteStar(Robin):
             for row in result:
                 await ws_channel[row[1]].send(f"<@{row[0]}>, je {row[2]} mag de ws in, succes!")
                 await self._update_comeback_channel(comeback_channel[row[1]], row[1])
-
-    def dummy(self, ctx):
-        conn = self.conn
-        query = (
-            "select Id "
-            "from WSReturn "
-        )
-        cur = conn.cursor()
-        cur.execute(query)
-        msg = []
-        result = cur.fetchall()
-        for row in result:
-            msg += f"{row[0]}\n"
-        return msg
 
 
 ###################################################################################################
