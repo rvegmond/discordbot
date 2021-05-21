@@ -23,8 +23,9 @@ class WhiteStar(Robin):
     The class that contains the Whitestar functions
     """
     def __init__(self, bot=None, conn=None):
-        self.bot = bot
-        self.conn = conn
+        # self.bot = bot
+        # self.conn = conn
+        super().__init__(bot, conn)
         self.return_scheduler.start()
         logger.info(f"Class {type(self).__name__} initialized ")
 
@@ -299,7 +300,12 @@ class WhiteStar(Robin):
             await Roles.in_role(self, ctx, 'Moderator')
             or await Roles.in_role(self, ctx, 'Bot Bouwers')
         ):
-            await _feedback(ctx=ctx, msg="You are not an admin", delete_after=5, delete_message=True)
+            await _feedback(
+                ctx=ctx,
+                msg="You are not an admin",
+                delete_after=5,
+                delete_message=True
+            )
             return None
 
         if action == 'open':
@@ -479,8 +485,10 @@ class WhiteStar(Robin):
 
         if len(result) > 0:
             for row in result:
-                returntime = datetime.datetime.strptime(row[2], '%Y-%m-%d %H:%M').strftime("%a %H:%M")
-                notificationtime = datetime.datetime.strptime(row[3], '%Y-%m-%d %H:%M').strftime("%a %H:%M")
+                returntime = datetime.datetime.strptime(
+                    row[2], '%Y-%m-%d %H:%M').strftime("%a %H:%M")
+                notificationtime = datetime.datetime.strptime(
+                    row[3], '%Y-%m-%d %H:%M').strftime("%a %H:%M")
                 msg += f"**{row[0]}**      {row[1]}         {returntime}       {notificationtime}\n"
         await comeback_channel.send(msg)
 
