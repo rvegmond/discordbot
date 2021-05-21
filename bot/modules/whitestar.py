@@ -23,8 +23,6 @@ class WhiteStar(Robin):
     The class that contains the Whitestar functions
     """
     def __init__(self, bot=None, conn=None):
-        # self.bot = bot
-        # self.conn = conn
         super().__init__(bot, conn)
         self.return_scheduler.start()
         logger.info(f"Class {type(self).__name__} initialized ")
