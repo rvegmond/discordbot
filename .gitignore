@@ -7,6 +7,9 @@ run_*
 data/hades.db
 .scannerwork
 Pipfile.lock
+data/*
+tests/test-results/*
+tests/hades-test.db
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

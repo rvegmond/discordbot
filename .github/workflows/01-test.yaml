@@ -1,22 +1,24 @@
 name: Build
-on: [push]
-  # push:
-    #    branches:
-    #      - master
-    #  pull_request:
-    #    types: [opened, synchronize, reopened]
+on: 
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
 jobs:
-  sonarcloud:
-    name: SonarCloud
+  test:
+    name: CodeTesting
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: install os prereq
+        run: sudo apt install -y sqlite3
+      - name: install python prereq
+        run: pip install pipenv  && pipenv install --dev
       - name: setLocale nl_NL.utf8
         run: sudo locale-gen nl_NL.utf8
-      - name: install prereq
-        run: pip install pipenv  && pipenv install --dev
       - name: run test
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

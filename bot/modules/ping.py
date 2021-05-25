@@ -1,14 +1,14 @@
-import discord
+"""
+The contents of this file is to reflect happyness of robin.
+"""
 from discord.ext import commands
-from threading import Lock
-from .robin import Robin
+from .robin import Robin, _feedback
 
 
 class Ping(Robin):
-
-    async def _ping(self, ctx):
-        await self._feedback(ctx, msg="pong")
-
+    """
+    Are you happy Robin?
+    """
     @commands.command(
         name="ping",
         help=("Commando om te zien of de bot nog leeft."
@@ -17,4 +17,7 @@ class Ping(Robin):
         brief="Commando om te zien of de bot nog leeft.",
     )
     async def ping(self, ctx):
-        await self._ping(ctx)
+        """
+        Are you there Robin? should reply a pong.
+        """
+        await _feedback(ctx, msg="pong")
