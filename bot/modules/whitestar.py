@@ -312,7 +312,7 @@ class WhiteStar(Robin):
             await ctx.send(content=f"Inschrijving geopend door {ctx.author.name}")
         elif action == 'close':
             await wsin_channel.set_permissions(ws_role, send_messages=False)
-            #await wslist_channel.set_permissions(ws_role, send_messages=False)
+            await wslist_channel.set_permissions(ws_role, send_messages=False)
             await ctx.send(content=f"Inschrijving gesloten door {ctx.author.name}")
         elif action == 'clear':
             msg = (
