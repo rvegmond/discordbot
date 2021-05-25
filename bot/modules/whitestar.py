@@ -308,11 +308,11 @@ class WhiteStar(Robin):
 
         if action == 'open':
             await wsin_channel.set_permissions(ws_role, send_messages=True)
-            await wslist_channel.set_permissions(ws_role, send_messages=True)
+            #await wslist_channel.set_permissions(ws_role, send_messages=True)
             await ctx.send(content=f"Inschrijving geopend door {ctx.author.name}")
         elif action == 'close':
             await wsin_channel.set_permissions(ws_role, send_messages=False)
-            await wslist_channel.set_permissions(ws_role, send_messages=False)
+            #await wslist_channel.set_permissions(ws_role, send_messages=False)
             await ctx.send(content=f"Inschrijving gesloten door {ctx.author.name}")
         elif action == 'clear':
             msg = (
@@ -334,6 +334,7 @@ class WhiteStar(Robin):
             )
             cur.execute(query)
             await self.update_ws_inschrijvingen_tabel(wslist_channel)
+            await wsin_channel.set_permissions(ws_role, send_messages=True)
             return None
 ###################################################################################################
 #  command ws  (inschrijvingen)
