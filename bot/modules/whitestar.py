@@ -294,7 +294,8 @@ class WhiteStar(Robin):
         execute administrative tasks for the WS entry
         """
         bot = self.bot
-        cur = self.conn.cursor()
+        conn = self.conn
+        cur = conn.cursor()
         wsin_channel = bot.get_channel(int(os.getenv("WSIN_CHANNEL")))
         wslist_channel = bot.get_channel(int(os.getenv("WSLIST_CHANNEL")))
         ws_role = ctx.guild.get_role(int(os.getenv("WS_ROLE")))
@@ -341,6 +342,7 @@ class WhiteStar(Robin):
             cur.execute(query)
             await self.update_ws_inschrijvingen_tabel(wslist_channel)
             await wsin_channel.set_permissions(ws_role, send_messages=True)
+            conn.commit()
             return None
 ###################################################################################################
 #  command ws  (inschrijvingen)
@@ -387,7 +389,6 @@ class WhiteStar(Robin):
 
             await _feedback(ctx=ctx, msg=msg, delete_after=3, delete_message=True)
             return None
-
         if len(args) == 0:
             # no arguments, send help!
             await ctx.send_help(ctx.command)
@@ -397,6 +398,7 @@ class WhiteStar(Robin):
             # more than 1 argument, join
             comment = _sanitize(' '.join(args[1:]))
 
+        logger.info(f"{usermap['discordalias']} - {args[0]} - {comment}")
         if args[0] in ['i', 'in']:
             await self._ws_entry(ctx, action='speler', comment=comment)
         elif args[0] in ['p', 'plan', 'planner']:
