@@ -120,7 +120,7 @@ class WhiteStar(Robin):
         query = f"delete from status where Id='{usermap['Id']}' "
         cur.execute(query)
         if cur.rowcount == 0:
-            logger.info(f"{usermap['discordalias']} doesn't have a previous status set..")
+            logger.info(f"{usermap['discordalias']} didn't have a previous status set..")
 
         now = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")
         query = "insert into status (Id, LastUpdate, StatusText) values (?, ?, ?) "
@@ -198,6 +198,7 @@ class WhiteStar(Robin):
 
         async for message in wslist_channel.history(limit=20):
             if message.author == bot.user:
+                logger.debug(f"going to delete message for {message.author} == {bot.user}")
                 await message.delete()
         await wslist_channel.send(msg)
 
@@ -213,7 +214,8 @@ class WhiteStar(Robin):
         Handle the entry for the ws
         """
         bot = self.bot
-        cur = self.conn.cursor()
+        conn = self.conn
+        cur = conn.cursor()
 
         usermap = self._getusermap(str(ctx.author.id))
         wsin_channel = bot.get_channel(int(os.getenv("WSIN_CHANNEL")))
@@ -223,8 +225,10 @@ class WhiteStar(Robin):
         )
         cur.execute(query, [usermap['Id']])
         is_entered = len(cur.fetchall())
+        logger.info(f"{usermap['discordalias']} heeft als action: {action}")
         if action == 'out':
             if is_entered == 0:
+                logger.info(f"{usermap['discordalias']} stond nog niet ingeschreven.. ")
                 msg = f"{usermap['discordalias']}, je stond nog niet ingeschreven.. "
                 await _feedback(ctx=ctx, msg=msg, delete_after=3)
             else:
@@ -235,6 +239,7 @@ class WhiteStar(Robin):
                 )
 
                 cur.execute(query, [usermap['Id']])
+                logger.info(f"{usermap['discordalias']} stond wel ingeschreven.. ")
                 msg = f"Helaas, {usermap['discordalias']} je doet niet mee met komende ws"
                 await _feedback(ctx=ctx, msg=msg, delete_after=3)
 
@@ -242,13 +247,13 @@ class WhiteStar(Robin):
 
                 async for message in wsin_channel.history(limit=50):
                     if message.author.id == ctx.author.id:
+                        logger.info(f"deleting message for {message.autor.id}")
                         await message.delete()
+            conn.commit()
             return None
-    # is member already registered
         query = (
             "select * from WSinschrijvingen where Id=? and inschrijving=? and actueel='ja' "
         )
-
         cur.execute(query, [usermap['Id'], action])
         rows_same_role = len(cur.fetchall())
 
@@ -278,6 +283,7 @@ class WhiteStar(Robin):
             ),
             delete_after=3
         )
+        conn.commit()
 
 ###################################################################################################
 #  function _ws_admin
