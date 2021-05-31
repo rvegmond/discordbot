@@ -486,10 +486,10 @@ class WhiteStar(Robin):
             f" **`{bot.command_prefix}terug <schip> <terugkomtijd> <notificatietid>`**, bv.:\n"
             f"`{bot.command_prefix}terug bs 17:00 8:00` - ik kan over 17 uur vanaf nu weer een bs "
             "insturen maar wil morgen om 8:00 pas een notificatie."
-            u"\u2063"
-            "**Speler     Schip     TerugTijd     NotificatieTijd**\n"
         )
 
+        await comeback_channel.send(msg)
+        msg = "**Speler     Schip     TerugTijd     NotificatieTijd**\n"
         if len(result) > 0:
             for row in result:
                 returntime = datetime.datetime.strptime(
