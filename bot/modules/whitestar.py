@@ -442,17 +442,20 @@ class WhiteStar(Robin):
             or await Roles.in_role(self, ctx, 'Bot Bouwers')
         ):
             cur = self.conn.cursor()
-
+            msg = ""
             guild = ctx.guild
             members = guild.members
             select_query = "select * from usermap where Id=? "
             for member in members:
                 cur.execute(select_query, [member.id])
                 if len(cur.fetchall()) == 0:
+                    msg += f"inserted {member.display_name}\n"
                     logger.info(f"inserted {member.display_name}")
                     query = "insert into usermap (Id, DiscordAlias) values (?, ?) "
                     cur.execute(query, [member.id, member.display_name])
-            await ctx.send(f"usermap updated by {ctx.author.name}")
+
+            msg += f"usermap updated by {ctx.author.name}"
+            await _feedback(ctx=ctx, msg=msg)
 
 ###################################################################################################
 #  command _update_comeback_channel

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 The main file for the bot Robin.
 """
@@ -29,7 +30,7 @@ def create_connection():
     """
     conn = None
     try:
-        conn = sqlite3.connect(DB_FILE)
+        conn = sqlite3.connect(DB_FILE, isolation_level=None)
         logger.info(f"connected successful to {DB_FILE}")
     except Exception as error:
         logger.info(f"connection failed {error}")
