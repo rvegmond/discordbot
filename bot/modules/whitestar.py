@@ -465,19 +465,21 @@ class WhiteStar(Robin):
     ###################################################################################################
 
     async def _update_comeback_channel(self, comeback_channel, which_ws):
-        cur = self.conn.cursor()
         bot = self.bot
-        query = (
-            "select um.DiscordAlias, ShipType, ReturnTime, NotificationTime "
-            "from WSReturn w "
-            "left join UserMap um "
-            "on um.Id  = w.Id "
-            "where w.NotificationTime > STRFTIME('%Y-%m-%d %H:%M', datetime('now', 'localtime')) "
-            "and w.ws = ? "
+
+        get_comback = (
+            self.db.session.query(
+                self.db.UserMap.DiscordAlias,
+                self.db.WSComeback.UserId,
+                self.db.WSComeback.WSId,
+                self.db.WSComeback.ShipType,
+                self.db.WSComeback.ReturnTime,
+                self.db.WSComeback.NotificationTime,
+            )
+            .join(self.db.UserMap)
+            .filter_by(self.db.WSComeback.NotificationTime > datetime.now())
         )
-        self.db.session.query(self.db.WSComeback)
-        cur.execute(query, [which_ws])
-        result = cur.fetchall()
+
         await comeback_channel.purge(limit=100)
         msg = (
             "In dit kanaal komt het overzicht wanneer je schip weer de ws in mag, dit kanaal is "
@@ -497,15 +499,11 @@ class WhiteStar(Robin):
 
         await comeback_channel.send(msg)
         msg = "**Speler     Schip     TerugTijd     NotificatieTijd**\n"
-        if len(result) > 0:
-            for row in result:
-                returntime = datetime.strptime(row[2], "%Y-%m-%d %H:%M").strftime(
-                    "%a %H:%M"
-                )
-                notificationtime = datetime.strptime(row[3], "%Y-%m-%d %H:%M").strftime(
-                    "%a %H:%M"
-                )
-                msg += f"**{row[0]}**      {row[1]}         {returntime}       {notificationtime}\n"
+        if get_comback.count() > 0:
+            for item in get_comback.all():
+                returntime = item.ReturnTime.strftime("%a %H:%M")
+                notificationtime = item.NotificationTime.strftime("%a %H:%M")
+                msg += f"**{item.DiscordAlias}**      {item.ShipType}         {returntime}       {notificationtime}\n"
         await comeback_channel.send(msg)
 
     ###################################################################################################
@@ -584,17 +582,6 @@ class WhiteStar(Robin):
         )
         self.db.session.add(new_return)
         self.db.session.commit()
-        # try:
-        #     query = (
-        #         "insert into WSReturn (Id, WS, Shiptype, ReturnTime, NotificationTime) "
-        #         "values (?, ?, ?, ?, ?) "
-        #     )
-        #     cur.execute(
-        #         query, [usermap["Id"], ws, shiptype, returntime, notificationtime]
-        #     )
-        # except Exception as exception:
-        #     logger.info(f"insert failed {exception}: __{' '.join(args)}")
-        #     await ctx.send_help(ctx.command)
 
         await self._update_comeback_channel(comeback_channel[ws], ws)
         if shiptype == "drone":
@@ -612,7 +599,7 @@ class WhiteStar(Robin):
                 ctx,
                 msg=(
                     f"Helaas, {usermap['discordalias']}, hopelijk volgende "
-                    "keer meer succes met je {shiptype}"
+                    f"keer meer succes met je {shiptype}"
                 ),
                 delete_after=3,
                 delete_message=True,
