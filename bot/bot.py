@@ -7,6 +7,7 @@ import sys
 import discord
 from discord.ext import commands
 from loguru import logger
+from datetime import datetime
 from modules import whitestar, ping, roles
 
 DB_FILE = "../data/hades.db"
@@ -41,6 +42,28 @@ def create_connection():
     return conn
 
 
+def update_last_active(conn, message):
+    cur = conn.cursor()
+    member = message.author
+    channel = message.channel
+
+    logger.info(f"member {member}")
+    logger.info(f"member.id {member.id}")
+    logger.info(f"member.name {member.name}")
+    logger.info(f"channel.name {channel.name}")
+    now = datetime.now()
+    query = "select * from UserMap where Id=? "
+    cur.execute(query, [member.id])
+    row = cur.fetchone()
+    if row is None:
+        query = "insert into usermap (Id, DiscordAlias,last_active, last_channel) values (?, ?, ?, ?)"
+        cur.execute(query, [member.id, member.name, channel.name, now])
+    else:
+        query = "update usermap set DiscordAlias=?, last_active=?, last_channel=? where Id=? "
+        cur.execute(query, [member.name, now, channel.name, member.id])
+    conn.commit()
+
+
 def new_bot(command_prefix: str, description: str) -> discord.ext.commands.bot:
     """Create a new discordbot"""
 
@@ -54,7 +77,7 @@ def new_bot(command_prefix: str, description: str) -> discord.ext.commands.bot:
     @bot.event
     async def on_message(message):
         logger.info(f"message {message}")
-
+        update_last_active(conn, message)
         await bot.process_commands(message)
 
     @bot.event
