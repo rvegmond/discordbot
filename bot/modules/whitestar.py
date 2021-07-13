@@ -22,14 +22,15 @@ class WhiteStar(Robin):
     """
     The class that contains the Whitestar functions
     """
+
     def __init__(self, bot=None, conn=None):
         super().__init__(bot, conn)
         self.return_scheduler.start()
         logger.info(f"Class {type(self).__name__} initialized ")
 
-###################################################################################################
-#  command status
-###################################################################################################
+    ###################################################################################################
+    #  command status
+    ###################################################################################################
 
     async def update_status_table(self, ctx):
         """
@@ -46,7 +47,7 @@ class WhiteStar(Robin):
             f"**`{bot.command_prefix}status <bereikbaarheid>`**\n"
             "Houdt je bericht duidelijk, kort en bondig (max 100 tekens)\n"
         )
-        msg += u"\u2063"
+        msg += "\u2063"
         await channel.send(msg)
         for this_ws in ("ws1", "ws2"):
             msg = f"**{this_ws.upper()}**\n"
@@ -76,9 +77,11 @@ class WhiteStar(Robin):
                     weekago = datetime.datetime.now() - timedelta(days=5)
                     user = row[0]
                     try:
-                        lastupdate = datetime.datetime.strptime(row[1], '%d-%m-%Y %H:%M:%S')
+                        lastupdate = datetime.datetime.strptime(
+                            row[1], "%d-%m-%Y %H:%M:%S"
+                        )
                     except ValueError:
-                        lastupdate = datetime.datetime.strptime(row[1], '%d-%m-%Y')
+                        lastupdate = datetime.datetime.strptime(row[1], "%d-%m-%Y")
                     status = row[2]
                     logger.info(f"lastupdate: {lastupdate}")
                     logger.info(f"yesterday: {yesterday}")
@@ -90,21 +93,22 @@ class WhiteStar(Robin):
                     else:
                         msg += f"**{user} - {nicedate} - {status}**\n"
 
-                msg += u"\u2063"
+                msg += "\u2063"
             except Exception as exception:
                 logger.info(f"error: {exception}")
                 return None
             await channel.send(msg)
 
-###################################################################################################
-#  command status
-###################################################################################################
+    ###################################################################################################
+    #  command status
+    ###################################################################################################
 
     @commands.command(
         name="status",
-        help=("Met het status commando update je status in het status kanaal,"
-              " hiermee help je je mede ws-ers op de hoogte te houden hoe snel je kunt reageren."
-              ),
+        help=(
+            "Met het status commando update je status in het status kanaal,"
+            " hiermee help je je mede ws-ers op de hoogte te houden hoe snel je kunt reageren."
+        ),
         brief="Update je status in het status kanaal",
     )
     async def status(self, ctx, *args):
@@ -113,7 +117,7 @@ class WhiteStar(Robin):
         """
 
         usermap = self._getusermap(int(ctx.author.id))
-        statusupdate = _sanitize(' '.join(args), 100)
+        statusupdate = _sanitize(" ".join(args), 100)
         conn = self.conn
         cur = conn.cursor()
 
@@ -121,16 +125,18 @@ class WhiteStar(Robin):
         query = f"delete from status where Id='{usermap['Id']}' "
         cur.execute(query)
         if cur.rowcount == 0:
-            logger.info(f"{usermap['discordalias']} didn't have a previous status set..")
+            logger.info(
+                f"{usermap['discordalias']} didn't have a previous status set.."
+            )
 
         now = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")
         query = "insert into status (Id, LastUpdate, StatusText) values (?, ?, ?) "
-        cur.execute(query, [usermap['Id'], now, statusupdate])
+        cur.execute(query, [usermap["Id"], now, statusupdate])
         await self.update_status_table(ctx)
 
         await ctx.send(
             content=f"Dank, {usermap['discordalias']} je ws-status is nu bijgewerkt",
-            delete_after=3
+            delete_after=3,
         )
 
         try:
@@ -139,9 +145,9 @@ class WhiteStar(Robin):
             logger.info(f"message deletion failed {exception}")
         conn.commit()
 
-###################################################################################################
-#  function update_ws_inschrijvingen_tabel
-###################################################################################################
+    ###################################################################################################
+    #  function update_ws_inschrijvingen_tabel
+    ###################################################################################################
 
     async def update_ws_inschrijvingen_tabel(self, wslist_channel):
         """
@@ -161,10 +167,10 @@ class WhiteStar(Robin):
             "order by Inschrijving asc, Inschrijftijd asc "
         )
         cur.execute(query)
-        msg = ''
+        msg = ""
         i = 1
         for row in cur.fetchall():
-            if row[1] == 'planner':
+            if row[1] == "planner":
                 msg += f"**{i}. {row[0]} {row[1]} {row[2]}**\n"
             else:
                 msg += f"{i}. {row[0]} {row[1]} {row[2]}\n"
@@ -200,18 +206,19 @@ class WhiteStar(Robin):
 
         async for message in wslist_channel.history(limit=20):
             if message.author == bot.user:
-                logger.debug(f"going to delete message for {message.author} == {bot.user}")
+                logger.debug(
+                    f"going to delete message for {message.author} == {bot.user}"
+                )
                 await message.delete()
         await wslist_channel.send(msg)
 
-###################################################################################################
-#  function _ws_entry
-###################################################################################################
+    ###################################################################################################
+    #  function _ws_entry
+    ###################################################################################################
 
-    async def _ws_entry(self,
-                        ctx: commands.Context = None,
-                        action: str = '',
-                        comment: str = ''):
+    async def _ws_entry(
+        self, ctx: commands.Context = None, action: str = "", comment: str = ""
+    ):
         """
         Handle the entry for the ws
         """
@@ -222,27 +229,25 @@ class WhiteStar(Robin):
         usermap = self._getusermap(str(ctx.author.id))
         wsin_channel = bot.get_channel(int(os.getenv("WSIN_CHANNEL")))
         wslist_channel = bot.get_channel(int(os.getenv("WSLIST_CHANNEL")))
-        query = (
-            "select * from WSinschrijvingen where Id=? and actueel='ja' "
-        )
-        cur.execute(query, [usermap['Id']])
+        query = "select * from WSinschrijvingen where Id=? and actueel='ja' "
+        cur.execute(query, [usermap["Id"]])
         is_entered = len(cur.fetchall())
         logger.info(f"{usermap['discordalias']} heeft als action: {action}")
-        if action == 'out':
+        if action == "out":
             if is_entered == 0:
                 logger.info(f"{usermap['discordalias']} stond nog niet ingeschreven.. ")
                 msg = f"{usermap['discordalias']}, je stond nog niet ingeschreven.. "
                 await _feedback(ctx=ctx, msg=msg, delete_after=3)
             else:
                 query = (
-                    "delete from WSinschrijvingen "
-                    "where Id=? "
-                    "and actueel='ja' "
+                    "delete from WSinschrijvingen " "where Id=? " "and actueel='ja' "
                 )
 
-                cur.execute(query, [usermap['Id']])
+                cur.execute(query, [usermap["Id"]])
                 logger.info(f"{usermap['discordalias']} stond wel ingeschreven.. ")
-                msg = f"Helaas, {usermap['discordalias']} je doet niet mee met komende ws"
+                msg = (
+                    f"Helaas, {usermap['discordalias']} je doet niet mee met komende ws"
+                )
                 await _feedback(ctx=ctx, msg=msg, delete_after=3)
 
                 await self.update_ws_inschrijvingen_tabel(wslist_channel)
@@ -253,10 +258,8 @@ class WhiteStar(Robin):
                         await message.delete()
             conn.commit()
             return None
-        query = (
-            "select * from WSinschrijvingen where Id=? and inschrijving=? and actueel='ja' "
-        )
-        cur.execute(query, [usermap['Id'], action])
+        query = "select * from WSinschrijvingen where Id=? and inschrijving=? and actueel='ja' "
+        cur.execute(query, [usermap["Id"], action])
         rows_same_role = len(cur.fetchall())
 
         if rows_same_role == 1:
@@ -269,7 +272,7 @@ class WhiteStar(Robin):
                 "update WSinschrijvingen set inschrijving=?, Opmerkingen=? "
                 "where Id=? and actueel='ja' "
             )
-            cur.execute(query, [action, comment, usermap['Id']])
+            cur.execute(query, [action, comment, usermap["Id"]])
         else:
             # not yet registerd, insert
             query = (
@@ -277,19 +280,19 @@ class WhiteStar(Robin):
                 "(Id, inschrijving, Inschrijftijd, Opmerkingen, actueel) "
                 "values (?, ?, datetime('now'), ?, 'ja') "
             )
-            cur.execute(query, [usermap['Id'], action, comment])
+            cur.execute(query, [usermap["Id"], action, comment])
         await ctx.send(
             content=(
                 f"Gefeliciteerd, {usermap['discordalias']} "
                 f"je bent nu {action} voor de volgende ws"
             ),
-            delete_after=3
+            delete_after=3,
         )
         conn.commit()
 
-###################################################################################################
-#  function _ws_admin
-###################################################################################################
+    ###################################################################################################
+    #  function _ws_admin
+    ###################################################################################################
 
     async def _ws_admin(self, ctx, action: str):
         """
@@ -304,26 +307,23 @@ class WhiteStar(Robin):
 
         # close
         if not (
-            await Roles.in_role(self, ctx, 'Moderator')
-            or await Roles.in_role(self, ctx, 'Bot Bouwers')
+            await Roles.in_role(self, ctx, "Moderator")
+            or await Roles.in_role(self, ctx, "Bot Bouwers")
         ):
             await _feedback(
-                ctx=ctx,
-                msg="You are not an admin",
-                delete_after=5,
-                delete_message=True
+                ctx=ctx, msg="You are not an admin", delete_after=5, delete_message=True
             )
             return None
 
-        if action == 'open':
+        if action == "open":
             await wsin_channel.set_permissions(ws_role, send_messages=True)
-            #await wslist_channel.set_permissions(ws_role, send_messages=True)
+            # await wslist_channel.set_permissions(ws_role, send_messages=True)
             await ctx.send(content=f"Inschrijving geopend door {ctx.author.name}")
-        elif action == 'close':
+        elif action == "close":
             await wsin_channel.set_permissions(ws_role, send_messages=False)
             await wslist_channel.set_permissions(ws_role, send_messages=False)
             await ctx.send(content=f"Inschrijving gesloten door {ctx.author.name}")
-        elif action == 'clear':
+        elif action == "clear":
             msg = (
                 f"{ws_role.mention}, De WS inschrijving is geopend\n"
                 "Met `!ws plan` of `!ws p` schrijf je je in als planner en speler\n"
@@ -333,22 +333,21 @@ class WhiteStar(Robin):
                 "worden er 2 wsen gestart, op voorwaarde van minimaal **4 planners** zijn."
                 "\n"
                 "Elke __**Dinsdag**__ worden de inschrijvingen geopend "
-                "ongeacht of er nog wssen lopen tot uiterlijk __**Woensdag**__")
+                "ongeacht of er nog wssen lopen tot uiterlijk __**Woensdag**__"
+            )
             await wsin_channel.purge(limit=100)
             await wslist_channel.purge(limit=100)
             await ctx.send(content=msg)
-            query = (
-                "update WSinschrijvingen "
-                "set actueel='nee' "
-            )
+            query = "update WSinschrijvingen " "set actueel='nee' "
             cur.execute(query)
             await self.update_ws_inschrijvingen_tabel(wslist_channel)
             await wsin_channel.set_permissions(ws_role, send_messages=True)
             conn.commit()
             return None
-###################################################################################################
-#  command ws  (inschrijvingen)
-###################################################################################################
+
+    ###################################################################################################
+    #  command ws  (inschrijvingen)
+    ###################################################################################################
 
     @commands.command(
         name="ws",
@@ -369,7 +368,8 @@ class WhiteStar(Robin):
             "Onderstaande opties zijn voor Moderator only:\n"
             " open  - open het ws-inschrijvingen kanaal\n"
             " close - sluit het ws-inschrijvingen kanaal\n"
-            " clear - schoon het ws-inschrijvingen kanaal, inschrijvingen worden geopend.\n"),
+            " clear - schoon het ws-inschrijvingen kanaal, inschrijvingen worden geopend.\n"
+        ),
         brief="Schrijf jezelf in voor de volgende ws",
     )
     async def ws(self, ctx, *args):
@@ -380,7 +380,7 @@ class WhiteStar(Robin):
         wsin_channel_id = int(os.getenv("WSIN_CHANNEL"))
         wsin_channel = self.bot.get_channel(int(os.getenv("WSIN_CHANNEL")))
         wslist_channel = self.bot.get_channel(int(os.getenv("WSLIST_CHANNEL")))
-        comment = ''
+        comment = ""
 
         if ctx.channel != wsin_channel:
             # Trying to post in the wrong channel
@@ -398,21 +398,21 @@ class WhiteStar(Robin):
 
         if len(args) > 1:
             # more than 1 argument, join
-            comment = _sanitize(' '.join(args[1:]))
+            comment = _sanitize(" ".join(args[1:]))
 
         logger.info(f"{usermap['discordalias']} - {args[0]} - {comment}")
-        if args[0] in ['i', 'in']:
-            await self._ws_entry(ctx, action='speler', comment=comment)
-        elif args[0] in ['p', 'plan', 'planner']:
-            await self._ws_entry(ctx, action='planner', comment=comment)
-        elif args[0] in ['u', 'uit', 'o', 'out']:
-            await self._ws_entry(ctx, action='out', comment=comment)
-        elif args[0] in ['close', 'sluit']:
-            await self._ws_admin(ctx, action='close')
-        elif args[0] in ['open']:
-            await self._ws_admin(ctx, action='open')
-        elif args[0] in ['clear']:
-            await self._ws_admin(ctx, action='clear')
+        if args[0] in ["i", "in"]:
+            await self._ws_entry(ctx, action="speler", comment=comment)
+        elif args[0] in ["p", "plan", "planner"]:
+            await self._ws_entry(ctx, action="planner", comment=comment)
+        elif args[0] in ["u", "uit", "o", "out"]:
+            await self._ws_entry(ctx, action="out", comment=comment)
+        elif args[0] in ["close", "sluit"]:
+            await self._ws_admin(ctx, action="close")
+        elif args[0] in ["open"]:
+            await self._ws_admin(ctx, action="open")
+        elif args[0] in ["clear"]:
+            await self._ws_admin(ctx, action="clear")
         else:
             await ctx.send("Ongeldige input")
             await ctx.send_help(ctx.command)
@@ -420,15 +420,13 @@ class WhiteStar(Robin):
 
         await self.update_ws_inschrijvingen_tabel(wslist_channel)
 
-###################################################################################################
-#  command updateusermap
-###################################################################################################
+    ###################################################################################################
+    #  command updateusermap
+    ###################################################################################################
 
     @commands.command(
         name="updateusermap",
-        help=(
-            "Moderator only:\n"
-            " geen argumenten, update de usermap tabel\n"),
+        help=("Moderator only:\n" " geen argumenten, update de usermap tabel\n"),
         brief="Update de usermap tabel",
         hidden="True",
     )
@@ -439,9 +437,8 @@ class WhiteStar(Robin):
         If Id is not yet in usermap table it will be added
         with the provided alias.
         """
-        if (
-            await Roles.in_role(self, ctx, 'Moderator')
-            or await Roles.in_role(self, ctx, 'Bot Bouwers')
+        if await Roles.in_role(self, ctx, "Moderator") or await Roles.in_role(
+            self, ctx, "Bot Bouwers"
         ):
             cur = self.conn.cursor()
 
@@ -457,9 +454,9 @@ class WhiteStar(Robin):
             await ctx.send(f"usermap updated by {ctx.author.name}")
             self.conn.commit()
 
-###################################################################################################
-#  command _update_comeback_channel
-###################################################################################################
+    ###################################################################################################
+    #  command _update_comeback_channel
+    ###################################################################################################
 
     async def _update_comeback_channel(self, comeback_channel, which_ws):
         cur = self.conn.cursor()
@@ -489,6 +486,8 @@ class WhiteStar(Robin):
             f" **`{bot.command_prefix}terug <schip> <terugkomtijd> <notificatietid>`**, bv.:\n"
             f"`{bot.command_prefix}terug bs 17:00 8:00` - ik kan over 17 uur vanaf nu weer een bs "
             "insturen maar wil morgen om 8:00 pas een notificatie."
+            "\u2063"
+            "**Speler     Schip     TerugTijd     NotificatieTijd**\n"
         )
 
         await comeback_channel.send(msg)
@@ -496,15 +495,17 @@ class WhiteStar(Robin):
         if len(result) > 0:
             for row in result:
                 returntime = datetime.datetime.strptime(
-                    row[2], '%Y-%m-%d %H:%M').strftime("%a %H:%M")
+                    row[2], "%Y-%m-%d %H:%M"
+                ).strftime("%a %H:%M")
                 notificationtime = datetime.datetime.strptime(
-                    row[3], '%Y-%m-%d %H:%M').strftime("%a %H:%M")
+                    row[3], "%Y-%m-%d %H:%M"
+                ).strftime("%a %H:%M")
                 msg += f"**{row[0]}**      {row[1]}         {returntime}       {notificationtime}\n"
         await comeback_channel.send(msg)
 
-###################################################################################################
-#  command terug
-###################################################################################################
+    ###################################################################################################
+    #  command terug
+    ###################################################################################################
 
     @commands.command(
         name="terug",
@@ -518,14 +519,19 @@ class WhiteStar(Robin):
             " - XX:YYu is de tijd op de klok, is voor de notificatietijd, corrigeert voor de dag\n"
             " - XX.Y    uren en 10en van uren, wordt omgerekend naar minuten (voor een drone)\n"
             "Zonder opgave van notificatietijd, krijg je ene notificatie op het moment van je "
-            "terugkomtijd.\n"),
+            "terugkomtijd.\n"
+        ),
         brief="Meld de terugkomtijd van je schip aan.",
     )
     async def terug(self, ctx, *args):
         cur = self.conn.cursor()
         comeback_channel = {}
-        comeback_channel['ws1'] = self.bot.get_channel(int(os.getenv('WS1_COMEBACK_CHANNEL')))
-        comeback_channel['ws2'] = self.bot.get_channel(int(os.getenv('WS2_COMEBACK_CHANNEL')))
+        comeback_channel["ws1"] = self.bot.get_channel(
+            int(os.getenv("WS1_COMEBACK_CHANNEL"))
+        )
+        comeback_channel["ws2"] = self.bot.get_channel(
+            int(os.getenv("WS2_COMEBACK_CHANNEL"))
+        )
 
         usermap = self._getusermap(int(ctx.author.id))
         returntime = _normalize_time(args[1])
@@ -540,32 +546,35 @@ class WhiteStar(Robin):
             return None
 
         shiptype = args[0].lower()
-        if shiptype in ['bs', 'ukkie', 'drone']:
+        if shiptype in ["bs", "ukkie", "drone"]:
             query = "select * from  WSReturn where Id=? and Shiptype=?"
-            cur.execute(query, [usermap['Id'], shiptype])
+            cur.execute(query, [usermap["Id"], shiptype])
             if len(cur.fetchall()) > 0:
                 query = "delete from WSReturn where Id=? and Shiptype=?"
-                cur.execute(query, [usermap['Id'], shiptype])
+                cur.execute(query, [usermap["Id"], shiptype])
         else:
             # wrong shiptype, send help!
             await ctx.send_help(ctx.command)
             return None
 
         ws = None
-        for wslist in ['ws1', 'ws2']:
-            if usermap['Id'] in _rolemembers(ctx=ctx, role_name=wslist):
+        for wslist in ["ws1", "ws2"]:
+            if usermap["Id"] in _rolemembers(ctx=ctx, role_name=wslist):
                 ws = wslist
         try:
             query = (
                 "insert into WSReturn (Id, WS, Shiptype, ReturnTime, NotificationTime) "
-                "values (?, ?, ?, ?, ?) ")
-            cur.execute(query, [usermap['Id'], ws, shiptype, returntime, notificationtime])
+                "values (?, ?, ?, ?, ?) "
+            )
+            cur.execute(
+                query, [usermap["Id"], ws, shiptype, returntime, notificationtime]
+            )
         except Exception as exception:
             logger.info(f"insert failed {exception}: __{' '.join(args)}")
             await ctx.send_help(ctx.command)
 
         await self._update_comeback_channel(comeback_channel[ws], ws)
-        if shiptype == 'drone':
+        if shiptype == "drone":
             await _feedback(
                 ctx,
                 msg=(
@@ -573,7 +582,7 @@ class WhiteStar(Robin):
                     "relics, straks snel weer een nieuwe drone"
                 ),
                 delete_after=3,
-                delete_message=True
+                delete_message=True,
             )
         else:
             await _feedback(
@@ -583,9 +592,44 @@ class WhiteStar(Robin):
                     "keer meer succes met je {shiptype}"
                 ),
                 delete_after=3,
-                delete_message=True
+                delete_message=True,
             )
 
+    ###################################################################################################
+    #  command info
+    ###################################################################################################
+
+    @commands.command(
+        name="info",
+        help=("Geeft info over een een speler."),
+        brief="Geeft info over een speler.",
+    )
+    async def info(self, ctx, *args):
+        cur = self.conn.cursor()
+
+        if len(args) != 1:
+            await ctx.send_help(ctx.command)
+            return None
+        logger.info(f"args[0] {args[0]}")
+        query = "select Id, DiscordAlias, last_active, last_channel from UserMap where lower(DiscordAlias)=lower(?)"
+        cur.execute(query, [args[0]])
+        result = cur.fetchone()
+        discordid = result[0]
+        discordalias = result[1]
+        last_active = datetime.datetime.strptime(result[2], "%Y-%m-%d %H:%M:%S.%f")
+        last_channel = result[3]
+        msg = (
+            f"Info over: **{discordalias}**\n\n"
+            f"DiscordAlias: {discordalias}\n"
+            f"DiscordId: {discordid}\n"
+            f"Laatst actief op discord: {datetime.datetime.strftime(last_active, '%d-%m-%Y %H:%M:%S')}\n"
+            f"Laatst actief in kanaal: {last_channel}"
+        )
+        await _feedback(ctx=ctx, msg=msg)
+
+    ###################################################################################################
+    #  runner return_scheduler
+    ###################################################################################################
     @tasks.loop(minutes=1)
     async def return_scheduler(self):
         """
@@ -593,11 +637,15 @@ class WhiteStar(Robin):
         """
         cur = self.conn.cursor()
         ws_channel = {}
-        ws_channel['ws1'] = self.bot.get_channel(int(os.getenv('WS1_CHANNEL')))
-        ws_channel['ws2'] = self.bot.get_channel(int(os.getenv('WS2_CHANNEL')))
+        ws_channel["ws1"] = self.bot.get_channel(int(os.getenv("WS1_CHANNEL")))
+        ws_channel["ws2"] = self.bot.get_channel(int(os.getenv("WS2_CHANNEL")))
         comeback_channel = {}
-        comeback_channel['ws1'] = self.bot.get_channel(int(os.getenv('WS1_COMEBACK_CHANNEL')))
-        comeback_channel['ws2'] = self.bot.get_channel(int(os.getenv('WS2_COMEBACK_CHANNEL')))
+        comeback_channel["ws1"] = self.bot.get_channel(
+            int(os.getenv("WS1_COMEBACK_CHANNEL"))
+        )
+        comeback_channel["ws2"] = self.bot.get_channel(
+            int(os.getenv("WS2_COMEBACK_CHANNEL"))
+        )
         query = (
             "select Id, ws, ShipType, ReturnTime, NotificationTime "
             "from WSReturn w "
@@ -607,7 +655,9 @@ class WhiteStar(Robin):
         result = cur.fetchall()
         if len(result) > 0:
             for row in result:
-                await ws_channel[row[1]].send(f"<@{row[0]}>, je {row[2]} mag de ws in, succes!")
+                await ws_channel[row[1]].send(
+                    f"<@{row[0]}>, je {row[2]} mag de ws in, succes!"
+                )
                 await self._update_comeback_channel(comeback_channel[row[1]], row[1])
 
 
@@ -615,8 +665,8 @@ class WhiteStar(Robin):
 #  _normalize_time
 ###################################################################################################
 
-def _normalize_time(intime: str
-                    ) -> str:
+
+def _normalize_time(intime: str) -> str:
     """
     Translate the intime to a normal "clock" time.
     The input can be hours from now, clock time or hours + hours/10
@@ -629,21 +679,23 @@ def _normalize_time(intime: str
     logger.info(f"intime: {intime}")
     now = datetime.datetime.now()
     logger.info(f"now: {now}")
-    if '.' in intime or ',' in intime:
+    if "." in intime or "," in intime:
         logger.info(f"found . {intime}")
-        (hours, minutes) = intime.split('.')
+        (hours, minutes) = intime.split(".")
         logger.info(f"hours: {hours}, minutes: {minutes}")
         intime = now + datetime.timedelta(hours=int(hours), minutes=int(minutes) * 6)
-    elif 'u' in intime:
+    elif "u" in intime:
         logger.info(f"found u {intime}")
-        intime = intime.replace('u', '')
-        (hours, minutes) = intime.split(':')
-        intime = datetime.datetime(now.year, now.month, now.day, int(hours), int(minutes), 0)
+        intime = intime.replace("u", "")
+        (hours, minutes) = intime.split(":")
+        intime = datetime.datetime(
+            now.year, now.month, now.day, int(hours), int(minutes), 0
+        )
         if intime < now:
             intime = intime + datetime.timedelta(days=1)
-    elif ':' in intime:
+    elif ":" in intime:
         logger.info(f"found : {intime}")
-        (hours, minutes) = intime.split(':')
+        (hours, minutes) = intime.split(":")
         logger.info(f"hours: {hours}, minutes: {minutes}")
         intime = now + datetime.timedelta(hours=int(hours), minutes=int(minutes))
         logger.info(f"intime: {intime}")
