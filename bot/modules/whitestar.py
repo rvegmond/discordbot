@@ -118,7 +118,8 @@ class WhiteStar(Robin):
 
         usermap = self._getusermap(int(ctx.author.id))
         statusupdate = _sanitize(" ".join(args), 100)
-        cur = self.conn.cursor()
+        conn = self.conn
+        cur = conn.cursor()
 
         logger.info(f"New status from {usermap['discordalias']}: {statusupdate} ")
         query = f"delete from status where Id='{usermap['Id']}' "
@@ -142,6 +143,7 @@ class WhiteStar(Robin):
             await ctx.message.delete()
         except Exception as exception:
             logger.info(f"message deletion failed {exception}")
+        conn.commit()
 
     ###################################################################################################
     #  function update_ws_inschrijvingen_tabel
@@ -450,6 +452,7 @@ class WhiteStar(Robin):
                     query = "insert into usermap (Id, DiscordAlias) values (?, ?) "
                     cur.execute(query, [member.id, member.display_name])
             await ctx.send(f"usermap updated by {ctx.author.name}")
+            self.conn.commit()
 
     ###################################################################################################
     #  command _update_comeback_channel
@@ -487,6 +490,8 @@ class WhiteStar(Robin):
             "**Speler     Schip     TerugTijd     NotificatieTijd**\n"
         )
 
+        await comeback_channel.send(msg)
+        msg = "**Speler     Schip     TerugTijd     NotificatieTijd**\n"
         if len(result) > 0:
             for row in result:
                 returntime = datetime.datetime.strptime(
