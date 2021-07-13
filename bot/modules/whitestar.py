@@ -254,7 +254,7 @@ class WhiteStar(Robin):
 
                 async for message in wsin_channel.history(limit=50):
                     if message.author.id == ctx.author.id:
-                        logger.info(f"deleting message for {message.autor.id}")
+                        logger.info(f"deleting message for {message.author.id}")
                         await message.delete()
             conn.commit()
             return None
@@ -487,7 +487,6 @@ class WhiteStar(Robin):
             f"`{bot.command_prefix}terug bs 17:00 8:00` - ik kan over 17 uur vanaf nu weer een bs "
             "insturen maar wil morgen om 8:00 pas een notificatie."
             "\u2063"
-            "**Speler     Schip     TerugTijd     NotificatieTijd**\n"
         )
 
         await comeback_channel.send(msg)
@@ -616,13 +615,18 @@ class WhiteStar(Robin):
         result = cur.fetchone()
         discordid = result[0]
         discordalias = result[1]
-        last_active = datetime.datetime.strptime(result[2], "%Y-%m-%d %H:%M:%S.%f")
-        last_channel = result[3]
+        if result[2] is None:
+            last_active = "Al even niet actief.."
+            last_channel = "niet bekend"
+        else:
+            datum = datetime.datetime.strptime(result[2], "%Y-%m-%d %H:%M:%S.%f")
+            last_active = datetime.datetime.strftime(datum, "%d-%m-%Y %H:%M:%S")
+            last_channel = result[3]
         msg = (
             f"Info over: **{discordalias}**\n\n"
             f"DiscordAlias: {discordalias}\n"
             f"DiscordId: {discordid}\n"
-            f"Laatst actief op discord: {datetime.datetime.strftime(last_active, '%d-%m-%Y %H:%M:%S')}\n"
+            f"Laatst actief op discord: {last_active}\n"
             f"Laatst actief in kanaal: {last_channel}"
         )
         await _feedback(ctx=ctx, msg=msg)
