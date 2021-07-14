@@ -252,7 +252,7 @@ class WhiteStar(Robin):
 
                 async for message in wsin_channel.history(limit=50):
                     if message.author.id == ctx.author.id:
-                        logger.info(f"deleting message for {message.autor.id}")
+                        logger.info(f"deleting message for {message.author.id}")
                         await message.delete()
             conn.commit()
             return None
@@ -495,6 +495,7 @@ class WhiteStar(Robin):
             f" **`{bot.command_prefix}terug <schip> <terugkomtijd> <notificatietid>`**, bv.:\n"
             f"`{bot.command_prefix}terug bs 17:00 8:00` - ik kan over 17 uur vanaf nu weer een bs "
             "insturen maar wil morgen om 8:00 pas een notificatie."
+            "\u2063"
         )
 
         await comeback_channel.send(msg)
@@ -605,6 +606,46 @@ class WhiteStar(Robin):
                 delete_message=True,
             )
 
+    ###################################################################################################
+    #  command info
+    ###################################################################################################
+
+    @commands.command(
+        name="info",
+        help=("Geeft info over een een speler."),
+        brief="Geeft info over een speler.",
+    )
+    async def info(self, ctx, *args):
+        cur = self.conn.cursor()
+
+        if len(args) != 1:
+            await ctx.send_help(ctx.command)
+            return None
+        logger.info(f"args[0] {args[0]}")
+        query = "select Id, DiscordAlias, last_active, last_channel from UserMap where lower(DiscordAlias)=lower(?)"
+        cur.execute(query, [args[0]])
+        result = cur.fetchone()
+        discordid = result[0]
+        discordalias = result[1]
+        if result[2] is None:
+            last_active = "Al even niet actief.."
+            last_channel = "niet bekend"
+        else:
+            datum = datetime.datetime.strptime(result[2], "%Y-%m-%d %H:%M:%S.%f")
+            last_active = datetime.datetime.strftime(datum, "%d-%m-%Y %H:%M:%S")
+            last_channel = result[3]
+        msg = (
+            f"Info over: **{discordalias}**\n\n"
+            f"DiscordAlias: {discordalias}\n"
+            f"DiscordId: {discordid}\n"
+            f"Laatst actief op discord: {last_active}\n"
+            f"Laatst actief in kanaal: {last_channel}"
+        )
+        await _feedback(ctx=ctx, msg=msg)
+
+    ###################################################################################################
+    #  runner return_scheduler
+    ###################################################################################################
     @tasks.loop(minutes=1)
     async def return_scheduler(self):
         """
