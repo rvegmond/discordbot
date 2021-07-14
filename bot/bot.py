@@ -43,8 +43,7 @@ def create_connection():
     return conn
 
 
-def update_last_active(conn, message):
-    cur = conn.cursor()
+def update_last_active(message):
     member = message.author
     channel = message.channel
 
@@ -52,17 +51,16 @@ def update_last_active(conn, message):
     logger.info(f"member.id {member.id}")
     logger.info(f"member.name {member.name}")
     logger.info(f"channel.name {channel.name}")
-    now = datetime.now()
-    query = "select * from UserMap where Id=? "
-    cur.execute(query, [member.id])
-    row = cur.fetchone()
-    if row is None:
-        query = "insert into usermap (Id, DiscordAlias,last_active, last_channel) values (?, ?, ?, ?)"
-        cur.execute(query, [member.id, member.name, channel.name, now])
+    if db.session.query(db.User).filter_by(UserId=member.id).count() == 0:
+        new_user = db.User(
+            UserId=member.id, DiscordAlias=member.name, LastChannel=channel.name
+        )
+        db.session.add(new_user)
     else:
-        query = "update usermap set DiscordAlias=?, last_active=?, last_channel=? where Id=? "
-        cur.execute(query, [member.name, now, channel.name, member.id])
-    conn.commit()
+        data = {"DiscordAlias": member.name, "LastChannel": channel.name}
+        db.session.query(db.User).filter(db.User.UserId == member.id).update(data)
+
+    db.session.commit()
 
 
 def new_bot(command_prefix: str, description: str) -> discord.ext.commands.bot:
@@ -78,7 +76,7 @@ def new_bot(command_prefix: str, description: str) -> discord.ext.commands.bot:
     @bot.event
     async def on_message(message):
         logger.info(f"message {message}")
-        update_last_active(conn, message)
+        update_last_active(message)
         await bot.process_commands(message)
 
     @bot.event

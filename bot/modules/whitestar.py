@@ -444,20 +444,20 @@ class WhiteStar(Robin):
 
             for member in members:
                 if (
-                    self.db.session.query(self.db.UserMap)
+                    self.db.session.query(self.db.User)
                     .filter_by(UserId=member.id)
                     .count()
                     == 0
                 ):
 
-                    new_user = self.db.UserMap(
+                    new_user = self.db.User(
                         UserId=member.id, DiscordAlias=member.display_name
                     )
                     self.db.session.add(new_user)
                     self.db.session.commit()
                     logger.info(f"inserted {member.display_name}")
 
-            await ctx.send(f"usermap updated by {ctx.author.name}")
+            await ctx.send(f"user table updated by {ctx.author.name}")
             self.conn.commit()
 
     ###################################################################################################
@@ -469,14 +469,14 @@ class WhiteStar(Robin):
 
         get_comback = (
             self.db.session.query(
-                self.db.UserMap.DiscordAlias,
+                self.db.User.DiscordAlias,
                 self.db.WSComeback.UserId,
                 self.db.WSComeback.WSId,
                 self.db.WSComeback.ShipType,
                 self.db.WSComeback.ReturnTime,
                 self.db.WSComeback.NotificationTime,
             )
-            .join(self.db.UserMap)
+            .join(self.db.User)
             .filter_by(self.db.WSComeback.NotificationTime > datetime.now())
         )
 
@@ -528,7 +528,6 @@ class WhiteStar(Robin):
         brief="Meld de terugkomtijd van je schip aan.",
     )
     async def terug(self, ctx, *args):
-        cur = self.conn.cursor()
         comeback_channel = {}
         comeback_channel["ws1"] = self.bot.get_channel(
             int(os.getenv("WS1_COMEBACK_CHANNEL"))
@@ -616,31 +615,37 @@ class WhiteStar(Robin):
         brief="Geeft info over een speler.",
     )
     async def info(self, ctx, *args):
-        cur = self.conn.cursor()
 
         if len(args) != 1:
             await ctx.send_help(ctx.command)
             return None
-        logger.info(f"args[0] {args[0]}")
-        query = "select Id, DiscordAlias, last_active, last_channel from UserMap where lower(DiscordAlias)=lower(?)"
-        cur.execute(query, [args[0]])
-        result = cur.fetchone()
-        discordid = result[0]
-        discordalias = result[1]
-        if result[2] is None:
-            last_active = "Al even niet actief.."
-            last_channel = "niet bekend"
+        user = args[0]
+        logger.info(f"user {user}")
+        if (
+            self.db.session.query(self.db.User).filter_by(DiscordAlias=user).count()
+            == 0
+        ):
+            msg = f"User: {user} is onbekend."
         else:
-            datum = datetime.datetime.strptime(result[2], "%Y-%m-%d %H:%M:%S.%f")
-            last_active = datetime.datetime.strftime(datum, "%d-%m-%Y %H:%M:%S")
-            last_channel = result[3]
-        msg = (
-            f"Info over: **{discordalias}**\n\n"
-            f"DiscordAlias: {discordalias}\n"
-            f"DiscordId: {discordid}\n"
-            f"Laatst actief op discord: {last_active}\n"
-            f"Laatst actief in kanaal: {last_channel}"
-        )
+            row = (
+                self.db.session.query(self.db.User)
+                .filter_by(DiscordAlias=user)
+                .all()[0]
+            )
+
+            if row.LastActive is None:
+                last_active = "Al even niet actief.."
+                last_channel = "niet bekend"
+            else:
+                last_active = row.LastActive
+                last_channel = row.LastChannel
+            msg = (
+                f"Info over: **{row.DiscordAlias}**\n\n"
+                f"DiscordAlias: {row.DiscordAlias}\n"
+                f"DiscordId: {row.UserId}\n"
+                f"Laatst actief op discord: {last_active}\n"
+                f"Laatst actief in kanaal: {last_channel}"
+            )
         await _feedback(ctx=ctx, msg=msg)
 
     ###################################################################################################

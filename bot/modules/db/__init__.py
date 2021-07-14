@@ -8,11 +8,11 @@ from sqlalchemy.orm import sessionmaker
 Base = declarative_base()
 
 from .status import Status
-from .usermap import UserMap
+from .user import User
 from .wscomeback import WSComeback
 from .wsentry import WSEntry
 
-_DB_URI = 'sqlite:///hades.db'
+_DB_URI = "sqlite:///hades.db"
 engine = create_engine(_DB_URI, echo=True)
 Base.metadata.create_all(engine)
 DBSession = sessionmaker(bind=engine)
