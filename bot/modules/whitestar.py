@@ -40,6 +40,8 @@ class WhiteStar(Robin):
         cur = self.conn.cursor()
         status_channel = int(os.getenv("STATUS_CHANNEL"))
         channel = bot.get_channel(status_channel)
+        yesterday = datetime.now() - timedelta(hours=36)
+        weekago = datetime.now() - timedelta(days=5)
         await channel.purge(limit=100)
         msg = (
             "In dit kanaal staat een overzicht hoe snel de verwachte reactietijd van je mede ws "
@@ -52,49 +54,32 @@ class WhiteStar(Robin):
         for this_ws in ("ws1", "ws2"):
             msg = f"**{this_ws.upper()}**\n"
 
-            cur.execute("delete from temp_ws ")
+            self.db.session.query(self.db.WSTemp).delete()
 
-            query = "insert into temp_ws (Id) values (?) "
             memberlist = _rolemembers(ctx=ctx, role_name=this_ws)
             for member in memberlist:
-                cur.execute(query, [member])
+                new_tmp = self.db.WSTemp(UserId=member)
+                self.db.session.add(new_tmp)
 
-            query = (
-                "select um.DiscordAlias, "
-                "case when s.LastUpdate is null then '01-01-1970 00:00:00' else s.LastUpdate end, "
-                "case when s.StatusText is null then 'Geen status ingevuld' else s.StatusText end "
-                "from temp_ws tw "
-                "left join UserMap um "
-                "on um.Id=tw.Id "
-                "left join Status s "
-                "on s.Id=um.Id "
+            get_status = (
+                self.db.session.query(
+                    self.db.User.DiscordAlias,
+                    self.db.Status.LastUpdate,
+                    self.db.Status.StatusText,
+                )
+                .join(self.db.WSTemp)
+                .join(self.db.Status)
             )
-
-            try:
-                cur.execute(query)
-                for row in cur.fetchall():
-                    yesterday = datetime.now() - timedelta(hours=36)
-                    weekago = datetime.now() - timedelta(days=5)
-                    user = row[0]
-                    try:
-                        lastupdate = datetime.strptime(row[1], "%d-%m-%Y %H:%M:%S")
-                    except ValueError:
-                        lastupdate = datetime.strptime(row[1], "%d-%m-%Y")
-                    status = row[2]
-                    logger.info(f"lastupdate: {lastupdate}")
-                    logger.info(f"yesterday: {yesterday}")
-                    nicedate = lastupdate.strftime("%a %d/%m %H:%M")
-                    if lastupdate < weekago:
-                        msg += f"~~{user} - {nicedate} - {status}~~\n"
-                    elif lastupdate <= yesterday:
-                        msg += f"{user} - {nicedate} - {status}\n"
-                    else:
-                        msg += f"**{user} - {nicedate} - {status}**\n"
+            for item in get_status.all():
+                nice_last_update = item.LastUpdate.strftime("%a %d/%m %H:%M")
+                if item.LastUpdate < weekago:
+                    msg += f"~~{item.DiscordAlias} - {nice_last_update} - {item.StatusText}~~\n"
+                elif item.LastUpdate <= yesterday:
+                    msg += f"{item.DiscordAlias} - {nice_last_update} - {item.StatusText}\n"
+                else:
+                    msg += f"**{item.DiscordAlias} - {nice_last_update} - {item.StatusText}**\n"
 
                 msg += "\u2063"
-            except Exception as exception:
-                logger.info(f"error: {exception}")
-                return None
             await channel.send(msg)
 
     ###################################################################################################
@@ -120,16 +105,13 @@ class WhiteStar(Robin):
         cur = conn.cursor()
 
         logger.info(f"New status from {usermap['discordalias']}: {statusupdate} ")
-        query = f"delete from status where Id='{usermap['Id']}' "
-        cur.execute(query)
-        if cur.rowcount == 0:
-            logger.info(
-                f"{usermap['discordalias']} didn't have a previous status set.."
-            )
+        self.db.session.query(self.db.Status).filter(
+            self.db.Status.UserId == usermap["Id"]
+        ).delete()
 
-        now = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-        query = "insert into status (Id, LastUpdate, StatusText) values (?, ?, ?) "
-        cur.execute(query, [usermap["Id"], now, statusupdate])
+        new_status = self.db.Status(UserId=usermap["Id"], StatusText=statusupdate)
+        self.db.session.add(new_status)
+
         await self.update_status_table(ctx)
 
         await ctx.send(
@@ -141,7 +123,7 @@ class WhiteStar(Robin):
             await ctx.message.delete()
         except Exception as exception:
             logger.info(f"message deletion failed {exception}")
-        conn.commit()
+        self.db.session.commit()
 
     ###################################################################################################
     #  function update_ws_inschrijvingen_tabel

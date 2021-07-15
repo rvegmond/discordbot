@@ -11,6 +11,7 @@ from .status import Status
 from .user import User
 from .wscomeback import WSComeback
 from .wsentry import WSEntry
+from .wstemp import WSTemp
 
 _DB_URI = "sqlite:///hades.db"
 engine = create_engine(_DB_URI, echo=True)
