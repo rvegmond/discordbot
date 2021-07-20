@@ -32,10 +32,6 @@ class Robin(commands.Cog):
             ).filter(self.db.User.UserId == memberid)
         ).one()
 
-        # query = "select Id, DiscordId, discordalias, gsheetalias from usermap where Id=?"
-        # cur.execute(query, [memberid])
-        # row = cur.fetchone()
-        # usermap = {'Id': row[0], 'discordid': row[1], 'discordalias': row[2], 'gsheetalias': row[3]}
         return usermap
 
 
