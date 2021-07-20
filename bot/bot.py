@@ -13,7 +13,7 @@ import modules.db as db
 
 DB_FILE = "../data/hades.db"
 
-___VERSION___ = "[v1.4.0]"
+___VERSION___ = "[v2.0.0]"
 
 config = {
     "handlers": [

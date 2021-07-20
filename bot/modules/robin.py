@@ -9,6 +9,7 @@ class Robin(commands.Cog):
     """
     The master class for Robin.
     """
+
     def __init__(self, bot=None, conn=None, db=None):
         self.bot = bot
         self.conn = conn
@@ -21,22 +22,29 @@ class Robin(commands.Cog):
         Id is the key for the selection.
         with the provided alias.
         """
-        conn = self.conn
         usermap = {}
-        cur = conn.cursor()
+        usermap = (
+            self.db.session.query(
+                self.db.User.UserId,
+                self.db.User.DiscordId,
+                self.db.User.DiscordAlias,
+                self.db.User.GsheetAlias,
+            ).filter(self.db.User.UserId == memberid)
+        ).one()
 
-        query = "select Id, DiscordId, discordalias, gsheetalias from usermap where Id=?"
-        cur.execute(query, [memberid])
-        row = cur.fetchone()
-        usermap = {'Id': row[0], 'discordid': row[1], 'discordalias': row[2], 'gsheetalias': row[3]}
+        # query = "select Id, DiscordId, discordalias, gsheetalias from usermap where Id=?"
+        # cur.execute(query, [memberid])
+        # row = cur.fetchone()
+        # usermap = {'Id': row[0], 'discordid': row[1], 'discordalias': row[2], 'gsheetalias': row[3]}
         return usermap
 
 
-async def _feedback(ctx: commands.Context = None,
-                    msg: str = '',
-                    delete_after: int = None,
-                    delete_message: bool = False
-                    ) -> str:
+async def _feedback(
+    ctx: commands.Context = None,
+    msg: str = "",
+    delete_after: int = None,
+    delete_message: bool = False,
+) -> str:
     """
     Send feedback to the user after a message is posted.
     The original message can be deleted.
@@ -63,9 +71,7 @@ async def _feedback(ctx: commands.Context = None,
     return "feedback sent successful"
 
 
-def _sanitize(msg_in: str,
-              maxlength: int = 200
-              ) -> str:
+def _sanitize(msg_in: str, maxlength: int = 200) -> str:
     """
     Sanitize the message in, remove forbidden characters.
     Truncate the message at maxlength (last bit will be replace with truncated)
@@ -74,8 +80,8 @@ def _sanitize(msg_in: str,
         msg_in:    string to be sanitized
         maxlenght: maximum length of the string
     """
-    forbidden = ['@', '#']
-    trunctext = ' .. truncated'
+    forbidden = ["@", "#"]
+    trunctext = " .. truncated"
     logger.info(f"msg_in: {msg_in}")
     if len(msg_in) > maxlength:
         tmplength = maxlength - len(trunctext)
@@ -89,5 +95,5 @@ def _sanitize(msg_in: str,
         msg_out = msg_in
 
     for nogo in forbidden:
-        msg_out = msg_out.replace(nogo, '_')
+        msg_out = msg_out.replace(nogo, "_")
     return msg_out

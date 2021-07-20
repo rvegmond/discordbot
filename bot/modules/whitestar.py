@@ -102,18 +102,18 @@ class WhiteStar(Robin):
         usermap = self._getusermap(int(ctx.author.id))
         statusupdate = _sanitize(" ".join(args), 100)
 
-        logger.info(f"New status from {usermap['discordalias']}: {statusupdate} ")
+        logger.info(f"New status from {usermap['DiscordAlias']}: {statusupdate} ")
         self.db.session.query(self.db.Status).filter(
-            self.db.Status.UserId == usermap["Id"]
+            self.db.Status.UserId == usermap["UserId"]
         ).delete()
 
-        new_status = self.db.Status(UserId=usermap["Id"], StatusText=statusupdate)
+        new_status = self.db.Status(UserId=usermap["UserId"], StatusText=statusupdate)
         self.db.session.add(new_status)
 
         await self.update_status_table(ctx)
 
         await ctx.send(
-            content=f"Dank, {usermap['discordalias']} je ws-status is nu bijgewerkt",
+            content=f"Dank, {usermap['DiscordAlias']} je ws-status is nu bijgewerkt",
             delete_after=3,
         )
 
@@ -133,47 +133,42 @@ class WhiteStar(Robin):
         it is based on the contents of the sqlite table
         """
         bot = self.bot
-        cur = self.conn.cursor()
 
         # Get all subscribers for the ws
-        query = (
-            "select um.DiscordAlias, w.inschrijving, w.Opmerkingen "
-            "from WSinschrijvingen w "
-            "left join UserMap um "
-            "on w.Id = um.Id "
-            "where actueel = 'ja' "
-            "order by Inschrijving asc, Inschrijftijd asc "
+        get_entries = (
+            self.db.session.query(
+                self.db.WSEntry.EntryType,
+                self.db.WSEntry.Remark,
+                self.db.User.DiscordAlias,
+            )
+            .filter_by(Active=True)
+            .join(self.db.User)
+            .order_by(self.db.WSEntry.EntryType)
+            .order_by(self.db.WSEntry.EntryTime)
         )
-        cur.execute(query)
         msg = ""
         i = 1
-        for row in cur.fetchall():
-            if row[1] == "planner":
-                msg += f"**{i}. {row[0]} {row[1]} {row[2]}**\n"
+        for item in get_entries.all():
+            logger.info(f"item {item}")
+            if item.EntryType == "planner":
+                msg += f"**{i}. {item.DiscordAlias} {item.EntryType} {item.Remark}**\n"
             else:
-                msg += f"{i}. {row[0]} {row[1]} {row[2]}\n"
+                msg += f"{i} {item.DiscordAlias} {item.EntryType} {item.Remark}\n"
             i += 1
         msg += "\n"
-
-        # get number of planners
-        query = (
-            "select * "
-            "from WSinschrijvingen w "
-            "where w.actueel = 'ja' "
-            "and w.inschrijving = 'planner' "
+        num_planners = (
+            self.db.session.query(self.db.WSEntry)
+            .filter_by(Active=True)
+            .filter_by(EntryType="planner")
+            .count()
         )
-        cur.execute(query)
-        num_planners = len(cur.fetchall())
-
-        # get number of players
-        query = (
-            "select * "
-            "from WSinschrijvingen w "
-            "where w.actueel = 'ja' "
-            "and w.inschrijving = 'speler' "
+        num_players = (
+            self.db.session.query(self.db.WSEntry)
+            .filter_by(Active=True)
+            .filter_by(EntryType="speler")
+            .count()
         )
-        cur.execute(query)
-        num_players = len(cur.fetchall())
+
         logger.info(f"num_players: {num_players}, num_planners: {num_planners}")
         msg += (
             f"**Planners:** {num_planners}, "
@@ -202,29 +197,31 @@ class WhiteStar(Robin):
         """
         bot = self.bot
         conn = self.conn
-        cur = conn.cursor()
 
         usermap = self._getusermap(str(ctx.author.id))
         wsin_channel = bot.get_channel(int(os.getenv("WSIN_CHANNEL")))
         wslist_channel = bot.get_channel(int(os.getenv("WSLIST_CHANNEL")))
-        query = "select * from WSinschrijvingen where Id=? and actueel='ja' "
-        cur.execute(query, [usermap["Id"]])
-        is_entered = len(cur.fetchall())
-        logger.info(f"{usermap['discordalias']} heeft als action: {action}")
+
+        is_entered = (
+            self.db.session.query(self.db.WSEntry)
+            .filter_by(Active=True)
+            .filter_by(UserId=usermap["UserId"])
+            .count()
+        )
+        logger.info(f"is_entered: {is_entered}")
+        logger.info(f"{usermap['DiscordAlias']} heeft als action: {action}")
         if action == "out":
             if is_entered == 0:
-                logger.info(f"{usermap['discordalias']} stond nog niet ingeschreven.. ")
-                msg = f"{usermap['discordalias']}, je stond nog niet ingeschreven.. "
+                logger.info(f"{usermap['DiscordAlias']} stond nog niet ingeschreven.. ")
+                msg = f"{usermap['DiscordAlias']}, je stond nog niet ingeschreven.. "
                 await _feedback(ctx=ctx, msg=msg, delete_after=3)
             else:
-                query = (
-                    "delete from WSinschrijvingen " "where Id=? " "and actueel='ja' "
-                )
-
-                cur.execute(query, [usermap["Id"]])
-                logger.info(f"{usermap['discordalias']} stond wel ingeschreven.. ")
+                self.db.session.query(self.db.WSEntry).filter_by(Active=True).filter_by(
+                    UserId=usermap["UserId"]
+                ).delete()
+                logger.info(f"{usermap['DiscordAlias']} stond wel ingeschreven.. ")
                 msg = (
-                    f"Helaas, {usermap['discordalias']} je doet niet mee met komende ws"
+                    f"Helaas, {usermap['DiscordAlias']} je doet niet mee met komende ws"
                 )
                 await _feedback(ctx=ctx, msg=msg, delete_after=3)
 
@@ -236,37 +233,40 @@ class WhiteStar(Robin):
                         await message.delete()
             conn.commit()
             return None
-        query = "select * from WSinschrijvingen where Id=? and inschrijving=? and actueel='ja' "
-        cur.execute(query, [usermap["Id"], action])
-        rows_same_role = len(cur.fetchall())
-
+        rows_same_role = (
+            self.db.session.query(self.db.WSEntry)
+            .filter_by(Active=True)
+            .filter_by(UserId=usermap["UserId"])
+            .filter_by(EntryType=action)
+            .count()
+        )
+        logger.info(f"rows_same_role {rows_same_role}")
         if rows_same_role == 1:
             # already registerd with the same role, do nothing..
-            await ctx.send(f"{usermap['discordalias']} is al ingeschreven als {action}")
+            await ctx.send(f"{usermap['DiscordAlias']} is al ingeschreven als {action}")
             return None
         if is_entered == 1:
+            logger.info(f"updating")
             # already registerd as a different role, update
-            query = (
-                "update WSinschrijvingen set inschrijving=?, Opmerkingen=? "
-                "where Id=? and actueel='ja' "
-            )
-            cur.execute(query, [action, comment, usermap["Id"]])
+            data = {"EntryType": action, "Remark": comment}
+            self.db.session.query(self.db.WSEntry).filter_by(Active=True).filter_by(
+                UserId=usermap["UserId"]
+            ).update(data)
         else:
+            logger.info(f"adding")
             # not yet registerd, insert
-            query = (
-                "insert into WSinschrijvingen "
-                "(Id, inschrijving, Inschrijftijd, Opmerkingen, actueel) "
-                "values (?, ?, datetime('now'), ?, 'ja') "
+            new_entry = self.db.WSEntry(
+                UserId=usermap["UserId"], EntryType=action, Remark=comment, Active=True
             )
-            cur.execute(query, [usermap["Id"], action, comment])
+            self.db.session.add(new_entry)
         await ctx.send(
             content=(
-                f"Gefeliciteerd, {usermap['discordalias']} "
+                f"Gefeliciteerd, {usermap['DiscordAlias']} "
                 f"je bent nu {action} voor de volgende ws"
             ),
             delete_after=3,
         )
-        conn.commit()
+        self.db.session.commit()
 
     ###################################################################################################
     #  function _ws_admin
@@ -363,7 +363,7 @@ class WhiteStar(Robin):
         if ctx.channel != wsin_channel:
             # Trying to post in the wrong channel
             msg = (
-                f"{usermap['discordalias']}, je kunt alleen in kanaal <#{wsin_channel_id}> "
+                f"{usermap['DiscordAlias']}, je kunt alleen in kanaal <#{wsin_channel_id}> "
                 "inschrijven, je bent nu nog **niet** ingeschreven!"
             )
 
@@ -378,7 +378,7 @@ class WhiteStar(Robin):
             # more than 1 argument, join
             comment = _sanitize(" ".join(args[1:]))
 
-        logger.info(f"{usermap['discordalias']} - {args[0]} - {comment}")
+        logger.info(f"{usermap['DiscordAlias']} - {args[0]} - {comment}")
         if args[0] in ["i", "in"]:
             await self._ws_entry(ctx, action="speler", comment=comment)
         elif args[0] in ["p", "plan", "planner"]:
@@ -533,7 +533,7 @@ class WhiteStar(Robin):
             result = (
                 self.db.session.query(self.db.WSComeback)
                 .filter(
-                    self.db.WSComeback.UserId == usermap["Id"],
+                    self.db.WSComeback.UserId == usermap["UserId"],
                     self.db.WSComeback.ShipType == shiptype,
                 )
                 .count()
@@ -541,7 +541,7 @@ class WhiteStar(Robin):
             logger.info(f"count: {result}")
             if result > 0:
                 self.db.session.query(self.db.WSComeback).filter(
-                    self.db.WSComeback.UserId == usermap["Id"],
+                    self.db.WSComeback.UserId == usermap["UserId"],
                     self.db.WSComeback.ShipType == shiptype,
                 ).delete()
         else:
@@ -551,10 +551,10 @@ class WhiteStar(Robin):
 
         ws = None
         for wslist in ["ws1", "ws2"]:
-            if usermap["Id"] in _rolemembers(ctx=ctx, role_name=wslist):
+            if usermap["UserId"] in _rolemembers(ctx=ctx, role_name=wslist):
                 ws = wslist
         new_return = self.db.WSComeback(
-            UserId=usermap["Id"],
+            UserId=usermap["UserId"],
             WSId=ws,
             ShipType=shiptype,
             ReturnTime=datetime.strptime(returntime, "%Y-%m-%d %H:%M"),
@@ -568,7 +568,7 @@ class WhiteStar(Robin):
             await _feedback(
                 ctx,
                 msg=(
-                    f"{usermap['discordalias']}, succes met ophalen van "
+                    f"{usermap['DiscordAlias']}, succes met ophalen van "
                     "relics, straks snel weer een nieuwe drone"
                 ),
                 delete_after=3,
@@ -578,7 +578,7 @@ class WhiteStar(Robin):
             await _feedback(
                 ctx,
                 msg=(
-                    f"Helaas, {usermap['discordalias']}, hopelijk volgende "
+                    f"Helaas, {usermap['DiscordAlias']}, hopelijk volgende "
                     f"keer meer succes met je {shiptype}"
                 ),
                 delete_after=3,
