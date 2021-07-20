@@ -47,17 +47,22 @@ def update_last_active(message):
     member = message.author
     channel = message.channel
 
+    if member.nick is None:
+        membername = member.name
+    else:
+        membername = member.nick
+
     logger.info(f"member {member}")
     logger.info(f"member.id {member.id}")
-    logger.info(f"member.name {member.name}")
+    logger.info(f"membername {membername}")
     logger.info(f"channel.name {channel.name}")
     if db.session.query(db.User).filter_by(UserId=member.id).count() == 0:
         new_user = db.User(
-            UserId=member.id, DiscordAlias=member.name, LastChannel=channel.name
+            UserId=member.id, DiscordAlias=membername, LastChannel=channel.name
         )
         db.session.add(new_user)
     else:
-        data = {"DiscordAlias": member.name, "LastChannel": channel.name}
+        data = {"DiscordAlias": membername, "LastChannel": channel.name}
         db.session.query(db.User).filter(db.User.UserId == member.id).update(data)
 
     db.session.commit()

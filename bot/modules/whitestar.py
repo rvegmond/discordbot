@@ -37,7 +37,6 @@ class WhiteStar(Robin):
         updating status table in status channel
         """
         bot = self.bot
-        cur = self.conn.cursor()
         status_channel = int(os.getenv("STATUS_CHANNEL"))
         channel = bot.get_channel(status_channel)
         yesterday = datetime.now() - timedelta(hours=36)
@@ -81,6 +80,7 @@ class WhiteStar(Robin):
 
                 msg += "\u2063"
             await channel.send(msg)
+        self.db.session.commit()
 
     ###################################################################################################
     #  command status
@@ -101,8 +101,6 @@ class WhiteStar(Robin):
 
         usermap = self._getusermap(int(ctx.author.id))
         statusupdate = _sanitize(" ".join(args), 100)
-        conn = self.conn
-        cur = conn.cursor()
 
         logger.info(f"New status from {usermap['discordalias']}: {statusupdate} ")
         self.db.session.query(self.db.Status).filter(
