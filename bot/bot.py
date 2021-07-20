@@ -47,9 +47,14 @@ def update_last_active(conn, message):
     member = message.author
     channel = message.channel
 
+    if member.nick is None:
+        membername = member.name
+    else:
+        membername = member.nick
+
     logger.info(f"member {member}")
     logger.info(f"member.id {member.id}")
-    logger.info(f"member.name {member.name}")
+    logger.info(f"membername {membername}")
     logger.info(f"channel.name {channel.name}")
     now = datetime.now()
     query = "select * from UserMap where Id=? "
@@ -57,10 +62,10 @@ def update_last_active(conn, message):
     row = cur.fetchone()
     if row is None:
         query = "insert into usermap (Id, DiscordAlias,last_active, last_channel) values (?, ?, ?, ?)"
-        cur.execute(query, [member.id, member.name, channel.name, now])
+        cur.execute(query, [member.id, membername, channel.name, now])
     else:
         query = "update usermap set DiscordAlias=?, last_active=?, last_channel=? where Id=? "
-        cur.execute(query, [member.name, now, channel.name, member.id])
+        cur.execute(query, [membername, now, channel.name, member.id])
     conn.commit()
 
 
