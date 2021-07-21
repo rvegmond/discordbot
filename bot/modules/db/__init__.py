@@ -13,8 +13,9 @@ from .wscomeback import WSComeback
 from .wsentry import WSEntry
 from .wstemp import WSTemp
 
-_DB_URI = "sqlite:///../data/hades.db"
-engine = create_engine(_DB_URI, echo=True)
-Base.metadata.create_all(engine)
-DBSession = sessionmaker(bind=engine)
-session = DBSession()
+
+def init(db_uri: str = "sqlite://"):
+    engine = create_engine(db_uri, echo=True)
+    Base.metadata.create_all(engine)
+    dbsession = sessionmaker(bind=engine)
+    return dbsession()
