@@ -84,9 +84,9 @@ async def test_feedback_delete():
     assert res == "feedback sent successful"
 
 
-def test_usermap():
-    """
-    These tests will test update usermap.
-    """
-    res = robin._getusermap(1)
-    assert res["discordid"] == "discordid1"
+# def test_usermap():
+#     """
+#     These tests will test update usermap.
+#     """
+#     res = robin._getusermap(1)
+#     assert res["discordid"] == "discordid1"
