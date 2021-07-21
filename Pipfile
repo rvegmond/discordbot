@@ -20,6 +20,7 @@ pytest-asyncio = "*"
 mock = "*"
 pytest-mock = "*"
 black = "*"
+sqlalchemy = "*"
 
 [requires]
 python_version = "3"
