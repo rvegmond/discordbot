@@ -28,9 +28,9 @@ class WhiteStar(Robin):
         self.return_scheduler.start()
         logger.info(f"Class {type(self).__name__} initialized ")
 
-    ###################################################################################################
+    ###############################################################################################
     #  command status
-    ###################################################################################################
+    ###############################################################################################
 
     async def update_status_table(self, ctx):
         """
@@ -82,9 +82,9 @@ class WhiteStar(Robin):
             await channel.send(msg)
         self.db.session.commit()
 
-    ###################################################################################################
+    ###############################################################################################
     #  command status
-    ###################################################################################################
+    ###############################################################################################
 
     @commands.command(
         name="status",
@@ -123,9 +123,9 @@ class WhiteStar(Robin):
             logger.info(f"message deletion failed {exception}")
         self.db.session.commit()
 
-    ###################################################################################################
+    ###############################################################################################
     #  function update_ws_inschrijvingen_tabel
-    ###################################################################################################
+    ###############################################################################################
 
     async def update_ws_inschrijvingen_tabel(self, wslist_channel):
         """
@@ -185,9 +185,9 @@ class WhiteStar(Robin):
                 await message.delete()
         await wslist_channel.send(msg)
 
-    ###################################################################################################
+    ###############################################################################################
     #  function _ws_entry
-    ###################################################################################################
+    ###############################################################################################
 
     async def _ws_entry(
         self, ctx: commands.Context = None, action: str = "", comment: str = ""
@@ -244,14 +244,14 @@ class WhiteStar(Robin):
             await ctx.send(f"{usermap['DiscordAlias']} is al ingeschreven als {action}")
             return None
         if is_entered == 1:
-            logger.info(f"updating")
+            logger.info("updating")
             # already registerd as a different role, update
             data = {"EntryType": action, "Remark": comment}
             self.db.session.query(self.db.WSEntry).filter_by(Active=True).filter_by(
                 UserId=usermap["UserId"]
             ).update(data)
         else:
-            logger.info(f"adding")
+            logger.info("adding")
             # not yet registerd, insert
             new_entry = self.db.WSEntry(
                 UserId=usermap["UserId"], EntryType=action, Remark=comment, Active=True
@@ -266,9 +266,9 @@ class WhiteStar(Robin):
         )
         self.db.session.commit()
 
-    ###################################################################################################
+    ###############################################################################################
     #  function _ws_admin
-    ###################################################################################################
+    ###############################################################################################
 
     async def _ws_admin(self, ctx, action: str):
         """
@@ -291,11 +291,9 @@ class WhiteStar(Robin):
 
         if action == "open":
             await wsin_channel.set_permissions(ws_role, send_messages=True)
-            # await wslist_channel.set_permissions(ws_role, send_messages=True)
             await ctx.send(content=f"Inschrijving geopend door {ctx.author.name}")
         elif action == "close":
             await wsin_channel.set_permissions(ws_role, send_messages=False)
-            await wslist_channel.set_permissions(ws_role, send_messages=False)
             await ctx.send(content=f"Inschrijving gesloten door {ctx.author.name}")
         elif action == "clear":
             msg = (
@@ -319,9 +317,9 @@ class WhiteStar(Robin):
             self.db.session.commit()
             return None
 
-    ###################################################################################################
+    ###############################################################################################
     #  command ws  (inschrijvingen)
-    ###################################################################################################
+    ###############################################################################################
 
     @commands.command(
         name="ws",
@@ -394,13 +392,13 @@ class WhiteStar(Robin):
 
         await self.update_ws_inschrijvingen_tabel(wslist_channel)
 
-    ###################################################################################################
+    ###############################################################################################
     #  command updateusermap
-    ###################################################################################################
+    ###############################################################################################
 
     @commands.command(
         name="updateusermap",
-        help=("Moderator only:\n" " geen argumenten, update de usermap tabel\n"),
+        help=("Moderator only, geen argumenten, update de usermap tabel\n"),
         brief="Update de usermap tabel",
         hidden="True",
     )
@@ -435,9 +433,9 @@ class WhiteStar(Robin):
 
             await ctx.send(f"user table updated by {ctx.author.name}")
 
-    ###################################################################################################
+    ###############################################################################################
     #  command _update_comeback_channel
-    ###################################################################################################
+    ###############################################################################################
 
     async def _update_comeback_channel(self, comeback_channel, which_ws):
         bot = self.bot
@@ -482,9 +480,9 @@ class WhiteStar(Robin):
                 msg += f"**{item.DiscordAlias}**      {item.ShipType}         {returntime}       {notificationtime}\n"
         await comeback_channel.send(msg)
 
-    ###################################################################################################
+    ###############################################################################################
     #  command terug
-    ###################################################################################################
+    ###############################################################################################
 
     @commands.command(
         name="terug",
@@ -580,9 +578,9 @@ class WhiteStar(Robin):
                 delete_message=True,
             )
 
-    ###################################################################################################
+    ###############################################################################################
     #  command info
-    ###################################################################################################
+    ###############################################################################################
 
     @commands.command(
         name="info",
@@ -623,9 +621,9 @@ class WhiteStar(Robin):
             )
         await _feedback(ctx=ctx, msg=msg)
 
-    ###################################################################################################
+    ###############################################################################################
     #  runner return_scheduler
-    ###################################################################################################
+    ###############################################################################################
     @tasks.loop(minutes=1)
     async def return_scheduler(self):
         """
