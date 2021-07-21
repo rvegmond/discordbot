@@ -7,8 +7,6 @@ help:
 
 .PHONY: full_test
 full_test: init ## deploy vpc stack
-	[ -f tests/hades-test.db ] && rm tests/hades-test.db || echo "dbfile didn't exist"
-	sqlite3 tests/hades-test.db < tests/create_db.sql
 	pipenv run pytest --cov-report xml:tests/test-results/coverage.xml --cov
 	pipenv run pylint bot/ tests/ -r n — msg-template='/path}:{line}: [{msg_id}({symbol}), {obj}] {msg}' | tee tests/test-results/pylint.txt
 	docker run \
