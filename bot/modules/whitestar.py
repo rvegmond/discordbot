@@ -23,8 +23,8 @@ class WhiteStar(Robin):
     The class that contains the Whitestar functions
     """
 
-    def __init__(self, bot=None, conn=None, db=None):
-        super().__init__(bot=bot, conn=conn, db=db)
+    def __init__(self, bot=None, db=None):
+        super().__init__(bot=bot, db=db)
         self.return_scheduler.start()
         logger.info(f"Class {type(self).__name__} initialized ")
 
@@ -196,7 +196,6 @@ class WhiteStar(Robin):
         Handle the entry for the ws
         """
         bot = self.bot
-        conn = self.conn
 
         usermap = self._getusermap(str(ctx.author.id))
         wsin_channel = bot.get_channel(int(os.getenv("WSIN_CHANNEL")))
@@ -231,7 +230,6 @@ class WhiteStar(Robin):
                     if message.author.id == ctx.author.id:
                         logger.info(f"deleting message for {message.author.id}")
                         await message.delete()
-            conn.commit()
             return None
         rows_same_role = (
             self.db.session.query(self.db.WSEntry)
@@ -277,8 +275,6 @@ class WhiteStar(Robin):
         execute administrative tasks for the WS entry
         """
         bot = self.bot
-        conn = self.conn
-        cur = conn.cursor()
         wsin_channel = bot.get_channel(int(os.getenv("WSIN_CHANNEL")))
         wslist_channel = bot.get_channel(int(os.getenv("WSLIST_CHANNEL")))
         ws_role = ctx.guild.get_role(int(os.getenv("WS_ROLE")))
@@ -316,11 +312,11 @@ class WhiteStar(Robin):
             await wsin_channel.purge(limit=100)
             await wslist_channel.purge(limit=100)
             await ctx.send(content=msg)
-            query = "update WSinschrijvingen " "set actueel='nee' "
-            cur.execute(query)
+            data = {"Active": False}
+            self.db.session.query(self.db.WSEntry).update(data)
             await self.update_ws_inschrijvingen_tabel(wslist_channel)
             await wsin_channel.set_permissions(ws_role, send_messages=True)
-            conn.commit()
+            self.db.session.commit()
             return None
 
     ###################################################################################################
@@ -438,7 +434,6 @@ class WhiteStar(Robin):
                     logger.info(f"inserted {member.display_name}")
 
             await ctx.send(f"user table updated by {ctx.author.name}")
-            self.conn.commit()
 
     ###################################################################################################
     #  command _update_comeback_channel
@@ -636,7 +631,6 @@ class WhiteStar(Robin):
         """
         this is the "cron" for the comeback notifications
         """
-        cur = self.conn.cursor()
         ws_channel = {}
         ws_channel["ws1"] = self.bot.get_channel(int(os.getenv("WS1_CHANNEL")))
         ws_channel["ws2"] = self.bot.get_channel(int(os.getenv("WS2_CHANNEL")))

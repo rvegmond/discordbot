@@ -10,9 +10,8 @@ class Robin(commands.Cog):
     The master class for Robin.
     """
 
-    def __init__(self, bot=None, conn=None, db=None):
+    def __init__(self, bot=None, db=None):
         self.bot = bot
-        self.conn = conn
         self.db = db
         logger.info(f"Class {type(self).__name__} initialized from Robin class")
 

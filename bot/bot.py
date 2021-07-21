@@ -26,23 +26,6 @@ config = {
 }
 
 
-def create_connection():
-    """create a database connection to the SQLite database
-        specified by db_file
-    :param db_file: database file
-    :return: Connection object or None
-    """
-    conn = None
-    try:
-        conn = sqlite3.connect(DB_FILE)
-        logger.info(f"connected successful to {DB_FILE}")
-    except Exception as error:
-        logger.info(f"connection failed {error}")
-        sys.exit(3)
-
-    return conn
-
-
 def update_last_active(message):
     member = message.author
     channel = message.channel
@@ -76,7 +59,6 @@ def new_bot(command_prefix: str, description: str) -> discord.ext.commands.bot:
     bot = commands.Bot(
         command_prefix=command_prefix, description=description, intents=intents
     )
-    conn = create_connection()
 
     @bot.event
     async def on_message(message):
@@ -89,9 +71,8 @@ def new_bot(command_prefix: str, description: str) -> discord.ext.commands.bot:
         logger.info(f"Signed in as [{bot.user.id}] [{bot.user.name}]")
 
         bot.add_cog(ping.Ping(bot))
-        bot.add_cog(whitestar.WhiteStar(bot=bot, conn=conn, db=db))
-        bot.add_cog(roles.Roles(bot=bot, conn=conn, db=db))
-        # bot.add_cog(scheduler.Scheduler(bot, conn))
+        bot.add_cog(whitestar.WhiteStar(bot=bot, db=db))
+        bot.add_cog(roles.Roles(bot=bot, db=db))
 
     return bot
 
