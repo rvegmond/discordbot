@@ -9,15 +9,12 @@ help:
 full_test: init ## deploy vpc stack
 	pipenv run pytest --cov-report xml:tests/test-results/coverage.xml --cov
 	pipenv run pylint bot/ tests/ -r n — msg-template='/path}:{line}: [{msg_id}({symbol}), {obj}] {msg}' | tee tests/test-results/pylint.txt
-	echo "GITHUB_REF: ${GITHUB_REF}"
-	echo "GITHUB_HEAD_REF: ${GITHUB_HEAD_REF}"
-	echo "GITHUB_BASE_REF: ${GITHUB_BASE_REF}"
 	docker run \
     --rm \
 	-e SONAR_HOST_URL="https://sonarcloud.io" \
     -e SONAR_LOGIN=${SONAR_TOKEN} \
     -v "${PWD}:/usr/src" \
-    sonarsource/sonar-scanner-cli -Dsonar.branch.name=${GITHUB_REF}
+    sonarsource/sonar-scanner-cli -Dsonar.branch.name=${GITHUB_HEAD_REF}
 
 .PHONY: test
 test: init ## deploy vpc stack
