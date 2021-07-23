@@ -3,9 +3,8 @@ This file contains the WSEntry table definition
 """
 
 
-from sqlalchemy import Table, Column, Integer, String, Boolean, ForeignKey, DateTime
-
 from datetime import datetime
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime
 from . import Base
 
 

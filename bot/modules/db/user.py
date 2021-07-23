@@ -2,8 +2,8 @@
 This file contains the User table definition
 """
 
-from sqlalchemy import Column, Integer, String, DateTime
 from datetime import datetime
+from sqlalchemy import Column, Integer, String, DateTime
 from . import Base
 
 

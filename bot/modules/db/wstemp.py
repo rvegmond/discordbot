@@ -2,8 +2,7 @@
 This file contains the WSTemp table definition
 """
 
-from sqlalchemy import Table, Column, Integer, String, Boolean, ForeignKey, DateTime
-from datetime import datetime
+from sqlalchemy import Column, Integer, ForeignKey
 from . import Base
 
 
