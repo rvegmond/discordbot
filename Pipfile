@@ -15,7 +15,6 @@ discord = {py = "*"}
 pytest-cov = "*"
 debugpy = "*"
 pytest = "*"
-typing-extensions = "*"
 pylint = "*"
 pytest-asyncio = "*"
 mock = "*"
