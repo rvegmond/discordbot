@@ -1,13 +1,17 @@
-#!/usr/bin/env python
+"""
+This file contains the User table definition
+"""
 
-
-from sqlalchemy import Table, Column, Integer, String, Boolean, ForeignKey, DateTime
-
+from sqlalchemy import Column, Integer, String, DateTime
 from datetime import datetime
 from . import Base
 
 
 class User(Base):
+    """
+    This file contains the User table definition
+    """
+
     __tablename__ = "user"
     UserId = Column(Integer, primary_key=True)
     DiscordId = Column(String)
@@ -18,6 +22,9 @@ class User(Base):
     LastChannel = Column(String)
 
     def __repr__(self):
+        """
+        define return for table
+        """
         return (
             f"<User(UserId={self.UserId},"
             f"DiscordId={self.DiscordId},"

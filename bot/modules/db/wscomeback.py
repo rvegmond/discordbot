@@ -1,4 +1,6 @@
-#!/usr/bin/env python
+"""
+This file contains the WSComeback table definition
+"""
 
 
 from sqlalchemy import Table, Column, Integer, String, Boolean, ForeignKey, DateTime
@@ -8,6 +10,10 @@ from . import Base
 
 
 class WSComeback(Base):
+    """
+    This file contains the WSComeback table definition
+    """
+
     __tablename__ = "wscomeback"
     ComebackId = Column(Integer, primary_key=True)
     UserId = Column(Integer, ForeignKey("user.UserId"))
@@ -17,6 +23,9 @@ class WSComeback(Base):
     NotificationTime = Column(DateTime)
 
     def __repr__(self):
+        """
+        define return for table
+        """
         return (
             f"<WSComeback(ComebackId={self.ComebackId},"
             f"UserId={self.UserId},"
