@@ -28,3 +28,9 @@ class Status(Base):
             f"LastUpdate={self.LastUpdate},"
             f"StatusText={self.StatusText})>"
         )
+
+    def __str__(self):
+        """
+        Dummy function
+        """
+        return self.__class__.__name__

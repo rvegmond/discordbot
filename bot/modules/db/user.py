@@ -34,3 +34,9 @@ class User(Base):
             f"LastActive={self.LastActive},"
             f"LastChannel={self.LastChannel})>"
         )
+
+    def __str__(self):
+        """
+        Dummy function
+        """
+        return self.__class__.__name__

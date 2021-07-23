@@ -33,3 +33,9 @@ class WSEntry(Base):
             f"EntryTime={self.EntryTime},"
             f"Active={self.Active})>"
         )
+
+    def __str__(self):
+        """
+        Dummy function
+        """
+        return self.__class__.__name__

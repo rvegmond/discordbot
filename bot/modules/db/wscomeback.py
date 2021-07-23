@@ -31,3 +31,9 @@ class WSComeback(Base):
             f"ReturnTime={self.ReturnTime},"
             f"NotificationTime={self.NotificationTime})>"
         )
+
+    def __str__(self):
+        """
+        Dummy function
+        """
+        return self.__class__.__name__
