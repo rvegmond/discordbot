@@ -19,3 +19,9 @@ class WSTemp(Base):
         define return for table
         """
         return f"<WSTemp(UserId={self.UserId}>"
+
+    def __str__(self):
+        """
+        Dummy function
+        """
+        return self.__class__.__name__
