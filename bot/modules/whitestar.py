@@ -141,7 +141,7 @@ class WhiteStar(Robin):
                 self.db.WSEntry.Remark,
                 self.db.User.DiscordAlias,
             )
-            .filter_by(Active=True)
+            .filter(self.db.WSEntry.Active)
             .join(self.db.User)
             .order_by(self.db.WSEntry.EntryType)
             .order_by(self.db.WSEntry.EntryTime)
@@ -158,14 +158,14 @@ class WhiteStar(Robin):
         msg += "\n"
         num_planners = (
             self.db.session.query(self.db.WSEntry)
-            .filter_by(Active=True)
-            .filter_by(EntryType="planner")
+            .filter(self.db.WSEntry.Active)
+            .filter(self.db.WSEntry.EntryType == "planner")
             .count()
         )
         num_players = (
             self.db.session.query(self.db.WSEntry)
-            .filter_by(Active=True)
-            .filter_by(EntryType="speler")
+            .filter(self.db.WSEntry.Active)
+            .filter(self.db.WSEntry.EntryType == "speler")
             .count()
         )
 
@@ -203,8 +203,8 @@ class WhiteStar(Robin):
 
         is_entered = (
             self.db.session.query(self.db.WSEntry)
-            .filter_by(Active=True)
-            .filter_by(UserId=usermap["UserId"])
+            .filter(self.db.WSEntry.Active)
+            .filter(self.db.WSEntry.UserId == usermap["UserId"])
             .count()
         )
         logger.info(f"is_entered: {is_entered}")
@@ -215,9 +215,9 @@ class WhiteStar(Robin):
                 msg = f"{usermap['DiscordAlias']}, je stond nog niet ingeschreven.. "
                 await _feedback(ctx=ctx, msg=msg, delete_after=3)
             else:
-                self.db.session.query(self.db.WSEntry).filter_by(Active=True).filter_by(
-                    UserId=usermap["UserId"]
-                ).delete()
+                self.db.session.query(self.db.WSEntry).filter(
+                    self.db.WSEntry.Active
+                ).filter(self.db.WSEntry.UserId == usermap["UserId"]).delete()
                 logger.info(f"{usermap['DiscordAlias']} stond wel ingeschreven.. ")
                 msg = (
                     f"Helaas, {usermap['DiscordAlias']} je doet niet mee met komende ws"
@@ -233,9 +233,9 @@ class WhiteStar(Robin):
             return None
         rows_same_role = (
             self.db.session.query(self.db.WSEntry)
-            .filter_by(Active=True)
-            .filter_by(UserId=usermap["UserId"])
-            .filter_by(EntryType=action)
+            .filter(self.db.WSEntry.Active)
+            .filter(self.db.WSEntry.UserId == usermap["UserId"])
+            .filter(self.db.WSEntry.EntryType == action)
             .count()
         )
         logger.info(f"rows_same_role {rows_same_role}")
@@ -247,9 +247,9 @@ class WhiteStar(Robin):
             logger.info("updating")
             # already registerd as a different role, update
             data = {"EntryType": action, "Remark": comment}
-            self.db.session.query(self.db.WSEntry).filter_by(Active=True).filter_by(
-                UserId=usermap["UserId"]
-            ).update(data)
+            self.db.session.query(self.db.WSEntry).filter(
+                self.db.WSEntry.Active
+            ).filtery(UserId=usermap["UserId"]).update(data)
         else:
             logger.info("adding")
             # not yet registerd, insert
@@ -419,7 +419,7 @@ class WhiteStar(Robin):
             for member in members:
                 if (
                     self.db.session.query(self.db.User)
-                    .filter_by(UserId=member.id)
+                    .filter(self.db.User.UserId == member.id)
                     .count()
                     == 0
                 ):
@@ -449,8 +449,8 @@ class WhiteStar(Robin):
                 self.db.WSComeback.ReturnTime,
                 self.db.WSComeback.NotificationTime,
             )
+            .filter(self.db.WSComeback.NotificationTime > datetime.now())
             .join(self.db.User)
-            .filter_by(self.db.WSComeback.NotificationTime > datetime.now())
         )
 
         await comeback_channel.purge(limit=100)
@@ -511,7 +511,8 @@ class WhiteStar(Robin):
 
         usermap = self._getusermap(int(ctx.author.id))
         returntime = _normalize_time(args[1])
-
+        logger.info(f"len(args) {len(args)}")
+        logger.info(f"args {args}")
         if len(args) == 2:
             notificationtime = returntime
         elif len(args) == 3:
@@ -595,14 +596,16 @@ class WhiteStar(Robin):
         user = args[0]
         logger.info(f"user {user}")
         if (
-            self.db.session.query(self.db.User).filter_by(DiscordAlias=user).count()
+            self.db.session.query(self.db.User)
+            .filter(self.db.User.DiscordAlias == user)
+            .count()
             == 0
         ):
             msg = f"User: {user} is onbekend."
         else:
             row = (
                 self.db.session.query(self.db.User)
-                .filter_by(DiscordAlias=user)
+                .filter(self.db.User.DiscordAlias == user)
                 .all()[0]
             )
 
@@ -645,8 +648,9 @@ class WhiteStar(Robin):
             self.db.WSComeback.ShipType,
             self.db.WSComeback.ReturnTime,
             self.db.WSComeback.NotificationTime,
-        ).filter_by(
-            NotificationTime=datetime.strptime(
+        ).filter(
+            self.db.WSComeback.NotificationTime
+            == datetime.strptime(
                 datetime.now().strftime("%Y-%m-%d %H:%M"), "%Y-%m-%d %H:%M"
             )
         )
