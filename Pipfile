@@ -19,6 +19,11 @@ pylint = "*"
 pytest-asyncio = "*"
 mock = "*"
 pytest-mock = "*"
+black = "*"
+sqlalchemy = "*"
 
 [requires]
 python_version = "3"
+
+[pipenv]
+allow_prereleases = true

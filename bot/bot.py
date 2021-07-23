@@ -9,10 +9,10 @@ from discord.ext import commands
 from loguru import logger
 from datetime import datetime
 from modules import whitestar, ping, roles
+import modules.db as db
 
-DB_FILE = "../data/hades.db"
-
-___VERSION___ = "[v1.4.0]"
+db.session = db.init("sqlite:///../data/hades.db")
+___VERSION___ = "[v2.0.0]"
 
 config = {
     "handlers": [
@@ -25,25 +25,7 @@ config = {
 }
 
 
-def create_connection():
-    """create a database connection to the SQLite database
-        specified by db_file
-    :param db_file: database file
-    :return: Connection object or None
-    """
-    conn = None
-    try:
-        conn = sqlite3.connect(DB_FILE)
-        logger.info(f"connected successful to {DB_FILE}")
-    except Exception as error:
-        logger.info(f"connection failed {error}")
-        sys.exit(3)
-
-    return conn
-
-
-def update_last_active(conn, message):
-    cur = conn.cursor()
+def update_last_active(message):
     member = message.author
     channel = message.channel
 
@@ -56,17 +38,16 @@ def update_last_active(conn, message):
     logger.info(f"member.id {member.id}")
     logger.info(f"membername {membername}")
     logger.info(f"channel.name {channel.name}")
-    now = datetime.now()
-    query = "select * from UserMap where Id=? "
-    cur.execute(query, [member.id])
-    row = cur.fetchone()
-    if row is None:
-        query = "insert into usermap (Id, DiscordAlias,last_active, last_channel) values (?, ?, ?, ?)"
-        cur.execute(query, [member.id, membername, channel.name, now])
+    if db.session.query(db.User).filter_by(UserId=member.id).count() == 0:
+        new_user = db.User(
+            UserId=member.id, DiscordAlias=membername, LastChannel=channel.name
+        )
+        db.session.add(new_user)
     else:
-        query = "update usermap set DiscordAlias=?, last_active=?, last_channel=? where Id=? "
-        cur.execute(query, [membername, now, channel.name, member.id])
-    conn.commit()
+        data = {"DiscordAlias": membername, "LastChannel": channel.name}
+        db.session.query(db.User).filter(db.User.UserId == member.id).update(data)
+
+    db.session.commit()
 
 
 def new_bot(command_prefix: str, description: str) -> discord.ext.commands.bot:
@@ -77,12 +58,11 @@ def new_bot(command_prefix: str, description: str) -> discord.ext.commands.bot:
     bot = commands.Bot(
         command_prefix=command_prefix, description=description, intents=intents
     )
-    conn = create_connection()
 
     @bot.event
     async def on_message(message):
         logger.info(f"message {message}")
-        update_last_active(conn, message)
+        update_last_active(message)
         await bot.process_commands(message)
 
     @bot.event
@@ -90,8 +70,8 @@ def new_bot(command_prefix: str, description: str) -> discord.ext.commands.bot:
         logger.info(f"Signed in as [{bot.user.id}] [{bot.user.name}]")
 
         bot.add_cog(ping.Ping(bot))
-        bot.add_cog(whitestar.WhiteStar(bot, conn))
-        bot.add_cog(roles.Roles(bot, conn))
+        bot.add_cog(whitestar.WhiteStar(bot=bot, db=db))
+        bot.add_cog(roles.Roles(bot=bot, db=db))
 
     return bot
 
