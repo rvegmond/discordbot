@@ -215,9 +215,9 @@ class WhiteStar(Robin):
                 msg = f"{usermap['DiscordAlias']}, je stond nog niet ingeschreven.. "
                 await _feedback(ctx=ctx, msg=msg, delete_after=3)
             else:
-                self.db.session.query(self.db.WSEntry).filter(
-                    self.db.WSEntry.Active
-                ).filter(self.db.WSEntry.UserId == usermap["UserId"]).delete()
+                self.db.session.query(self.db.WSEntry).where(
+                    self.db.WSEntry.Active == True
+                ).where(self.db.WSEntry.UserId == usermap["UserId"]).delete()
                 logger.info(f"{usermap['DiscordAlias']} stond wel ingeschreven.. ")
                 msg = (
                     f"Helaas, {usermap['DiscordAlias']} je doet niet mee met komende ws"

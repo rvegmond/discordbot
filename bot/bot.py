@@ -11,8 +11,6 @@ from datetime import datetime
 from modules import whitestar, ping, roles
 import modules.db as db
 
-DB_FILE = "../data/hades.db"
-
 db.session = db.init("sqlite:///../data/hades.db")
 ___VERSION___ = "[v2.0.0]"
 
