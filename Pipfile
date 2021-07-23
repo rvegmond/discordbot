@@ -7,6 +7,7 @@ name = "pypi"
 loguru = "*"
 discord = {py = "*"}
 pylint = "*"
+sqlalchemy = "*"
 
 [dev-packages]
 loguru = "*"
@@ -19,6 +20,11 @@ pylint = "*"
 pytest-asyncio = "*"
 mock = "*"
 pytest-mock = "*"
+black = "*"
+sqlalchemy = "*"
 
 [requires]
 python_version = "3"
+
+[pipenv]
+allow_prereleases = true
