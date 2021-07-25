@@ -450,6 +450,7 @@ class WhiteStar(Robin):
                 self.db.WSComeback.NotificationTime,
             )
             .filter(self.db.WSComeback.NotificationTime > datetime.now())
+            .filter(self.db.WSComeback.WSId == which_ws)
             .join(self.db.User)
         )
 
