@@ -1,9 +1,10 @@
-from discord.ext import commands
+from discord.ext import commands, tasks
+from datetime import datetime
 from loguru import logger
 import os
 
 from ..robin import Robin
-from ..utils import feedback, normalize_time
+from ..utils import feedback, normalize_time, rolemembers
 
 
 class Comeback(Robin):
@@ -89,13 +90,13 @@ class Comeback(Robin):
         )
 
         usermap = self._getusermap(int(ctx.author.id))
-        returntime = _normalize_time(args[1])
+        returntime = normalize_time(args[1])
         logger.info(f"len(args) {len(args)}")
         logger.info(f"args {args}")
         if len(args) == 2:
             notificationtime = returntime
         elif len(args) == 3:
-            notificationtime = _normalize_time(args[2])
+            notificationtime = normalize_time(args[2])
         else:
             # send help!
             await ctx.send_help(ctx.command)
@@ -124,7 +125,7 @@ class Comeback(Robin):
 
         ws = None
         for wslist in ["ws1", "ws2"]:
-            if usermap["UserId"] in _rolemembers(ctx=ctx, role_name=wslist):
+            if usermap["UserId"] in rolemembers(ctx=ctx, role_name=wslist):
                 ws = wslist
         new_return = self.db.WSComeback(
             UserId=usermap["UserId"],
@@ -138,7 +139,7 @@ class Comeback(Robin):
 
         await self._update_comeback_channel(comeback_channel[ws], ws)
         if shiptype == "drone":
-            await _feedback(
+            await feedback(
                 ctx,
                 msg=(
                     f"{usermap['DiscordAlias']}, succes met ophalen van "
@@ -148,7 +149,7 @@ class Comeback(Robin):
                 delete_message=True,
             )
         else:
-            await _feedback(
+            await feedback(
                 ctx,
                 msg=(
                     f"Helaas, {usermap['DiscordAlias']}, hopelijk volgende "

@@ -8,9 +8,9 @@ import discord
 from discord.ext import commands
 from loguru import logger
 from datetime import datetime
-from modules import whitestar, ping, roles
 import modules.ws as ws
 import modules.db as db
+import modules.utils as utils
 
 db.session = db.init("sqlite:///../data/hades.db")
 ___VERSION___ = "[v2.0.0]"
@@ -89,11 +89,12 @@ def new_bot(command_prefix: str, description: str) -> discord.ext.commands.bot:
     async def on_ready():
         logger.info(f"Signed in as [{bot.user.id}] [{bot.user.name}]")
 
-        bot.add_cog(ping.Ping(bot))
-        bot.add_cog(whitestar.WhiteStar(bot=bot, db=db))
+        bot.add_cog(utils.Ping(bot=bot))
         bot.add_cog(ws.Info(bot=bot, db=db))
-        bot.add_cog(roles.Roles(bot=bot, db=db))
-        bot.add_cog(rs.RSEvent(bot=bot, db=db))
+        bot.add_cog(ws.Status(bot=bot, db=db))
+        bot.add_cog(ws.Comeback(bot=bot, db=db))
+        bot.add_cog(ws.Entry(bot=bot, db=db))
+        bot.add_cog(utils.GetAllRoles(bot=bot, db=db))
 
     return bot
 
