@@ -8,7 +8,7 @@ from datetime import timedelta, datetime
 from discord.ext import commands, tasks
 from loguru import logger
 from ..robin import Robin
-from ..utils import in_role, feedback
+from ..utils import in_role, feedback, sanitize
 
 try:
     locale.setlocale(locale.LC_ALL, "nl_NL.utf8")  # required running on linux
@@ -31,7 +31,6 @@ class Entry(Robin):
     ###############################################################################################
     #  function update_ws_inschrijvingen_tabel
     ###############################################################################################
-
     async def update_ws_inschrijvingen_tabel(self, wslist_channel):
         """
         This wil write the list of "inschrijvingen" to the wslist_channel,
@@ -275,7 +274,7 @@ class Entry(Robin):
 
         if len(args) > 1:
             # more than 1 argument, join
-            comment = _sanitize(" ".join(args[1:]))
+            comment = sanitize(" ".join(args[1:]))
 
         logger.info(f"{usermap['DiscordAlias']} - {args[0]} - {comment}")
         if args[0] in ["i", "in"]:
