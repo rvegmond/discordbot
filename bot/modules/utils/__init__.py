@@ -4,6 +4,12 @@ All related to whitestar functionality
 import locale
 import os
 from .feedback import *
+from .sanitize import *
+from .normalize_time import *
+from .rolemembers import *
+from .get_all_roles import *
+from .in_role import *
+from .ping import *
 
 # try:
 #     locale.setlocale(locale.LC_ALL, "nl_NL.utf8")  # required running on linux

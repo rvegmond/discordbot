@@ -7,8 +7,8 @@ import datetime
 from datetime import timedelta, datetime
 from discord.ext import commands, tasks
 from loguru import logger
-from .robin import Robin, _sanitize, _feedback
-from .roles import Roles, _rolemembers
+from ..robin import Robin
+from ..utils import in_role, feedback
 
 try:
     locale.setlocale(locale.LC_ALL, "nl_NL.utf8")  # required running on linux
@@ -18,110 +18,15 @@ except locale.Error:
     logger.info("running on mac")
 
 
-class WhiteStar(Robin):
+class Entry(Robin):
     """
     The class that contains the Whitestar functions
     """
 
     def __init__(self, bot=None, db=None):
         super().__init__(bot=bot, db=db)
-        self.return_scheduler.start()
+        # self.return_scheduler.start()
         logger.info(f"Class {type(self).__name__} initialized ")
-
-    ###############################################################################################
-    #  command status
-    ###############################################################################################
-
-    async def update_status_table(self, ctx):
-        """
-        updating status table in status channel
-        """
-        bot = self.bot
-        status_channel = int(os.getenv("STATUS_CHANNEL"))
-        channel = bot.get_channel(status_channel)
-        yesterday = datetime.now() - timedelta(hours=36)
-        weekago = datetime.now() - timedelta(days=5)
-        await channel.purge(limit=100)
-        msg = (
-            "In dit kanaal staat een overzicht hoe snel de verwachte reactietijd van je mede ws "
-            "teamgenoten is Je update je beschikbaarheid status met "
-            f"**`{bot.command_prefix}status <bereikbaarheid>`**\n"
-            "Houdt je bericht duidelijk, kort en bondig (max 100 tekens)\n"
-        )
-        msg += "\u2063"
-        await channel.send(msg)
-        for this_ws in ("ws1", "ws2"):
-            msg = f"**{this_ws.upper()}**\n"
-
-            self.db.session.query(self.db.WSTemp).delete()
-
-            memberlist = _rolemembers(ctx=ctx, role_name=this_ws)
-            for member in memberlist:
-                new_tmp = self.db.WSTemp(UserId=member)
-                self.db.session.add(new_tmp)
-
-            get_status = (
-                self.db.session.query(
-                    self.db.User.DiscordAlias,
-                    self.db.Status.LastUpdate,
-                    self.db.Status.StatusText,
-                )
-                .join(self.db.WSTemp)
-                .join(self.db.Status)
-            )
-            for item in get_status.all():
-                nice_last_update = item.LastUpdate.strftime("%a %d/%m %H:%M")
-                if item.LastUpdate < weekago:
-                    msg += f"~~{item.DiscordAlias} - {nice_last_update} - {item.StatusText}~~\n"
-                elif item.LastUpdate <= yesterday:
-                    msg += f"{item.DiscordAlias} - {nice_last_update} - {item.StatusText}\n"
-                else:
-                    msg += f"**{item.DiscordAlias} - {nice_last_update} - {item.StatusText}**\n"
-
-                msg += "\u2063"
-            await channel.send(msg)
-        self.db.session.commit()
-
-    ###############################################################################################
-    #  command status
-    ###############################################################################################
-
-    @commands.command(
-        name="status",
-        help=(
-            "Met het status commando update je status in het status kanaal,"
-            " hiermee help je je mede ws-ers op de hoogte te houden hoe snel je kunt reageren."
-        ),
-        brief="Update je status in het status kanaal",
-    )
-    async def status(self, ctx, *args):
-        """
-        updating the status of ws participants
-        """
-
-        usermap = self._getusermap(int(ctx.author.id))
-        statusupdate = _sanitize(" ".join(args), 100)
-
-        logger.info(f"New status from {usermap['DiscordAlias']}: {statusupdate} ")
-        self.db.session.query(self.db.Status).filter(
-            self.db.Status.UserId == usermap["UserId"]
-        ).delete()
-
-        new_status = self.db.Status(UserId=usermap["UserId"], StatusText=statusupdate)
-        self.db.session.add(new_status)
-
-        await self.update_status_table(ctx)
-
-        await ctx.send(
-            content=f"Dank, {usermap['DiscordAlias']} je ws-status is nu bijgewerkt",
-            delete_after=3,
-        )
-
-        try:
-            await ctx.message.delete()
-        except Exception as exception:
-            logger.info(f"message deletion failed {exception}")
-        self.db.session.commit()
 
     ###############################################################################################
     #  function update_ws_inschrijvingen_tabel
@@ -213,7 +118,7 @@ class WhiteStar(Robin):
             if is_entered == 0:
                 logger.info(f"{usermap['DiscordAlias']} stond nog niet ingeschreven.. ")
                 msg = f"{usermap['DiscordAlias']}, je stond nog niet ingeschreven.. "
-                await _feedback(ctx=ctx, msg=msg, delete_after=3)
+                await feedback(ctx=ctx, msg=msg, delete_after=3)
             else:
                 self.db.session.query(self.db.WSEntry).where(
                     self.db.WSEntry.Active == True
@@ -222,7 +127,7 @@ class WhiteStar(Robin):
                 msg = (
                     f"Helaas, {usermap['DiscordAlias']} je doet niet mee met komende ws"
                 )
-                await _feedback(ctx=ctx, msg=msg, delete_after=3)
+                await feedback(ctx=ctx, msg=msg, delete_after=3)
 
                 await self.update_ws_inschrijvingen_tabel(wslist_channel)
 
@@ -281,10 +186,10 @@ class WhiteStar(Robin):
 
         # close
         if not (
-            await Roles.in_role(self, ctx, "Moderator")
-            or await Roles.in_role(self, ctx, "Bot Bouwers")
+            await in_role(self, ctx, "Moderator")
+            or await in_role(self, ctx, "Bot Bouwers")
         ):
-            await _feedback(
+            await feedback(
                 ctx=ctx, msg="You are not an admin", delete_after=5, delete_message=True
             )
             return None
@@ -361,7 +266,7 @@ class WhiteStar(Robin):
                 "inschrijven, je bent nu nog **niet** ingeschreven!"
             )
 
-            await _feedback(ctx=ctx, msg=msg, delete_after=3, delete_message=True)
+            await feedback(ctx=ctx, msg=msg, delete_after=3, delete_message=True)
             return None
         if len(args) == 0:
             # no arguments, send help!
@@ -409,7 +314,7 @@ class WhiteStar(Robin):
         If Id is not yet in usermap table it will be added
         with the provided alias.
         """
-        if await Roles.in_role(self, ctx, "Moderator") or await Roles.in_role(
+        if await in_role(self, ctx, "Moderator") or await in_role(
             self, ctx, "Bot Bouwers"
         ):
 
@@ -432,46 +337,3 @@ class WhiteStar(Robin):
                     logger.info(f"inserted {member.display_name}")
 
             await ctx.send(f"user table updated by {ctx.author.name}")
-
-
-###################################################################################################
-#  _normalize_time
-###################################################################################################
-
-
-def _normalize_time(intime: str) -> str:
-    """
-    Translate the intime to a normal "clock" time.
-    The input can be hours from now, clock time or hours + hours/10
-
-    paramters:
-        intime:     The time to normalize
-    Output:
-        intime:     The normalized time
-    """
-    logger.info(f"intime: {intime}")
-    now = datetime.now()
-    logger.info(f"now: {now}")
-    if "." in intime or "," in intime:
-        logger.info(f"found . {intime}")
-        (hours, minutes) = intime.split(".")
-        logger.info(f"hours: {hours}, minutes: {minutes}")
-        intime = now + timedelta(hours=int(hours), minutes=int(minutes) * 6)
-    elif "u" in intime:
-        logger.info(f"found u {intime}")
-        intime = intime.replace("u", "")
-        (hours, minutes) = intime.split(":")
-        intime = datetime.datetime(
-            now.year, now.month, now.day, int(hours), int(minutes), 0
-        )
-        if intime < now:
-            intime = intime + timedelta(days=1)
-    elif ":" in intime:
-        logger.info(f"found : {intime}")
-        (hours, minutes) = intime.split(":")
-        logger.info(f"hours: {hours}, minutes: {minutes}")
-        intime = now + timedelta(hours=int(hours), minutes=int(minutes))
-        logger.info(f"intime: {intime}")
-    intime = intime.strftime("%Y-%m-%d %H:%M")
-    logger.info(f"return {intime}")
-    return intime
