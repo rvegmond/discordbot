@@ -1,5 +1,5 @@
 name: Build
-on: 
+on:
   push:
     branches:
       - master
@@ -19,8 +19,7 @@ jobs:
         run: pip install pipenv  && pipenv install --dev
       - name: setLocale nl_NL.utf8
         run: sudo locale-gen nl_NL.utf8
-      - name: run test
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: make full_test
-
+      # - name: run test
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #   run: make full_test
