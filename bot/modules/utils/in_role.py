@@ -2,7 +2,7 @@ from discord.ext import commands
 from loguru import logger
 
 
-async def in_role(self, ctx: commands.Context, req_role: str) -> bool:
+async def in_role(ctx: commands.Context, req_role: str) -> bool:
     """
     Check if the author of the message is a member of the specified role.
 
