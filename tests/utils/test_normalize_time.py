@@ -37,5 +37,7 @@ def testnormalize_time_():
     hour = now.strftime("%H")
     if int(hour) >= 18:
         res_time = now + datetime.timedelta(days=1)
+    else:
+        res_time = now
     res_time = res_time.strftime("%Y-%m-%d 18:00")
     assert time == res_time
