@@ -25,9 +25,7 @@ def normalize_time(intime: str) -> str:
         logger.info(f"found u {intime}")
         intime = intime.replace("u", "")
         (hours, minutes) = intime.split(":")
-        intime = datetime.datetime(
-            now.year, now.month, now.day, int(hours), int(minutes), 0
-        )
+        intime = datetime(now.year, now.month, now.day, int(hours), int(minutes), 0)
         if intime < now:
             intime = intime + timedelta(days=1)
     elif ":" in intime:
