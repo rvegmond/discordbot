@@ -8,9 +8,7 @@ import discord
 from discord.ext import commands
 from loguru import logger
 from datetime import datetime
-import modules.ws as ws
-import modules.db as db
-import modules.utils as utils
+from modules import ws, db, utils
 
 db.session = db.init("sqlite:///../data/hades.db")
 ___VERSION___ = "[v2.0.0]"
