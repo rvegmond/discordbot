@@ -25,6 +25,24 @@ config = {
 }
 
 
+def update_rsruns(content):
+    text = content.split()
+    i = 0
+    for item in text:
+        print(f"{i} __{item}__")
+        i += 1
+
+    if len(text) > 1 and "start" in text[1]:
+        level = text[0].replace("rs", "")
+        logger.info(f"level {level}")
+        for line in text[2:5]:
+            if "<@" in line:
+                user = line.replace("<@", "").replace(">", "")
+                logger.info(f"user {user}")
+                new_entry = db.RSQueue(DiscordId=user, DRSLevel=level)
+                db.session.add(new_entry)
+
+
 def update_last_active(message):
     member = message.author
     channel = message.channel
@@ -33,7 +51,8 @@ def update_last_active(message):
         membername = member.name
     else:
         membername = member.nick
-
+    if member.name == "RedStarQueueBot":
+        update_rsruns(message.content)
     logger.info(f"member {member}")
     logger.info(f"member.id {member.id}")
     logger.info(f"membername {membername}")
