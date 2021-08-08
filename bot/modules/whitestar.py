@@ -524,7 +524,7 @@ class WhiteStar(Robin):
             return None
 
         shiptype = args[0].lower()
-        if shiptype in ["bs", "ukkie", "drone"]:
+        if shiptype in ["bs", "ukkie", "drone","fs"]:
             result = (
                 self.db.session.query(self.db.WSComeback)
                 .filter(
