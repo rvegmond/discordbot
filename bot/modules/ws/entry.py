@@ -152,8 +152,8 @@ class Entry(Robin):
             # already registerd as a different role, update
             data = {"EntryType": action, "Remark": comment}
             self.db.session.query(self.db.WSEntry).filter(
-                self.db.WSEntry.Active
-            ).filtery(UserId=usermap["UserId"]).update(data)
+                self.db.WSEntry.Active == True
+            ).filter(self.db.WSEntry.UserId == usermap["UserId"]).update(data)
         else:
             logger.info("adding")
             # not yet registerd, insert
@@ -184,10 +184,7 @@ class Entry(Robin):
         ws_role = ctx.guild.get_role(int(os.getenv("WS_ROLE")))
 
         # close
-        if not (
-            await in_role(self, ctx, "Moderator")
-            or await in_role(self, ctx, "Bot Bouwers")
-        ):
+        if not (await in_role(ctx, "Moderator") or await in_role(ctx, "Bot Bouwers")):
             await feedback(
                 ctx=ctx, msg="You are not an admin", delete_after=5, delete_message=True
             )
@@ -313,9 +310,7 @@ class Entry(Robin):
         If Id is not yet in usermap table it will be added
         with the provided alias.
         """
-        if await in_role(self, ctx, "Moderator") or await in_role(
-            self, ctx, "Bot Bouwers"
-        ):
+        if await in_role(ctx, "Moderator") or await in_role(ctx, "Bot Bouwers"):
 
             guild = ctx.guild
             members = guild.members
