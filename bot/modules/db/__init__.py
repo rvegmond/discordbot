@@ -12,7 +12,7 @@ from .user import User
 from .wscomeback import WSComeback
 from .wsentry import WSEntry
 from .wstemp import WSTemp
-from .rsqueue import RSQueue
+from .rsevent import RSEvent
 
 
 def init(db_uri: str = "sqlite://"):

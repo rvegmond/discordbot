@@ -8,7 +8,7 @@ import discord
 from discord.ext import commands
 from loguru import logger
 from datetime import datetime
-from modules import whitestar, ping, roles
+from modules import whitestar, ping, roles, rs
 import modules.db as db
 
 db.session = db.init("sqlite:///../data/hades.db")
