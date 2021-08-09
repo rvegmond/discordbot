@@ -91,6 +91,7 @@ def new_bot(command_prefix: str, description: str) -> discord.ext.commands.bot:
         bot.add_cog(ping.Ping(bot))
         bot.add_cog(whitestar.WhiteStar(bot=bot, db=db))
         bot.add_cog(roles.Roles(bot=bot, db=db))
+        bot.add_cog(rs.RSEvent(bot=bot, db=db))
 
     return bot
 
