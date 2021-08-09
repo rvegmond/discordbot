@@ -10,7 +10,7 @@ from . import Base
 class RSEvent(Base):
     __tablename__ = "rsevent"
     EventId = Column(Integer, primary_key=True)
-    DiscorId = Column(Integer)
+    DiscordId = Column(Integer)
     RSLevel = Column(Integer)
     Runtime = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 

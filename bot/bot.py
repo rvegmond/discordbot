@@ -39,7 +39,7 @@ def update_rsruns(content):
             if "<@" in line:
                 user = line.replace("<@", "").replace(">", "")
                 logger.info(f"user {user}")
-                new_entry = db.RSQueue(DiscordId=user, RSLevel=level)
+                new_entry = db.RSEvent(DiscordId=user, RSLevel=level)
                 db.session.add(new_entry)
 
 
