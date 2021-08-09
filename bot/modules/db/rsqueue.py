@@ -10,7 +10,7 @@ from . import Base
 class RSQueue(Base):
     __tablename__ = "rsqueue"
     QueueId = Column(Integer, primary_key=True)
-    DiscorId = Column(Integer)
+    DiscordId = Column(Integer)
     # UserId = Column(Integer, ForeignKey("user.UserId"))
     RSLevel = Column(Integer)
     Runtime = Column(DateTime, default=datetime.now, onupdate=datetime.now)
