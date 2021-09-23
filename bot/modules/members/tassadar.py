@@ -8,7 +8,7 @@ from ..utils import feedback
 
 class Tassadar(Robin):
     """
-    Are you happy Robin?
+    Are you happy Tassadar?
     """
 
     @commands.command(

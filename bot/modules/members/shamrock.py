@@ -8,13 +8,13 @@ from ..utils import feedback
 
 class Shamrock(Robin):
     """
-    Are you happy Robin?
+    Are you happy Shamrock?
     """
 
     @commands.command(
         name="shamrock",
         help="Hoe is het met shamrock?",
-        brief="Hoe is het met tassadar?",
+        brief="Hoe is het met shamrock?",
     )
     async def command(self, ctx):
         """
