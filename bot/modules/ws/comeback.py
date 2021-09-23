@@ -12,6 +12,11 @@ class Comeback(Robin):
     The class that contains the Comeback functions
     """
 
+    def __init__(self, bot=None, db=None):
+        super().__init__(bot=bot, db=db)
+        self.return_scheduler.start()
+        logger.info(f"Class {type(self).__name__} initialized ")
+
     ###############################################################################################
     #  command _update_comeback_channel
     ###############################################################################################
