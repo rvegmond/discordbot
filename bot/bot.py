@@ -33,14 +33,17 @@ def update_rsruns(content):
         i += 1
 
     if len(text) > 1 and "start" in text[1]:
+        logger.info(f"content {content}")
         level = text[0].replace("rs", "")
         logger.info(f"level {level}")
-        for line in text[2:5]:
+        for line in text[2:6]:
             if "<@" in line:
                 user = line.replace("<@", "").replace(">", "")
                 logger.info(f"user {user}")
                 new_entry = db.RSEvent(DiscordId=user, RSLevel=level)
                 db.session.add(new_entry)
+#                await self.update_rsevent_table()
+
 
 
 def update_last_active(message):
