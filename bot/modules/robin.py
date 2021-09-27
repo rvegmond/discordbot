@@ -33,6 +33,34 @@ class Robin(commands.Cog):
 
         return usermap
 
+    def _getusermap_by_alias(self, alias):
+        """
+        Get the mapping for discordalias and gsheetalias
+        Id is the key for the selection.
+        with the provided alias.
+        """
+        usermap = {}
+        usermap = (
+            self.db.session.query(
+                self.db.User.UserId,
+                self.db.User.DiscordId,
+                self.db.User.DiscordAlias,
+                self.db.User.GsheetAlias,
+            ).filter(self.db.User.DiscordAlias == alias)
+        ).one()
+
+        return usermap
+
+    def _known_user(self, user):
+        """
+        is there info about the user
+        """
+        return (
+            self.db.session.query(self.db.User)
+            .filter(self.db.User.DiscordAlias == user)
+            .count()
+        )
+
 
 # async def _feedback(
 #     ctx: commands.Context = None,

@@ -11,7 +11,7 @@ from datetime import datetime
 from modules import ws, db, utils, members
 
 db.session = db.init("sqlite:///../data/hades.db")
-___VERSION___ = "[v2.0.0]"
+___VERSION___ = "[v2.1.0]"
 
 config = {
     "handlers": [
@@ -88,7 +88,9 @@ def new_bot(command_prefix: str, description: str) -> discord.ext.commands.bot:
         logger.info(f"Signed in as [{bot.user.id}] [{bot.user.name}]")
 
         bot.add_cog(utils.Ping(bot=bot))
-        bot.add_cog(ws.Info(bot=bot, db=db))
+        bot.add_cog(utils.Tech(bot=bot, db=db))
+        bot.add_cog(utils.Info(bot=bot, db=db))
+        bot.add_cog(utils.UserAlias(bot=bot, db=db))
         bot.add_cog(ws.Status(bot=bot, db=db))
         bot.add_cog(ws.Comeback(bot=bot, db=db))
         bot.add_cog(ws.Entry(bot=bot, db=db))

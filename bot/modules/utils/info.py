@@ -10,16 +10,6 @@ class Info(Robin):
     The class that contains the Whitestar functions
     """
 
-    def _known_user(self, user):
-        """
-        is there info about the user
-        """
-        return (
-            self.db.session.query(self.db.User)
-            .filter(self.db.User.DiscordAlias == user)
-            .count()
-        )
-
     @commands.command(
         name="info",
         help=("Geeft info over een een speler."),

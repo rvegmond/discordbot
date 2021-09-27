@@ -5,7 +5,6 @@ import locale
 import os
 import datetime
 from datetime import timedelta, datetime
-from .info import *
 from .comeback import *
 from .status import *
 from .entry import *

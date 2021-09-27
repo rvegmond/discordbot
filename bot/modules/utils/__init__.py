@@ -10,10 +10,13 @@ from .rolemembers import *
 from .get_all_roles import *
 from .in_role import *
 from .ping import *
+from .tech import *
+from .info import *
+from .user_alias import *
 
-# try:
-#     locale.setlocale(locale.LC_ALL, "nl_NL.utf8")  # required running on linux
-#     logger.info("running on linux")
-# except locale.Error:
-#     locale.setlocale(locale.LC_ALL, "nl_NL.UTF-8")  # required when running on MAC
-#     logger.info("running on mac")
+try:
+    locale.setlocale(locale.LC_ALL, "nl_NL.utf8")  # required running on linux
+    logger.info("running on linux")
+except locale.Error:
+    locale.setlocale(locale.LC_ALL, "nl_NL.UTF-8")  # required when running on MAC
+    logger.info("running on mac")
