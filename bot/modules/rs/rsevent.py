@@ -12,14 +12,14 @@ class RSEvent(Robin):
     Are you happy Robin?
     """
 
-    async def update_rsevent_table(self, ctx):
+    async def update_rsevent_table(self):
         """
         updating status table in status channel
         """
         bot = self.bot
         eventlist_channel = int(os.getenv("EVENTLIST_CHANNEL"))
         channel = bot.get_channel(eventlist_channel)
-        await channel.purge(limit=100)
+#        await channel.purge(limit=100)
         msg = (
             "semi real-time overzicht van het aantal rs-en welke iedereen"
             "gedaan heeft\n"
@@ -55,4 +55,4 @@ class RSEvent(Robin):
         updating the status of ws participants
         """
 
-        await self.update_rsevent_table(ctx)
+        await self.update_rsevent_table()
