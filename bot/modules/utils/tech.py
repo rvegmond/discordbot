@@ -183,6 +183,9 @@ class Tech(Robin):
     """
 
     def _tech_get(self, worksheet, user, module):
+        """
+        Get a specific module level
+        """
         list_of_lists = worksheet.get_all_records()
         for item in list_of_lists:
             if item["Naam"] == user:
@@ -191,6 +194,9 @@ class Tech(Robin):
         return f"{module}: {mod_config[module]}"
 
     def _tech_get_specialty(self, worksheet, user, spec):
+        """
+        get all levels in a specific specialty
+        """
         list_of_lists = worksheet.get_all_records()
         for item in list_of_lists:
             if item["Naam"] == user:
@@ -201,6 +207,9 @@ class Tech(Robin):
         return msg
 
     def _tech_get_all(self, worksheet, user):
+        """
+        Just get all tech for a user
+        """
         list_of_lists = worksheet.get_all_records()
         for item in list_of_lists:
             if item["Naam"] == user:
@@ -239,7 +248,10 @@ class Tech(Robin):
             "\n"
         ),
     )
-    async def command(self, ctx, *args):
+    async def tech(self, ctx, *args):
+        """
+        Get and display the tech levels for a user/group
+        """
         if len(args) < 3:
             await ctx.send_help(ctx.command)
             return None
