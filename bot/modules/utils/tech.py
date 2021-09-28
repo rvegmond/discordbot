@@ -252,11 +252,13 @@ class Tech(Robin):
         name="tech",
         brief=("Geeft info over tech mods"),
         help=(
-            "Met het tech commando vraag je de modules op van een speler zoals bekend in de google sheet\n"
-            f"**tech get discordnaam** all         - geeft alle modules van een speler\n"
-            f"**tech get discordnaam** modulenaam  - geeft het modulelevel van een speler\n"
-            f"**tech get discordnaam** tech        - geeft de modules voor een bepaalde tech van een speler\n"
-            f"     waar waar tech = [{specialty.keys()}]]"
+            "Met het tech commando vraag je de modules op van een speler"
+            " zoals deze bekend in de google sheet, dit is real time\n"
+            "de feedback kan dus enige vertragingin hebben\n"
+            f"**tech get discordnaam** all         - alle modules \n"
+            f"**tech get discordnaam** modulenaam  - specifieke module\n"
+            f"**tech get discordnaam** type        - bepaald type\n"
+            f"     waar type = [{specialty.keys()}]]"
             "\n"
             "\n"
         ),
