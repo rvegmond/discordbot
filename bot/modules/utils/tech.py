@@ -242,7 +242,6 @@ def _get_ws_members(list_of_lists, ws):
     for player in list_of_lists:
         if player[5] == ws:
             ws_members.append(player[1])
-    # ws_members = [x[1] for x in list_of_lists if (x[5] == ws)]
     logger.info(f"ws_members: {ws_members}")
     return ws_members
 
@@ -279,7 +278,9 @@ class Tech(Robin):
             f"**tech get discordnaam** all         - alle modules \n"
             f"**tech get discordnaam** modulenaam  - specifieke module\n"
             f"**tech get discordnaam** type        - bepaald type\n"
-            f"     waar type = [{specialty.keys()}]]"
+            f"     waar type = [{','.join([k for k in specialty.keys()])}]]\n"
+            "\n"
+            "**tech get [ws1|ws2] modulenaam - module per ws\n"
             "\n"
             "\n"
         ),
