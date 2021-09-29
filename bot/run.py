@@ -9,6 +9,8 @@ from discord.ext import commands
 from loguru import logger
 from datetime import datetime
 from modules import ws, db, utils, members
+import gspread
+
 
 db.session = db.init("sqlite:///../data/hades.db")
 ___VERSION___ = "[v2.1.0]"
@@ -90,9 +92,12 @@ def new_bot(command_prefix: str, description: str) -> discord.ext.commands.bot:
     @bot.event
     async def on_ready():
         logger.info(f"Signed in as [{bot.user.id}] [{bot.user.name}]")
+        gc = gspread.service_account()
+        wks = gc.open_by_key(os.getenv("GSHEET_ID"))
+        worksheet = wks.worksheet("Modules")
 
         bot.add_cog(utils.Ping(bot=bot))
-        bot.add_cog(utils.Tech(bot=bot, db=db))
+        bot.add_cog(utils.Tech(bot=bot, db=db, worksheet=worksheet))
         bot.add_cog(utils.Info(bot=bot, db=db))
         bot.add_cog(utils.UserAlias(bot=bot, db=db))
         bot.add_cog(ws.Status(bot=bot, db=db))

@@ -185,23 +185,31 @@ for item in SHEET_CONFIG:
     specialty[item["spec"]].append(item["long_name"])
 
 
-def _tech_get_module(worksheet, user, module):
+def _tech_get_module(list_of_dicts, user, module):
     """
     Get a specific module level
     """
-    list_of_lists = worksheet.get_all_records()
-    for item in list_of_lists:
+    for item in list_of_dicts:
         if item["Naam"] == user:
             mod_config = item
     return f"{short_to_long[module]} ({module}): {mod_config[short_to_long[module]]}"
 
 
-def _tech_get_specialty(worksheet, user, spec):
+def _tech_get_module_level(list_of_dicts, user, module):
+    """
+    Get a specific module level
+    """
+    for item in list_of_dicts:
+        if item["Naam"] == user:
+            mod_config = item
+    return mod_config[module]
+
+
+def _tech_get_specialty(list_of_dicts, user, spec):
     """
     get all levels in a specific specialty
     """
-    list_of_lists = worksheet.get_all_records()
-    for item in list_of_lists:
+    for item in list_of_dicts:
         if item["Naam"] == user:
             mod_config = item
     msg = f"**{spec}** for **{user}**, laatst bijgewerkt: **{mod_config['Bijgewerkt']}**\n"
@@ -211,12 +219,11 @@ def _tech_get_specialty(worksheet, user, spec):
     return msg
 
 
-def _tech_get_all(worksheet, user):
+def _tech_get_all(list_of_dicts, user):
     """
     Just get all tech for a user
     """
-    list_of_lists = worksheet.get_all_records()
-    for item in list_of_lists:
+    for item in list_of_dicts:
         if item["Naam"] == user:
             mod_config = item
     msg = (
@@ -230,23 +237,37 @@ def _tech_get_all(worksheet, user):
     return msg
 
 
+def _get_ws_members(list_of_lists, ws):
+    ws_members = []
+    for player in list_of_lists:
+        if player[5] == ws:
+            ws_members.append(player[1])
+    # ws_members = [x[1] for x in list_of_lists if (x[5] == ws)]
+    logger.info(f"ws_members: {ws_members}")
+    return ws_members
+
+
+def _tech_get_ws(list_of_dicts, list_of_lists, ws, module):
+
+    members = _get_ws_members(list_of_lists, ws)
+    msg = f"**{module}** for **{ws}**\n"
+    logger.info(f"msg: {msg}")
+    for member in members:
+        module_level = _tech_get_module_level(list_of_dicts, member, module)
+        msg = msg + f"{member}: {module_level}\n"
+
+    return msg
+
+
 class Tech(Robin):
     """
     The class that gets tech info
     """
 
-    # def _tech_get_ws(self, worksheet, ws):
-    #     list_of_lists = worksheet.get_all_records()
-    #     for item in list_of_lists:
-    #         if item['ws-count'] == ws:
-    #             mod_config = item
-    #     msg = f"**Tech** for **{ws}**, laatst bijgewerkt: **{mod_config['Bijgewerkt']}**\n"
-    #     i = 0
-    #     for item in mod_config:
-    #         if i > 6 or i == 0:
-    #             msg = msg + f"{item}: {mod_config[item]}\n"
-    #         i = i + 1
-    #     return msg
+    def __init__(self, bot=None, db=None, worksheet=None):
+        super().__init__(bot=bot, db=db)
+        self.worksheet = worksheet
+        logger.info(f"Class {type(self).__name__} initialized ")
 
     @commands.command(
         name="tech",
@@ -277,20 +298,35 @@ class Tech(Robin):
         if (requested_action == "not_defined") or (requested_for == "not_defined"):
             await ctx.send_help(ctx.command)
             return None
+        list_of_lists = self.worksheet.get_all_values()
+        list_of_dicts = self.worksheet.get_all_records()
         logger.info(f"long_to_short {long_to_short}")
         logger.info(f"user {requested_for}")
-        usermap = self._getusermap_by_alias(requested_for)
-        gc = gspread.service_account()
-        wks = gc.open_by_key(os.getenv("GSHEET_ID"))
-        worksheet = wks.worksheet("Modules")
-        if requested_type == "all":
-            msg = _tech_get_all(worksheet, usermap["GsheetAlias"])
-
-        elif requested_type in specialty:
-            msg = _tech_get_specialty(worksheet, usermap["GsheetAlias"], requested_type)
-        else:
+        if requested_for in ["ws1", "ws2"]:
+            if requested_type in short_to_long:
+                requested_type = short_to_long[requested_type]
             if requested_type in long_to_short:
-                requested_type = long_to_short[requested_type]
-            msg = _tech_get_module(worksheet, usermap["GsheetAlias"], requested_type)
+                msg = _tech_get_ws(
+                    list_of_dicts, list_of_lists, requested_for, requested_type
+                )
+            else:
+                msg = "Je kunt alleen modules opvragen voor de heel ws"
+
+        else:
+            usermap = self._getusermap_by_alias(requested_for)
+
+            if requested_type == "all":
+                msg = _tech_get_all(list_of_dicts, usermap["GsheetAlias"])
+
+            elif requested_type in specialty:
+                msg = _tech_get_specialty(
+                    list_of_dicts, usermap["GsheetAlias"], requested_type
+                )
+            else:
+                if requested_type in long_to_short:
+                    requested_type = long_to_short[requested_type]
+                msg = _tech_get_module(
+                    list_of_dicts, usermap["GsheetAlias"], requested_type
+                )
 
         await feedback(ctx=ctx, msg=msg)
