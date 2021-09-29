@@ -282,6 +282,7 @@ class Tech(Robin):
             "\n"
             "**tech get [ws1|ws2] modulenaam - module per ws\n"
             "\n"
+            "**tech get modules <specialty> - module + afk, evt. per specialty\n"
             "\n"
         ),
     )
@@ -312,7 +313,15 @@ class Tech(Robin):
                 )
             else:
                 msg = "Je kunt alleen modules opvragen voor de heel ws"
-
+        elif requested_for == "modules":
+            msg = "** specialty - module naam (afkorting)**\n"
+            for line in SHEET_CONFIG:
+                if line["column"] >= 12:
+                    if requested_type == "all" or line["spec"] == requested_type:
+                        msg = (
+                            msg
+                            + f"{line['spec']} - {line['long_name']} ({line['short_name']})\n"
+                        )
         else:
             usermap = self._getusermap_by_alias(requested_for)
 
