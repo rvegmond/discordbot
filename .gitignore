@@ -1,4 +1,5 @@
 # config files!
+bot/config/*
 .DS_Store
 gsheet/config/*
 .DS_Store
