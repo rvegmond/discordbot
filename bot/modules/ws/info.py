@@ -16,7 +16,7 @@ class Info(Robin):
         """
         return (
             self.db.session.query(self.db.User)
-            .filter(self.db.User.DiscordAlias == user)
+            .filter(self.db.User.DiscordAlias.ilike(user + "%"))
             .count()
         )
 
