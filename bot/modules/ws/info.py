@@ -32,7 +32,7 @@ class Info(Robin):
         if self._known_user(user):
             row = (
                 self.db.session.query(self.db.User)
-                .filter(self.db.User.DiscordAlias == user)
+                .filter(self.db.User.DiscordAlias.ilike(user + "%"))
                 .one()
             )
 
