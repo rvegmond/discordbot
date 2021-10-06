@@ -9,6 +9,7 @@ from .info import *
 from .comeback import *
 from .status import *
 from .entry import *
+from .idee import *
 
 try:
     locale.setlocale(locale.LC_ALL, "nl_NL.utf8")  # required running on linux
