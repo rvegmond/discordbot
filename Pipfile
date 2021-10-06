@@ -8,6 +8,7 @@ loguru = "*"
 discord = {py = "*"}
 pylint = "*"
 sqlalchemy = "*"
+icecream = "*"
 
 [dev-packages]
 loguru = "*"
