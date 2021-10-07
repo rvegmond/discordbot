@@ -9,6 +9,7 @@ discord = {py = "*"}
 pylint = "*"
 sqlalchemy = "*"
 icecream = "*"
+boto3 = "*"
 
 [dev-packages]
 loguru = "*"

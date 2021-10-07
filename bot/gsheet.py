@@ -6,6 +6,14 @@ from datetime import datetime
 from icecream import ic
 from modules import ws, db, utils, members
 
+import base64
+import boto3
+import json
+from botocore.exceptions import ClientError
+
+gc_prd = boto3.session.Session(profile_name="gc-prd")
+sqs_client = gc_prd.client("sqs")
+
 db.session = db.init("sqlite:///../data/hades.db")
 
 
@@ -132,6 +140,42 @@ def insert_gsheet_into_table(worksheet):
     # conn.commit()
 
 
+def update_table():
+    more_messages = True
+    while more_messages:
+        received_messages = sqs_client.receive_message(
+            QueueUrl="https://sqs.eu-west-1.amazonaws.com/686403619219/gc-robin-queue",
+            MessageAttributeNames=["All"],
+            MaxNumberOfMessages=10,
+            WaitTimeSeconds=2,
+        )
+        # for message in received_messages:
+        #     path, body, line = unpack_message(message)
+        #     received_lines[line] = body
+        # if received_messages:
+        #     delete_messages(queue, received_messages)
+        # else:
+        # ic(received_messages)
+        if "Messages" in received_messages:
+            for message in received_messages["Messages"]:
+                #      print(f"{type(dict(base64.b64decode(message['Body'])))}")
+                row_dict = json.loads(base64.b64decode(message["Body"]).decode("utf-8"))
+                print(f"{row_dict}")
+                print(f"{row_dict.values()}")
+                row_dict.pop("id")
+                print(f"{row_dict}")
+                print(f"{row_dict.values()}")
+                row_dict.pop("row")
+                print(f"{row_dict}")
+                print(f"{row_dict.values()}")
+                row_dict.pop("_content_hash")
+                print(f"{row_dict}")
+                print(f"{row_dict.values()}")
+                add_gsheet_row(list(row_dict.values()))
+        else:
+            more_messages = False
+
+
 def main():
     gc = gspread.service_account()
 
@@ -141,6 +185,7 @@ def main():
     worksheet = wks.worksheet("Modules")
 
     insert_gsheet_into_table(worksheet)
+    update_table()
 
 
 if __name__ == "__main__":
