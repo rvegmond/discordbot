@@ -30,7 +30,7 @@ class Idee(Robin):
         """
 
         usermap = self._getusermap(int(ctx.author.id))
-        idea = sanitize(" ".join(args), 100)
+        idea = sanitize(" ".join(args))
         if ctx.channel.id == int(os.getenv("WS1_CHANNEL")):
             officers_channel = self.bot.get_channel(
                 int(os.getenv("WS1_OFFICERS_CHANNEL"))
