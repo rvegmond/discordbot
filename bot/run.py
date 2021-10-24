@@ -8,10 +8,10 @@ import discord
 from discord.ext import commands
 from loguru import logger
 from datetime import datetime
-from modules import ws, db, utils, members
+from modules import ws, db, utils, members, tech
 
 db.session = db.init("sqlite:///../data/hades.db")
-___VERSION___ = "[v2.0.0]"
+___VERSION___ = "[v2.0.5]"
 
 config = {
     "handlers": [
@@ -41,8 +41,9 @@ def update_rsruns(content):
                 logger.info(f"user {user}")
                 new_entry = db.RSEvent(DiscordId=user, RSLevel=level)
                 db.session.add(new_entry)
-#                await self.update_rsevent_table()
 
+
+#                await self.update_rsevent_table()
 
 
 def update_last_active(message):
@@ -95,6 +96,8 @@ def new_bot(command_prefix: str, description: str) -> discord.ext.commands.bot:
         bot.add_cog(ws.Status(bot=bot, db=db))
         bot.add_cog(ws.Comeback(bot=bot, db=db))
         bot.add_cog(ws.Entry(bot=bot, db=db))
+        bot.add_cog(ws.Idee(bot=bot, db=db))
+        bot.add_cog(tech.Tech(bot=bot, db=db))
         bot.add_cog(utils.GetAllRoles(bot=bot, db=db))
         bot.add_cog(members.Tassadar(bot=bot, db=db))
         bot.add_cog(members.Shamrock(bot=bot, db=db))
