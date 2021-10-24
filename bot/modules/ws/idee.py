@@ -9,7 +9,7 @@ from ..utils import feedback, normalize_time, sanitize, rolemembers
 
 class Idee(Robin):
     """
-    The class that contains the Comeback functions
+    The class that contains the Idee functions
     """
 
     ###############################################################################################
@@ -19,14 +19,14 @@ class Idee(Robin):
     @commands.command(
         name="idee",
         help=(
-            "Met het status commando update je status in het status kanaal,"
-            " hiermee help je je mede ws-ers op de hoogte te houden hoe snel je kunt reageren."
+            "Als je een idee hebt kun je dit hiermee doorgeven,"
+            " de planners krijgen dit in het planning kanaal te zien."
         ),
-        brief="Update je status in het status kanaal",
+        brief="Geef een idee door aan de planners.",
     )
     async def idee(self, ctx, *args):
         """
-        updating the status of ws participants
+        Posting an idea in the plannnig channel
         """
 
         usermap = self._getusermap(int(ctx.author.id))

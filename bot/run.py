@@ -8,7 +8,7 @@ import discord
 from discord.ext import commands
 from loguru import logger
 from datetime import datetime
-from modules import ws, db, utils, members
+from modules import ws, db, utils, members, tech
 
 db.session = db.init("sqlite:///../data/hades.db")
 ___VERSION___ = "[v2.0.5]"
@@ -97,6 +97,7 @@ def new_bot(command_prefix: str, description: str) -> discord.ext.commands.bot:
         bot.add_cog(ws.Comeback(bot=bot, db=db))
         bot.add_cog(ws.Entry(bot=bot, db=db))
         bot.add_cog(ws.Idee(bot=bot, db=db))
+        bot.add_cog(tech.Tech(bot=bot, db=db))
         bot.add_cog(utils.GetAllRoles(bot=bot, db=db))
         bot.add_cog(members.Tassadar(bot=bot, db=db))
         bot.add_cog(members.Shamrock(bot=bot, db=db))
